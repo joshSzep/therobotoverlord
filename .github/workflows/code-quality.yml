@@ -10,12 +10,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  code-quality:
-    name: Code Quality Checks
+  # Common setup job that other jobs depend on
+  setup:
+    name: Setup Environment
     # Skip running on PR if already running on push to the same branch
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     env:
       # Tool versions - update these when upgrading tools
       NODE_VERSION: '23.11.0'
@@ -62,23 +63,123 @@ jobs:
       - name: Setup dependencies
         run: just setup
 
+  # Global pre-commit checks
+  global-checks:
+    name: Global Checks
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: 'backend/.python-version'
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: '0.7.8'
       - name: Run pre-commit built-in substeps
-        run: just pre-commit-built-ins
+        run: |
+          cd backend
+          uv run pre-commit run check-merge-conflict --all-files
+          uv run pre-commit run detect-private-key --all-files
+          uv run pre-commit run end-of-file-fixer --all-files
+          uv run pre-commit run trailing-whitespace --all-files
 
+  # Backend code quality checks (run in parallel)
+  ruff-format:
+    name: Ruff Format
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: 'backend/.python-version'
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: '0.7.8'
       - name: Run Ruff format
-        run: just ruff-format
+        run: cd backend && uv run ruff format --check .
 
+  ruff-check:
+    name: Ruff Check
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: 'backend/.python-version'
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: '0.7.8'
       - name: Run Ruff check
-        run: just ruff-check
+        run: cd backend && uv run ruff check .
 
+  mypy:
+    name: Mypy
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: 'backend/.python-version'
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: '0.7.8'
       - name: Run Mypy
-        run: just mypy
+        run: cd backend && uv run mypy .
 
+  pyright:
+    name: Pyright
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: 'backend/.python-version'
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: '0.7.8'
       - name: Run Pyright
-        run: just pyright
+        run: cd backend && uv run pyright .
 
+  pytest:
+    name: Pytest
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: 'backend/.python-version'
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: '0.7.8'
       - name: Run Pytest
-        run: just pytest
+        run: cd backend && uv run pytest
 
+  # Frontend code quality checks
+  eslint:
+    name: ESLint
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '23.11.0'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - name: Install dependencies
+        run: cd frontend && npm ci
       - name: Run ESLint
-        run: just eslint
+        run: cd frontend && npm run lint
