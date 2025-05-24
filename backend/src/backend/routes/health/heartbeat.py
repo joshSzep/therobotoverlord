@@ -2,7 +2,6 @@ import asyncio
 
 from fastapi import APIRouter
 from fastapi import WebSocket
-from fastapi import WebSocketDisconnect
 
 from backend.routes.health.utils import build_health_check_response
 
@@ -15,10 +14,7 @@ async def heartbeat(
 ) -> None:
     """WebSocket endpoint that sends a heartbeat message every second."""
     await websocket.accept()
-    try:
-        while True:
-            message = build_health_check_response()
-            await websocket.send_json(message.model_dump())
-            await asyncio.sleep(1)
-    except WebSocketDisconnect:
-        pass
+    while True:
+        message = build_health_check_response()
+        await websocket.send_json(message.model_dump())
+        await asyncio.sleep(1)
