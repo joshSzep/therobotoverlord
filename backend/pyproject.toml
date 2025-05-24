@@ -42,3 +42,16 @@ known-first-party = ["backend"]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.mypy]
+python_version = "3.12"
+sources = ["backend"]
+exclude = [".venv", "tests"]
+
+[tool.pyright]
+pythonVersion = "3.12"
+venvPath = ".venv"
+exclude = [".venv", "tests"]
