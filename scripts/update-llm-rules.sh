@@ -26,7 +26,16 @@ fi
 echo "Checking LLM rule files against $SOURCE_FILE..."
 
 # Get the modification time of the source file
-source_mtime=$(stat -f "%m" "$SOURCE_FILE")
+# Check if we're on macOS or Linux and use appropriate stat command
+if [[ "$(uname)" == "Darwin" ]]; then
+  # macOS
+  source_mtime=$(stat -f "%m" "$SOURCE_FILE")
+  format_date() { date -r "$1"; }
+else
+  # Linux
+  source_mtime=$(stat -c "%Y" "$SOURCE_FILE")
+  format_date() { date -d "@$1"; }
+fi
 
 # Flags to track file status
 updated=false
@@ -41,7 +50,13 @@ for target in "${TARGET_FILES[@]}"; do
   # Check if target file exists
   if [ -f "$target" ]; then
     # Get the modification time of the target file
-    target_mtime=$(stat -f "%m" "$target")
+    if [[ "$(uname)" == "Darwin" ]]; then
+      # macOS
+      target_mtime=$(stat -f "%m" "$target")
+    else
+      # Linux
+      target_mtime=$(stat -c "%Y" "$target")
+    fi
 
     # Check if target file is newer than source file
     if [ "$target_mtime" -gt "$source_mtime" ]; then
@@ -50,8 +65,8 @@ for target in "${TARGET_FILES[@]}"; do
         echo "Target file $target is newer but has identical content. No update needed."
       else
         echo "Warning: Target file $target is newer than source file and has different content."
-        echo "Source last modified: $(date -r "$source_mtime")"
-        echo "Target last modified: $(date -r "$target_mtime")"
+        echo "Source last modified: $(format_date "$source_mtime")"
+        echo "Target last modified: $(format_date "$target_mtime")"
         echo "Skipping this file to preserve newer changes."
         skipped=true
       fi
