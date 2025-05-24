@@ -62,12 +62,23 @@ jobs:
       - name: Setup dependencies
         run: just setup
 
-      - name: Run Code Quality Checks
-        run: |
-          just pre-commit-built-ins
-          just ruff-format
-          just ruff-check
-          just mypy
-          just pyright
-          just pytest
-          just eslint
+      - name: Run pre-commit built-in substeps
+        run: just pre-commit-built-ins
+
+      - name: Run Ruff format
+        run: just ruff-format
+
+      - name: Run Ruff check
+        run: just ruff-check
+
+      - name: Run Mypy
+        run: just mypy
+
+      - name: Run Pyright
+        run: just pyright
+
+      - name: Run Pytest
+        run: just pytest
+
+      - name: Run ESLint
+        run: just eslint
