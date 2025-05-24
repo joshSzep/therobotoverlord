@@ -62,5 +62,20 @@ jobs:
       - name: Setup dependencies
         run: just setup
 
-      - name: Run pre-commit checks
-        run: just pre-commit
+      - name: Run Global Code Quality Checks
+        run: |
+          pre-commit run check-merge-conflict --all-files
+          pre-commit run detect-private-key --all-files
+          pre-commit run end-of-file-fixer --all-files
+          pre-commit run trailing-whitespace --all-files
+
+      - name: Run Backend Code Quality Checks
+        run: |
+          just ruff-format
+          just ruff-check
+          just mypy
+          just pyright
+          just pytest
+
+      - name: Run Frontend Code Quality Checks
+        run: just eslint
