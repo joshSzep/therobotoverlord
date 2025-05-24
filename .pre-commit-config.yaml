@@ -3,46 +3,46 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-merge-conflict
-        name: check-merge-conflict (pre-commit hooks)
+        name: GLOBAL check-merge-conflict
       - id: detect-private-key
-        name: detect-private-key (pre-commit hooks)
+        name: GLOBAL detect-private-key
       - id: end-of-file-fixer
-        name: end-of-file-fixer (pre-commit hooks)
+        name: GLOBAL end-of-file-fixer
       - id: trailing-whitespace
-        name: trailing-whitespace (pre-commit hooks)
+        name: GLOBAL trailing-whitespace
 
   - repo: local
     hooks:
       # Backend hooks
       - id: ruff-format
-        name: ruff-format (backend formatter)
+        name: BACKEND ruff-format
         entry: cd backend && uv run ruff format
         language: system
         always_run: true
       - id: ruff-lint
-        name: ruff-lint (backend linter)
+        name: BACKEND ruff-lint
         entry: cd backend && uv run ruff check
         language: system
         always_run: true
       - id: mypy
-        name: mypy (backend type checker)
+        name: BACKEND mypy
         entry: cd backend && uv run mypy
         language: system
         always_run: true
       - id: pyright
-        name: pyright (backend type checker)
+        name: BACKEND pyright
         entry: cd backend && uv run pyright
         language: system
         always_run: true
       - id: pytest
-        name: pytest (backend tests)
+        name: BACKEND pytest
         entry: cd backend && uv run pytest
         language: system
         always_run: true
 
       # Frontend hooks
       - id: eslint
-        name: eslint (frontend linter)
+        name: FRONTEND eslint
         entry: cd frontend && npm run lint
         language: system
         always_run: true
