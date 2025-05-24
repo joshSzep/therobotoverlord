@@ -64,10 +64,10 @@ jobs:
 
       - name: Run Global Code Quality Checks
         run: |
-          pre-commit run check-merge-conflict --all-files
-          pre-commit run detect-private-key --all-files
-          pre-commit run end-of-file-fixer --all-files
-          pre-commit run trailing-whitespace --all-files
+          uv run pre-commit run check-merge-conflict --all-files
+          uv run pre-commit run detect-private-key --all-files
+          uv run pre-commit run end-of-file-fixer --all-files
+          uv run pre-commit run trailing-whitespace --all-files
 
       - name: Run Backend Code Quality Checks
         run: |
