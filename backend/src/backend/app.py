@@ -1,8 +1,12 @@
-from importlib.metadata import version
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC
+from datetime import datetime
+from importlib.metadata import version
+
+from fastapi import FastAPI
+from fastapi import WebSocket
+from fastapi import WebSocketDisconnect
+from fastapi.responses import JSONResponse
 
 # Create FastAPI application
 app = FastAPI(
@@ -19,7 +23,7 @@ async def health_check() -> JSONResponse:
         content={
             "status": "ok",
             "version": app.version,
-            "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+            "timestamp": datetime.now(tz=UTC).isoformat(),
         }
     )
 
@@ -35,7 +39,7 @@ async def heartbeat(websocket: WebSocket) -> None:
                 {
                     "type": "heartbeat",
                     "version": app.version,
-                    "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+                    "timestamp": datetime.now(tz=UTC).isoformat(),
                 }
             )
             await asyncio.sleep(1)

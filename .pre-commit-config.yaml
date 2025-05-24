@@ -13,36 +13,33 @@ repos:
 
   - repo: local
     hooks:
-      # Backend hooks
       - id: ruff-format
         name: BACKEND ruff-format
-        entry: cd backend && uv run ruff format
+        entry: ./scripts/ruff-format.sh
         language: system
-        always_run: true
-      - id: ruff-lint
-        name: BACKEND ruff-lint
-        entry: cd backend && uv run ruff check
+        pass_filenames: false
+      - id: ruff-check
+        name: BACKEND ruff-check
+        entry: ./scripts/ruff-check.sh
         language: system
-        always_run: true
+        pass_filenames: false
       - id: mypy
         name: BACKEND mypy
-        entry: cd backend && uv run mypy
+        entry: ./scripts/mypy.sh
         language: system
-        always_run: true
+        pass_filenames: false
       - id: pyright
         name: BACKEND pyright
-        entry: cd backend && uv run pyright
+        entry: ./scripts/pyright.sh
         language: system
-        always_run: true
+        pass_filenames: false
       - id: pytest
         name: BACKEND pytest
-        entry: cd backend && uv run pytest
+        entry: ./scripts/pytest.sh
         language: system
-        always_run: true
-
-      # Frontend hooks
+        pass_filenames: false
       - id: eslint
         name: FRONTEND eslint
-        entry: cd frontend && npm run lint
+        entry: ./scripts/eslint.sh
         language: system
-        always_run: true
+        pass_filenames: false

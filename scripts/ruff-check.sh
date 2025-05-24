@@ -3,5 +3,5 @@
 set -e
 
 cd backend
-uv run pre-commit run --all-files
+uv run ruff check --fix
 cd ..

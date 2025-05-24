@@ -1,41 +1,45 @@
 # justfile for The Robot Overlord project
 
-# List available commands
+# `DEFAULT`: List available commands
 default:
     @just --list
 
-# Do a `git add .` from the root directory
-git-add-all:
-    @git add .
+# `eslint`: lint the frontend
+eslint:
+    @./scripts/eslint.sh
 
-# Do a `git restore .` from the root directory
-git-restore-all:
-    @git restore .
+# `gunicorn`: serve the backend in PRODUCTION
+gunicorn:
+    @./scripts/gunicorn.sh
 
-# Do a `git restore --staged .` from the root directory
-git-restore-staged-all:
-    @git restore --staged .
+# `mypy`: type check the backend (reference implementation)
+mypy:
+    @./scripts/mypy.sh
 
-# Show `git status` from the root directory
-git-status:
-    @git status
-
-# Run pre-commit hooks (format, lint, test)
+# `pre-commit`: run format, lint, and test on all files
 pre-commit:
     @./scripts/pre-commit.sh
 
-# Run the setup script
+# `pyright`: type check the backend (microsoft implementation)
+pyright:
+    @./scripts/pyright.sh
+
+# `pytest`: test the backend
+pytest:
+    @./scripts/pytest.sh
+
+# `ruff check`: lint the backend
+ruff-check:
+    @./scripts/ruff-check.sh
+
+# `ruff format`: format the backend
+ruff-format:
+    @./scripts/ruff-format.sh
+
+# `setup`: install dependencies and pre-commit hooks
 setup:
     @./scripts/setup.sh
 
-# Start the backend with the development server
-backend-dev:
-    @./scripts/backend-dev.sh
-
-# Start the backend with the production server
-backend-prod:
-    @./scripts/backend-prod.sh
-
-# Run tests with coverage
-test:
-    @./scripts/test.sh
+# `uvicorn`: serve the backend in DEVELOPMENT
+uvicorn:
+    @./scripts/uvicorn.sh
