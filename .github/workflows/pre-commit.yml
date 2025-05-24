@@ -1,0 +1,59 @@
+name: Pre-commit Checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    env:
+      # Tool versions - update these when upgrading tools
+      NODE_VERSION: '23.11.0'
+      UV_VERSION: '0.7.8'
+      JUST_VERSION: '1.38.0'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: 'backend/.python-version'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install and setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: 'backend/uv.lock'
+
+      - name: Cache just
+        uses: actions/cache@v4
+        id: just-cache
+        with:
+          path: $HOME/.local/bin/just
+          key: ${{ runner.os }}-just-${{ env.JUST_VERSION }}
+
+      - name: Install just
+        if: steps.just-cache.outputs.cache-hit != 'true'
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --tag ${{ env.JUST_VERSION }} --to $HOME/.local/bin
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Add just to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Setup dependencies
+        run: just setup
+
+      - name: Run pre-commit checks
+        run: just pre-commit
