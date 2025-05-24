@@ -43,3 +43,7 @@ setup:
 # `uvicorn`: serve the backend in DEVELOPMENT
 uvicorn:
     @./scripts/uvicorn.sh
+
+# `update-llm-rules`: update all LLM rule files from LLM_RULES.md
+update-llm-rules:
+    @./scripts/update-llm-rules.sh
