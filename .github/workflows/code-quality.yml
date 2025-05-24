@@ -62,6 +62,9 @@ jobs:
       - name: Setup dependencies
         run: just setup
 
+      - name: Install pre-commit
+        run: uv pip install pre-commit
+
       - name: Run Global Code Quality Checks
         run: |
           uv run pre-commit run check-merge-conflict --all-files
