@@ -3,9 +3,13 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-merge-conflict
+        name: check-merge-conflict (pre-commit hooks)
       - id: detect-private-key
+        name: detect-private-key (pre-commit hooks)
       - id: end-of-file-fixer
+        name: end-of-file-fixer (pre-commit hooks)
       - id: trailing-whitespace
+        name: trailing-whitespace (pre-commit hooks)
 
   - repo: local
     hooks:
