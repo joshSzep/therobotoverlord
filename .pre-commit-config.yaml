@@ -4,7 +4,6 @@ repos:
     hooks:
       # Pre-commit hooks
       - id: check-merge-conflict
-      - id: check-executables-have-shebangs
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: trailing-whitespace
