@@ -1,14 +1,21 @@
-name: Pre-commit Checks
+name: Code Quality Checks
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
+
+# Cancel in-progress runs when a new workflow with the same ref is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  pre-commit:
+  code-quality:
+    name: Code Quality Checks
+    # Skip running on PR if already running on push to the same branch
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       # Tool versions - update these when upgrading tools
       NODE_VERSION: '23.11.0'

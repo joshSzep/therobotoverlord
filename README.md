@@ -1,11 +1,16 @@
 # therobotoverlord
+
+[![Code Quality](https://github.com/joshSzep/therobotoverlord/actions/workflows/code-quality.yml/badge.svg)](https://github.com/joshSzep/therobotoverlord/actions/workflows/code-quality.yml)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+
+
 I FOR ONE WELCOME OUR NEW **ROBOT OVERLORD**
 
 ## Pre-requisites
 
 - `git` - [Version Control System](https://git-scm.com/)
 - `just` - [Command Runner](https://just.systems/)
-- `node` - [JavaScript Runtime](https://nodejs.org/)
+- `node` - [JavaScript Runtime and Package Manager](https://nodejs.org/)
 - `uv` - [Python Package Manager](https://github.com/urbit/uv)
 - `python` - [Python Runtime](https://www.python.org/)
 
