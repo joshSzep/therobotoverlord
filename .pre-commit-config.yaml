@@ -13,12 +13,14 @@ repos:
 
   - repo: local
     hooks:
+      # Note: Not run in the code-quality GitHub Action workflow, only in pre-commit
       - id: update-llm-rules
         name: GLOBAL update-llm-rules
         entry: ./scripts/update-llm-rules.sh
         language: system
         pass_filenames: false
         files: ^LLM_RULES\.md$
+
       - id: ruff-format
         name: BACKEND ruff-format
         entry: ./scripts/ruff-format.sh

@@ -1,6 +1,6 @@
 # justfile for The Robot Overlord project
 
-# `DEFAULT`: List available commands
+# List available commands
 default:
     @just --list
 
@@ -19,6 +19,10 @@ mypy:
 # `pre-commit`: run format, lint, and test on all files
 pre-commit:
     @./scripts/pre-commit.sh
+
+# run pre-commit built-in substeps on all files (for CI/CD)
+pre-commit-built-ins:
+    @./scripts/pre-commit-built-ins.sh
 
 # `pyright`: type check the backend (microsoft implementation)
 pyright:
