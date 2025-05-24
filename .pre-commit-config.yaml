@@ -1,0 +1,16 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+      - id: check-xml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-executables-have-shebangs
+      - id: check-symlinks
+      - id: detect-private-key
+      - id: forbid-submodules
+      - id: name-tests-test
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
