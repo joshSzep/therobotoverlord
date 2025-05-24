@@ -11,34 +11,34 @@ repos:
     hooks:
       # Backend hooks
       - id: ruff-format
-        name: ruff-format
+        name: ruff-format (backend formatter)
         entry: cd backend && uv run ruff format
         language: system
         always_run: true
       - id: ruff-lint
-        name: ruff-lint
+        name: ruff-lint (backend linter)
         entry: cd backend && uv run ruff check
         language: system
         always_run: true
       - id: mypy
-        name: mypy
+        name: mypy (backend type checker)
         entry: cd backend && uv run mypy
         language: system
         always_run: true
       - id: pyright
-        name: pyright
+        name: pyright (backend type checker)
         entry: cd backend && uv run pyright
         language: system
         always_run: true
       - id: pytest
-        name: pytest
+        name: pytest (backend tests)
         entry: cd backend && uv run pytest
         language: system
         always_run: true
 
       # Frontend hooks
       - id: eslint
-        name: eslint
+        name: eslint (frontend linter)
         entry: cd frontend && npm run lint
         language: system
         always_run: true
