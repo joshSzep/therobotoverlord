@@ -28,7 +28,6 @@ Icon?
 # General editor files
 *.sublime-workspace
 *.sublime-project
-*.vscode/
 .idea/
 *.code-workspace
 
@@ -44,6 +43,12 @@ node_modules/
 # Python cache
 __pycache__/
 *.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # Log files
 *.log

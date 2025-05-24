@@ -28,6 +28,14 @@ pre-commit:
 setup:
     @./scripts/setup.sh
 
+# Start the backend with the development server
+backend-dev:
+    @./scripts/backend-dev.sh
+
+# Start the backend with the production server
+backend-prod:
+    @./scripts/backend-prod.sh
+
 # Run tests with coverage
 test:
     @./scripts/test.sh
