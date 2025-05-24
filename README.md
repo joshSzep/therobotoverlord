@@ -1,22 +1,25 @@
 # therobotoverlord
-I FOR ONE WELCOME OUR NEW ROBOT OVERLORD
+I FOR ONE WELCOME OUR NEW **ROBOT OVERLORD**
 
 ## Pre-requisites
 
-- `just` (https://just.systems/)
-- `node` (https://nodejs.org/)
-- `uv` (https://github.com/urbit/uv)
-- `python` (https://www.python.org/)
+- `git` - [Version Control System](https://git-scm.com/)
+- `just` - [Command Runner](https://just.systems/)
+- `node` - [JavaScript Runtime](https://nodejs.org/)
+- `uv` - [Python Package Manager](https://github.com/urbit/uv)
+- `python` - [Python Runtime](https://www.python.org/)
 
 ## Quick Start
 
-1. Run `just setup` to install dependencies.
-2. Run `just verify` to verify the project.
+1. Clone the repository.
+2. Run `just setup` to install dependencies.
+3. Run `just pre-commit` to verify the project (this will run format, lint, and test)
 
 ## Monorepo Structure
 
-The monorepo has the following base directories:
+It's important to know the following about the monorepo structure:
 
-- `backend`: [Backend for the therobotoverlord project](./backend/README.md).
-- `frontend`: [Frontend for the therobotoverlord project](.frontend/README.md).
-- `scripts`: [Scripts for the therobotoverlord project](./scripts/README.md).
+- `backend/`: [FastAPI backend](./backend/README.md).
+- `frontend/`: [Next.js frontend](./frontend/README.md).
+- `scripts/`: [Scripts](./scripts/README.md) - used for managing the monorepo.
+- `justfile`: [Justfile](./justfile) - used for executing commands in the monorepo.
