@@ -40,7 +40,7 @@ jobs:
         uses: actions/cache@v4
         id: just-cache
         with:
-          path: $HOME/.local/bin/just
+          path: ~/.local/bin/just
           key: ${{ runner.os }}-just-${{ env.JUST_VERSION }}
 
       - name: Install just
