@@ -4,10 +4,14 @@
 default:
     @just --list
 
-# Run the setup script to install dependencies
+# Run the setup script
 setup:
     @./scripts/setup.sh
 
-# Verify pre-commit hooks are installed and pass
-verify:
-    @./scripts/verify.sh
+# Run pre-commit hooks (format, lint, test)
+pre-commit:
+    @./scripts/pre-commit.sh
+
+# Run tests with coverage
+test:
+    @./scripts/test.sh

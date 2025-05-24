@@ -1,2 +1,5 @@
-def test_pytest_ran():
-    assert True
+from backend.placeholder import placeholder
+
+
+def test_placeholder():
+    assert placeholder() == "placeholder"
