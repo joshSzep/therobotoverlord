@@ -1,2 +1,2 @@
-def placeholder():
+def placeholder() -> str:
     return "placeholder"

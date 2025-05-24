@@ -53,10 +53,37 @@ addopts = "--cov=backend --cov-report=xml --cov-report=term"
 
 [tool.mypy]
 python_version = "3.12"
-sources = ["backend"]
 exclude = [".venv", "tests"]
+strict = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+disallow_any_generics = true
+follow_untyped_imports = true
 
 [tool.pyright]
 pythonVersion = "3.12"
 venvPath = ".venv"
 exclude = [".venv", "tests"]
+typeCheckingMode = "strict"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportPrivateImportUsage = true
+reportUnknownMemberType = false
+reportUnknownArgumentType = true
+reportUnknownParameterType = true
+reportUnknownVariableType = true
+reportUntypedFunctionDecorator = true
+reportUntypedClassDecorator = true
+reportUntypedBaseClass = true
+reportUntypedNamedTuple = true
+reportFunctionMemberAccess = true
+reportIncompatibleMethodOverride = true
+reportIncompatibleVariableOverride = true
