@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 # Create FastAPI application
 app = FastAPI(
     title="The Robot Overlord API",
-    description="Backend API for the Robot Overlord project",
+    description="Backend API for The Robot Overlord",
     version=version("backend"),
 )
 
