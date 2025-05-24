@@ -62,15 +62,14 @@ jobs:
       - name: Setup dependencies
         run: just setup
 
-      - name: Install pre-commit
-        run: uv pip install pre-commit
-
       - name: Run Global Code Quality Checks
         run: |
+          cd backend
           uv run pre-commit run check-merge-conflict --all-files
           uv run pre-commit run detect-private-key --all-files
           uv run pre-commit run end-of-file-fixer --all-files
           uv run pre-commit run trailing-whitespace --all-files
+          cd ..
 
       - name: Run Backend Code Quality Checks
         run: |
