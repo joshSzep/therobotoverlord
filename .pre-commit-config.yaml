@@ -11,6 +11,7 @@ repos:
       - id: trailing-whitespace
   - repo: local
     hooks:
+      # Backend hooks
       - id: ruff-format
         name: ruff-format
         entry: cd backend && uv run ruff format
@@ -36,3 +37,9 @@ repos:
         entry: cd backend && uv run pytest
         language: system
         types: [python]
+      # Frontend hooks
+      - id: eslint
+        name: eslint
+        entry: cd frontend && npm run lint
+        language: system
+        types_or: [javascript, jsx, ts, tsx]
