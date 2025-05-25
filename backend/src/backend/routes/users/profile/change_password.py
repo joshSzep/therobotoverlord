@@ -1,5 +1,3 @@
-"""User profile endpoints for retrieving and updating user data."""
-
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
@@ -9,37 +7,11 @@ from fastapi import status
 from backend.db.models.user import User
 from backend.db.models.user_event import UserEvent
 from backend.routes.users.users_schemas import PasswordChangeRequestSchema
-from backend.routes.users.users_schemas import UserSchema
 from backend.utils.auth import get_current_user
+from backend.utils.constants import UNKNOWN_IP_ADDRESS_MARKER
 from backend.utils.password import validate_password
 
 router = APIRouter()
-
-UNKNOWN_IP_ADDRESS_MARKER = "<UNKNOWN>"
-
-
-@router.get("/me", response_model=UserSchema)
-async def get_current_user_info(
-    current_user: User = Depends(get_current_user),
-) -> UserSchema:
-    """Get information about the currently authenticated user.
-
-    Args:
-        current_user: The current authenticated user.
-
-    Returns:
-        User information.
-    """
-    return UserSchema(
-        id=current_user.id,
-        email=current_user.email,
-        display_name=current_user.display_name,
-        is_verified=current_user.is_verified,
-        last_login=current_user.last_login,
-        role=current_user.role,
-        created_at=current_user.created_at,
-        updated_at=current_user.updated_at,
-    )
 
 
 @router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
@@ -84,35 +56,3 @@ async def change_password(
 
     # Log password change event
     await UserEvent.log_password_change(current_user.id, ip_address, user_agent)
-
-
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(
-    request: Request,
-    current_user: User = Depends(get_current_user),
-) -> None:
-    """Log out the current user by invalidating their session.
-
-    This endpoint doesn't actually invalidate the JWT token (as that's not possible),
-    but it marks the user's session as inactive in the database.
-
-    Args:
-        request: The FastAPI request object.
-        current_user: The current authenticated user.
-    """
-    # Get client information
-    ip_address = request.client.host if request.client else UNKNOWN_IP_ADDRESS_MARKER
-    user_agent = request.headers.get("User-Agent", "")
-
-    # Find and invalidate active sessions for this user with the same IP and user agent
-    sessions = await current_user.sessions.filter(
-        ip_address=ip_address,
-        user_agent=user_agent,
-        is_active=True,
-    ).all()
-
-    for session in sessions:
-        await session.invalidate()
-
-    # Log logout event
-    await UserEvent.log_logout(current_user.id, ip_address, user_agent)

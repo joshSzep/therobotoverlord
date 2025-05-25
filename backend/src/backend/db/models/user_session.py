@@ -1,5 +1,3 @@
-"""User session model for tracking active sessions."""
-
 from tortoise import fields
 
 from backend.db.base import BaseModel

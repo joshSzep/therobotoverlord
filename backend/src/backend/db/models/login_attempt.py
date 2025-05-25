@@ -1,5 +1,3 @@
-"""Login attempt model for security monitoring."""
-
 from tortoise import fields
 
 from backend.db.base import BaseModel

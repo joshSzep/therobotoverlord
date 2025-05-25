@@ -1,5 +1,3 @@
-"""Event model for tracking user activity."""
-
 import uuid
 
 from tortoise import fields
@@ -24,7 +22,10 @@ class UserEvent(BaseModel):
 
     @classmethod
     async def log_login_success(
-        cls, user_id: uuid.UUID, ip_address: str, user_agent: str
+        cls,
+        user_id: uuid.UUID,
+        ip_address: str,
+        user_agent: str,
     ) -> "UserEvent":
         """Log a successful login event.
 
@@ -45,7 +46,10 @@ class UserEvent(BaseModel):
 
     @classmethod
     async def log_login_failure(
-        cls, user_id: uuid.UUID | None, ip_address: str, user_agent: str
+        cls,
+        user_id: uuid.UUID | None,
+        ip_address: str,
+        user_agent: str,
     ) -> "UserEvent":
         """Log a failed login attempt.
 
@@ -66,7 +70,10 @@ class UserEvent(BaseModel):
 
     @classmethod
     async def log_logout(
-        cls, user_id: uuid.UUID, ip_address: str, user_agent: str
+        cls,
+        user_id: uuid.UUID,
+        ip_address: str,
+        user_agent: str,
     ) -> "UserEvent":
         """Log a logout event.
 
@@ -87,7 +94,10 @@ class UserEvent(BaseModel):
 
     @classmethod
     async def log_password_change(
-        cls, user_id: uuid.UUID, ip_address: str, user_agent: str
+        cls,
+        user_id: uuid.UUID,
+        ip_address: str,
+        user_agent: str,
     ) -> "UserEvent":
         """Log a password change event.
 
@@ -108,7 +118,10 @@ class UserEvent(BaseModel):
 
     @classmethod
     async def log_account_lockout(
-        cls, user_id: uuid.UUID, ip_address: str, user_agent: str
+        cls,
+        user_id: uuid.UUID,
+        ip_address: str,
+        user_agent: str,
     ) -> "UserEvent":
         """Log an account lockout event.
 
