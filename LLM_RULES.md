@@ -1,11 +1,19 @@
 # The Robot Overlord Project Guidelines
 
+## Project Vision
+- **Concept**: AI-moderated debate platform with satirical Soviet propaganda aesthetic
+- **Core Flow**: Users submit posts → AI analysis → APPROVE (post appears) or REJECT (tombstone counter)
+- **Theme**: Authoritarian robot overlord ("CITIZEN, YOUR LOGIC REQUIRES CALIBRATION")
+- **Tech Stack**: FastAPI+Tortoise ORM backend, Next.js frontend, PostgreSQL, OpenAI/Anthropic APIs
+- **Key Features**: User accounts with approval/rejection counters, threaded debates, AI moderation pipeline, Soviet-themed UI
+
 ## Project Structure
 - `backend/`: FastAPI backend (Python)
   - `src/backend/`: Source code
   - `tests/`: Test files (mirrors source code directory structure)
 - `frontend/`: Next.js frontend (TypeScript)
 - `scripts/`: Shell scripts for workflows
+- `plans/`: Markdown files for LLM consumption (technical design documentation)
 - `justfile`: Command runner
 - `LLM_RULES.md`: Central location for AI assistant guidelines
 - `.github/workflows/`: CI/CD configuration
