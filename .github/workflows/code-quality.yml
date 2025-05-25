@@ -7,7 +7,31 @@ env:
 
 on:
   push:
+    paths:
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+      - '**.jsx'
+      - '**.tsx'
+      - '**.json'
+      - '**.yaml'
+      - '**.yml'
+      - 'backend/**'
+      - 'frontend/**'
+      - '.github/workflows/**'
   pull_request:
+    paths:
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+      - '**.jsx'
+      - '**.tsx'
+      - '**.json'
+      - '**.yaml'
+      - '**.yml'
+      - 'backend/**'
+      - 'frontend/**'
+      - '.github/workflows/**'
 
 # Cancel in-progress runs when a new workflow with the same ref is triggered
 concurrency:
@@ -24,6 +48,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -52,6 +78,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
           python-version-file: 'backend/.python-version'
@@ -71,9 +99,13 @@ jobs:
     name: Ruff Format
     needs: setup
     runs-on: ubuntu-latest
+    # Only run when Python files change
+    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'backend') || contains(join(github.event.pull_request.changed_files.*.filename, ' '), '.py') }}
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
           python-version-file: 'backend/.python-version'
@@ -90,6 +122,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
           python-version-file: 'backend/.python-version'
@@ -106,6 +140,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
           python-version-file: 'backend/.python-version'
@@ -122,6 +158,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
           python-version-file: 'backend/.python-version'
@@ -138,6 +176,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
           python-version-file: 'backend/.python-version'
@@ -152,9 +192,13 @@ jobs:
     name: ESLint
     needs: setup
     runs-on: ubuntu-latest
+    # Only run when frontend files change
+    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'frontend') || contains(join(github.event.pull_request.changed_files.*.filename, ' '), '.js') || contains(join(github.event.pull_request.changed_files.*.filename, ' '), '.ts') }}
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
