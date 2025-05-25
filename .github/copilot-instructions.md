@@ -1,5 +1,19 @@
 # The Robot Overlord Project Guidelines
 
+## IMPORTANT: If you want to learn more, read the plans
+
+Plans markdown files stored in the `plans/` directory. These are technical design documents for the project which are specifically designed for LLM consumption.
+
+## IMPORTANT: Plans are the source of truth for the project
+
+Plans are the source of truth for the project. If you want to learn more about the project, read the plans. If you want to change the project, change the plans. If you want to implement a feature, implement it based on the plans. If you want to change the plans, change the plans.
+
+## IMPORTANT: If you want to implement a feature, implement it based on a ./plans/checklists/ document
+
+Checklists are stored in the `plans/checklists/` directory. These are checklists for implementing features. If you want to implement a feature, implement it based on a checklist. If you want to change a checklist, change the checklist.
+
+As you work through a checklist, mark each item as completed in the checklist. If you want to change a checklist item, change the checklist item. If you want to implement a checklist item, implement the checklist item. If you want to remove a checklist item, remove the checklist item. If you want to add a checklist item, add the checklist item.
+
 ## Project Vision
 - **Concept**: AI-moderated debate platform with satirical Soviet propaganda aesthetic
 - **Core Flow**: Users submit posts → AI analysis → APPROVE (post appears) or REJECT (tombstone counter)
@@ -24,6 +38,7 @@
 - `frontend/`: Next.js frontend (TypeScript)
 - `scripts/`: Shell scripts for workflows
 - `plans/`: Markdown files for LLM consumption (technical design documentation)
+- `plans/checklists/`: Markdown files for LLM consumption (checklists)
 - `justfile`: Command runner
 - `LLM_RULES.md`: Central location for AI assistant guidelines
 - `.github/workflows/`: CI/CD configuration
