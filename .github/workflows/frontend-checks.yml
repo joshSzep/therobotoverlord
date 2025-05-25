@@ -6,23 +6,7 @@ env:
 
 on:
   push:
-    paths:
-      - '**.js'
-      - '**.ts'
-      - '**.jsx'
-      - '**.tsx'
-      - '**.json'
-      - 'frontend/**'
-      - '.github/workflows/frontend-checks.yml'
   pull_request:
-    paths:
-      - '**.js'
-      - '**.ts'
-      - '**.jsx'
-      - '**.tsx'
-      - '**.json'
-      - 'frontend/**'
-      - '.github/workflows/frontend-checks.yml'
 
 # Cancel in-progress runs when a new workflow with the same ref is triggered
 concurrency:
