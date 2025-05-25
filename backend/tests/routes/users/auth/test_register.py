@@ -1,12 +1,7 @@
-"""Tests for user registration endpoint."""
-
-# Standard library imports
 from unittest import mock
 import uuid
 
 from fastapi import HTTPException
-
-# Third-party imports
 import pytest
 
 from backend.routes.users.auth.register import register

@@ -173,10 +173,25 @@ def echo_if_hello(well_named_param: str) -> Optional[str]:
     return None
 ```
 
-GOOD EXAMPLE:
+GOOD EXAMPLE (Docstring adds value) located in our app's `backend.utils.datetime` module:
 ```python
-def echo_if_hello(well_named_param: str) -> Optional[str]:
-    if well_named_param == "hello":
-        return "hello"
-    return None
+from datetime import UTC
+from datetime import datetime
+
+
+def now_utc() -> datetime:
+    """
+    ALWAYS use this and NEVER use datetime.now() or datetime.utcnow() directly,
+    as they are not timezone aware.
+    """
+    return datetime.now(tz=UTC)
+
 ```
+
+## Criteria for Keeping a Docstring
+
+A docstring should **ONLY** be kept if it meets any of the following criteria:
+- It explains complex logic that cannot be understood from the function signature alone
+- It documents non-obvious side effects or behaviors
+- It provides critical context that would be lost if removed
+- It cannot be replaced by better naming or type annotations

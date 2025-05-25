@@ -19,16 +19,6 @@ def create_access_token(
     data: dict[str, Any],
     expires_delta: timedelta | None = None,
 ) -> str:
-    """Create a JWT access token.
-
-    Args:
-        data: The data to encode in the token.
-        expires_delta: Optional expiration time. If not provided, the default
-            expiration time from settings will be used.
-
-    Returns:
-        The encoded JWT token as a string.
-    """
     to_encode = data.copy()
 
     if expires_delta:
@@ -46,14 +36,6 @@ def create_access_token(
 
 
 def create_refresh_token(data: dict[str, Any]) -> str:
-    """Create a JWT refresh token.
-
-    Args:
-        data: The data to encode in the token.
-
-    Returns:
-        The encoded JWT refresh token as a string.
-    """
     to_encode = data.copy()
     expire = now_utc() + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode.update({"exp": expire, "refresh": True})
@@ -63,18 +45,7 @@ def create_refresh_token(data: dict[str, Any]) -> str:
     return encoded_jwt
 
 
-def verify_token(token: str) -> dict[str, Any]:
-    """Verify a JWT token and return its payload.
-
-    Args:
-        token: The JWT token to verify.
-
-    Returns:
-        The decoded token payload as a dictionary.
-
-    Raises:
-        HTTPException: If the token is invalid or expired.
-    """
+def decode_token(token: str) -> dict[str, Any]:
     try:
         payload = jwt.decode(
             token,
@@ -97,18 +68,7 @@ def verify_token(token: str) -> dict[str, Any]:
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
-    """Get the current authenticated user from the token.
-
-    Args:
-        token: The JWT token from the request.
-
-    Returns:
-        The authenticated user as a User object.
-
-    Raises:
-        HTTPException: If the token is invalid or the user doesn't exist.
-    """
-    payload = verify_token(token)
+    payload = decode_token(token)
     user_id = payload.get("sub")
 
     if user_id is None:
@@ -139,17 +99,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
 async def get_optional_user(
     token: str | None = Depends(oauth2_scheme),
 ) -> User | None:
-    """Get the current user if authenticated, or None if not.
-
-    This dependency can be used for endpoints that allow anonymous access
-    but provide additional functionality for authenticated users.
-
-    Args:
-        token: The JWT token from the request, if available.
-
-    Returns:
-        The authenticated user or None if the token is invalid.
-    """
     if token is None:
         return None
 

@@ -1,5 +1,3 @@
-"""Tests for the User model."""
-
 from unittest import mock
 
 import bcrypt
@@ -15,7 +13,6 @@ from backend.utils.datetime import now_utc
 
 @pytest.mark.asyncio
 async def test_set_password() -> None:
-    """Test setting a password correctly hashes it."""
     # Arrange
     user = User(
         email="test@example.com",
@@ -38,7 +35,6 @@ async def test_set_password() -> None:
 
 @pytest.mark.asyncio
 async def test_verify_password_correct() -> None:
-    """Test verifying a correct password."""
     # Arrange
     user = User(
         email="test@example.com",
@@ -56,7 +52,6 @@ async def test_verify_password_correct() -> None:
 
 @pytest.mark.asyncio
 async def test_verify_password_incorrect() -> None:
-    """Test verifying an incorrect password."""
     # Arrange
     user = User(
         email="test@example.com",
@@ -74,7 +69,6 @@ async def test_verify_password_incorrect() -> None:
 
 @pytest.mark.asyncio
 async def test_record_login_success() -> None:
-    """Test recording a successful login."""
     # Arrange
     user = mock.AsyncMock()
     user.last_login = None
@@ -103,7 +97,7 @@ async def test_record_login_success() -> None:
         user.save.assert_called_once()
 
         # Verify session was created
-        UserSession.create.assert_called_once_with(
+        UserSession.create.assert_called_once_with(  # type: ignore[union-attr]
             user=user,
             ip_address=ip_address,
             user_agent=user_agent,
@@ -113,7 +107,7 @@ async def test_record_login_success() -> None:
         )
 
         # Verify login attempt was recorded
-        LoginAttempt.create.assert_called_once_with(
+        LoginAttempt.create.assert_called_once_with(  # type: ignore[union-attr]
             user=user,
             ip_address=ip_address,
             user_agent=user_agent,
@@ -123,7 +117,6 @@ async def test_record_login_success() -> None:
 
 @pytest.mark.asyncio
 async def test_record_login_failure_without_locking() -> None:
-    """Test recording a failed login without locking the account."""
     # Arrange
     user = mock.AsyncMock()
     user.failed_login_attempts = 2  # This will be incremented to 3, not enough to lock
@@ -144,7 +137,7 @@ async def test_record_login_failure_without_locking() -> None:
         user.save.assert_called_once()
 
         # Verify login attempt was recorded
-        LoginAttempt.create.assert_called_once_with(
+        LoginAttempt.create.assert_called_once_with(  # type: ignore[union-attr]
             user=user,
             ip_address=ip_address,
             user_agent=user_agent,
@@ -154,7 +147,6 @@ async def test_record_login_failure_without_locking() -> None:
 
 @pytest.mark.asyncio
 async def test_record_login_failure_with_locking() -> None:
-    """Test recording a failed login that locks the account."""
     # Arrange
     user = mock.AsyncMock()
     user.failed_login_attempts = 4  # This will be incremented to 5, enough to lock
@@ -179,7 +171,7 @@ async def test_record_login_failure_with_locking() -> None:
         user.save.assert_called_once()
 
         # Verify login attempt was recorded
-        LoginAttempt.create.assert_called_once_with(
+        LoginAttempt.create.assert_called_once_with(  # type: ignore[union-attr]
             user=user,
             ip_address=ip_address,
             user_agent=user_agent,
@@ -187,14 +179,13 @@ async def test_record_login_failure_with_locking() -> None:
         )
 
         # Verify lockout event was logged
-        UserEvent.log_account_lockout.assert_called_once_with(
+        UserEvent.log_account_lockout.assert_called_once_with(  # type: ignore[union-attr]
             user.id, ip_address, user_agent
         )
 
 
 @pytest.mark.asyncio
 async def test_user_role_enum() -> None:
-    """Test the UserRole enum values."""
     # Arrange & Act & Assert
     assert UserRole.USER == "user"
     assert UserRole.MODERATOR == "moderator"
@@ -203,7 +194,6 @@ async def test_user_role_enum() -> None:
 
 @pytest.mark.asyncio
 async def test_create_user() -> None:
-    """Test creating a user with default values."""
     # Arrange
     email = "test@example.com"
     display_name = "Test User"

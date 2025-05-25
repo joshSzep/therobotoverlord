@@ -13,7 +13,6 @@ from backend.utils.version import get_version
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Lifespan handler for the FastAPI application."""
     if not settings.TESTING:
         asyncio.create_task(run_session_cleanup_task())
     yield
@@ -27,8 +26,5 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Initialize Tortoise ORM
 init_tortoise(app)
-
-# Include routers
 app.include_router(router)

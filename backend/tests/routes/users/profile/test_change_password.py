@@ -15,7 +15,6 @@ from backend.utils.constants import UNKNOWN_IP_ADDRESS_MARKER
 
 @pytest.fixture
 def mock_user() -> mock.Mock:
-    """Return a mock user for testing."""
     user_id = uuid.uuid4()
 
     mock_user = mock.Mock(spec=User)
@@ -29,7 +28,6 @@ def mock_user() -> mock.Mock:
 
 @pytest.fixture
 def password_data() -> PasswordChangeRequestSchema:
-    """Return a mock password change request schema."""
     return PasswordChangeRequestSchema(
         current_password="current_password123",
         new_password="new_password123",
@@ -38,8 +36,6 @@ def password_data() -> PasswordChangeRequestSchema:
 
 @pytest.fixture
 def client(mock_user) -> Generator[TestClient, None, None]:
-    """Return a TestClient instance with overridden dependencies."""
-
     # Override the get_current_user dependency
     async def override_get_current_user():
         return mock_user
@@ -59,7 +55,6 @@ def test_change_password_success(
     mock_user: mock.Mock,
     password_data: PasswordChangeRequestSchema,
 ) -> None:
-    """Test successful password change."""
     # Setup mock behavior
     mock_user.verify_password.return_value = True
 
@@ -104,7 +99,6 @@ def test_change_password_incorrect_current_password(
     mock_user: mock.Mock,
     password_data: PasswordChangeRequestSchema,
 ) -> None:
-    """Test password change with incorrect current password."""
     # Setup mock behavior
     mock_user.verify_password.return_value = False
 
@@ -132,7 +126,6 @@ def test_change_password_invalid_new_password(
     mock_user: mock.Mock,
     password_data: PasswordChangeRequestSchema,
 ) -> None:
-    """Test password change with invalid new password."""
     # Setup mock behavior
     mock_user.verify_password.return_value = True
     error_message = "Password too short"
@@ -169,7 +162,6 @@ def test_change_password_no_client_info(
     mock_user: mock.Mock,
     password_data: PasswordChangeRequestSchema,
 ) -> None:
-    """Test password change when request.client is None."""
     # Setup mock behavior
     mock_user.verify_password.return_value = True
 
@@ -214,7 +206,6 @@ def test_change_password_no_user_agent(
     mock_user: mock.Mock,
     password_data: PasswordChangeRequestSchema,
 ) -> None:
-    """Test password change when User-Agent header is missing."""
     # Setup mock behavior
     mock_user.verify_password.return_value = True
 

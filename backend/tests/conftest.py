@@ -18,6 +18,7 @@ from backend.db.models.user import User
 from backend.db.models.user_session import UserSession
 from backend.utils.auth import create_access_token
 from backend.utils.auth import create_refresh_token
+from backend.utils.datetime import now_utc
 from backend.utils.settings import settings
 
 
@@ -133,7 +134,7 @@ async def test_user_refresh_token(test_user: User) -> str:
 async def expired_token(test_user: User) -> str:
     """Create an expired JWT token for testing."""
     to_encode: Dict[str, Any] = {"sub": str(test_user.id)}
-    expire = datetime.utcnow() - timedelta(minutes=30)
+    expire = now_utc() - timedelta(minutes=30)
     to_encode["exp"] = int(expire.timestamp())
     return jwt.encode(
         to_encode,

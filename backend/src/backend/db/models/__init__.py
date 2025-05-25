@@ -1,5 +1,3 @@
-"""Database models for the application."""
-
 from backend.db.models.login_attempt import LoginAttempt
 from backend.db.models.user import User
 from backend.db.models.user import UserRole

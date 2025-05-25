@@ -1,5 +1,3 @@
-"""Tests for the UserEvent model."""
-
 from unittest import mock
 import uuid
 

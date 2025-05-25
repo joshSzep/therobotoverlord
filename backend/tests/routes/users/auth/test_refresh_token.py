@@ -1,5 +1,3 @@
-"""Tests for refresh token authentication endpoint."""
-
 from unittest import mock
 
 from fastapi import HTTPException
@@ -41,7 +39,7 @@ async def test_refresh_token_success():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.users.auth.refresh_token.verify_token", return_value=payload
+            "backend.routes.users.auth.refresh_token.decode_token", return_value=payload
         ),
         mock.patch.object(
             User, "get_or_none", new=mock.AsyncMock(return_value=mock_user)
@@ -80,7 +78,7 @@ async def test_refresh_token_not_refresh_token():
 
     # Mock dependencies
     with mock.patch(
-        "backend.routes.users.auth.refresh_token.verify_token", return_value=payload
+        "backend.routes.users.auth.refresh_token.decode_token", return_value=payload
     ):
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
@@ -106,7 +104,7 @@ async def test_refresh_token_missing_user_id():
 
     # Mock dependencies
     with mock.patch(
-        "backend.routes.users.auth.refresh_token.verify_token", return_value=payload
+        "backend.routes.users.auth.refresh_token.decode_token", return_value=payload
     ):
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
@@ -132,7 +130,7 @@ async def test_refresh_token_user_not_found():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.users.auth.refresh_token.verify_token", return_value=payload
+            "backend.routes.users.auth.refresh_token.decode_token", return_value=payload
         ),
         mock.patch.object(User, "get_or_none", new=mock.AsyncMock(return_value=None)),
     ):
@@ -166,7 +164,7 @@ async def test_refresh_token_locked_account():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.users.auth.refresh_token.verify_token", return_value=payload
+            "backend.routes.users.auth.refresh_token.decode_token", return_value=payload
         ),
         mock.patch.object(
             User, "get_or_none", new=mock.AsyncMock(return_value=mock_user)
@@ -190,9 +188,9 @@ async def test_refresh_token_invalid_token():
     # Mock the request object
     mock_request = mock.MagicMock()
 
-    # Mock verify_token to raise an exception
+    # Mock decode_token to raise an exception
     with mock.patch(
-        "backend.routes.users.auth.refresh_token.verify_token",
+        "backend.routes.users.auth.refresh_token.decode_token",
         side_effect=Exception("Invalid token"),
     ):
         # Act & Assert

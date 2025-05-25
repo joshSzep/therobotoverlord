@@ -1,16 +1,11 @@
-"""Tests for session management background tasks."""
-
-# Standard library imports
 import asyncio
 from datetime import timedelta
 from typing import AsyncGenerator
 from unittest import mock
 
-# Third-party imports
 import pytest
 import pytest_asyncio
 
-# Project imports
 from backend.db.models.user import User
 from backend.db.models.user_session import UserSession
 from backend.tasks.session import cleanup_expired_sessions

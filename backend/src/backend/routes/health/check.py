@@ -8,5 +8,4 @@ router = APIRouter()
 
 @router.get("/check", response_model=HealthCheckResponseSchema)
 async def check() -> HealthCheckResponseSchema:
-    """Simple health check endpoint to verify the API is running."""
     return build_health_check_response()

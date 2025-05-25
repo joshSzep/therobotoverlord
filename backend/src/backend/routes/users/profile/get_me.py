@@ -12,14 +12,6 @@ router = APIRouter()
 async def get_current_user_info(
     current_user: User = Depends(get_current_user),
 ) -> UserSchema:
-    """Get information about the currently authenticated user.
-
-    Args:
-        current_user: The current authenticated user.
-
-    Returns:
-        User information.
-    """
     return UserSchema(
         id=current_user.id,
         email=current_user.email,

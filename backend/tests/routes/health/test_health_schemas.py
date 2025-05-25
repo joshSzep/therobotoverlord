@@ -20,11 +20,11 @@ def test_health_check_response_missing_fields():
     """Test that HealthCheckResponse requires all fields."""
     # Test missing version
     with pytest.raises(ValidationError):
-        HealthCheckResponseSchema(timestamp="2025-05-24T09:15:00+00:00")
+        HealthCheckResponseSchema(timestamp="2025-05-24T09:15:00+00:00")  # type: ignore[reportUnknownVariableType]
 
     # Test missing timestamp
     with pytest.raises(ValidationError):
-        HealthCheckResponseSchema(version="1.0.0")
+        HealthCheckResponseSchema(version="1.0.0")  # type: ignore[reportUnknownVariableType]
 
 
 def test_health_check_response_model_dump():

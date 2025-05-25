@@ -16,7 +16,6 @@ HEARTBEAT_INTERVAL_SECONDS: float = 1.0
 async def heartbeat(
     websocket: WebSocket,
 ) -> None:
-    """WebSocket endpoint that sends heartbeat messages."""
     await websocket.accept()
     while True:
         message: HealthCheckResponseSchema = build_health_check_response()

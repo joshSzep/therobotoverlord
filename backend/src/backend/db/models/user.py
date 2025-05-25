@@ -30,25 +30,17 @@ class User(BaseModel):
     is_locked = fields.BooleanField(default=False)
 
     async def set_password(self, password: str) -> None:
-        """Hash and set user password."""
         password_bytes = password.encode("utf-8")
         salt = bcrypt.gensalt()
         hashed = bcrypt.hashpw(password_bytes, salt)
         self.password_hash = hashed.decode("utf-8")
 
     async def verify_password(self, password: str) -> bool:
-        """Verify password against stored hash."""
         password_bytes = password.encode("utf-8")
         hash_bytes = self.password_hash.encode("utf-8")
         return bcrypt.checkpw(password_bytes, hash_bytes)
 
     async def record_login_success(self, ip_address: str, user_agent: str) -> None:
-        """Record a successful login attempt.
-
-        Args:
-            ip_address: The IP address of the client.
-            user_agent: The user agent of the client.
-        """
         # Update user fields
         self.last_login = now_utc()
         self.failed_login_attempts = 0
@@ -79,7 +71,6 @@ class User(BaseModel):
         )
 
     async def record_login_failure(self, ip_address: str, user_agent: str) -> None:
-        """Record failed login attempt and lock account if needed."""
         self.failed_login_attempts += 1
 
         # Lock account after 5 failed attempts

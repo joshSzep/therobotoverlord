@@ -1,5 +1,3 @@
-"""Shared constants used throughout the application."""
-
 from typing import Final
 
 # Marker for unknown IP addresses in request logs

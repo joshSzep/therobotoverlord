@@ -12,9 +12,9 @@ import pytest
 from backend.db.models.user import User
 from backend.utils.auth import create_access_token
 from backend.utils.auth import create_refresh_token
+from backend.utils.auth import decode_token
 from backend.utils.auth import get_current_user
 from backend.utils.auth import get_optional_user
-from backend.utils.auth import verify_token
 from backend.utils.settings import settings
 
 
@@ -81,14 +81,14 @@ async def test_create_refresh_token() -> None:
 
 
 @pytest.mark.asyncio
-async def test_verify_token_valid() -> None:
+async def test_decode_token_valid() -> None:
     """Test verifying a valid token."""
     # Arrange
     test_data = {"sub": "test-user-id"}
     token = create_access_token(data=test_data)
 
     # Act
-    payload = verify_token(token)
+    payload = decode_token(token)
 
     # Assert
     assert payload["sub"] == "test-user-id"
@@ -109,7 +109,7 @@ async def test_verify_token_expired() -> None:
 
     # Act & Assert
     with pytest.raises(HTTPException) as excinfo:
-        verify_token(expired_token)
+        decode_token(expired_token)
 
     assert excinfo.value.status_code == 401
     assert "AUTHENTICATION TOKEN HAS FAILED INSPECTION" in excinfo.value.detail
@@ -120,7 +120,7 @@ async def test_verify_token_invalid(invalid_token: str) -> None:
     """Test verifying an invalid token."""
     # Act & Assert
     with pytest.raises(HTTPException) as excinfo:
-        verify_token(invalid_token)
+        decode_token(invalid_token)
 
     assert excinfo.value.status_code == 401
     assert "AUTHENTICATION TOKEN HAS FAILED INSPECTION" in excinfo.value.detail

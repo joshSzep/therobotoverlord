@@ -16,15 +16,6 @@ async def logout(
     request: Request,
     current_user: User = Depends(get_current_user),
 ) -> None:
-    """Log out the current user by invalidating their session.
-
-    This endpoint doesn't actually invalidate the JWT token (as that's not possible),
-    but it marks the user's session as inactive in the database.
-
-    Args:
-        request: The FastAPI request object.
-        current_user: The current authenticated user.
-    """
     # Get client information
     ip_address = request.client.host if request.client else UNKNOWN_IP_ADDRESS_MARKER
     user_agent = request.headers.get("User-Agent", "")

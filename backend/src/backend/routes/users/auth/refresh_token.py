@@ -7,27 +7,15 @@ from backend.db.models.user import User
 from backend.routes.users.users_schemas import TokenSchema
 from backend.utils.auth import create_access_token
 from backend.utils.auth import create_refresh_token
-from backend.utils.auth import verify_token
+from backend.utils.auth import decode_token
 
 router = APIRouter()
 
 
 @router.post("/refresh", response_model=TokenSchema)
 async def refresh_token(request: Request, refresh_token: str) -> TokenSchema:
-    """Refresh an access token using a refresh token.
-
-    Args:
-        request: The FastAPI request object.
-        refresh_token: The refresh token.
-
-    Returns:
-        New access and refresh tokens.
-
-    Raises:
-        HTTPException: If the refresh token is invalid or expired.
-    """
     try:
-        payload = verify_token(refresh_token)
+        payload = decode_token(refresh_token)
 
         # Check if it's actually a refresh token
         if not payload.get("refresh"):

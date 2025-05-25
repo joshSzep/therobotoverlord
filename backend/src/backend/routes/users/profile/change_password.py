@@ -20,17 +20,6 @@ async def change_password(
     password_data: PasswordChangeRequestSchema,
     current_user: User = Depends(get_current_user),
 ) -> None:
-    """Change the user's password.
-
-    Args:
-        request: The FastAPI request object.
-        password_data: Current and new password.
-        current_user: The current authenticated user.
-
-    Raises:
-        HTTPException: If the current password is incorrect or the new password is
-        invalid.
-    """
     # Verify current password
     if not await current_user.verify_password(password_data.current_password):
         raise HTTPException(

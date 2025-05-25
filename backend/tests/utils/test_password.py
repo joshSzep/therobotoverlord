@@ -1,5 +1,3 @@
-"""Tests for password validation and security utilities."""
-
 import pytest
 
 from backend.utils.password import is_common_password

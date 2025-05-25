@@ -95,10 +95,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         )
 
     user = await User.get(id=user_id)
-    if user is None or user.deleted_at is not None:
+    if user is None or user.is_locked:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found or deleted",
+            detail="CITIZEN IS LOCKED OUT",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

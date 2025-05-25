@@ -1,5 +1,3 @@
-"""Tests for login authentication endpoint."""
-
 from unittest import mock
 
 from fastapi import HTTPException
@@ -14,7 +12,6 @@ from backend.routes.users.users_schemas import TokenSchema
 
 @pytest.mark.asyncio
 async def test_login_success():
-    """Test successful login."""
     # Arrange
     form_data = OAuth2PasswordRequestForm(
         username="test@example.com",
@@ -143,14 +140,13 @@ async def test_login_user_not_found():
         assert "CREDENTIALS REQUIRE CALIBRATION" in excinfo.value.detail
 
         # Verify mock calls
-        UserEvent.log_login_failure.assert_called_once_with(
+        UserEvent.log_login_failure.assert_called_once_with(  # type: ignore
             None, "127.0.0.1", "Test Browser"
         )
 
 
 @pytest.mark.asyncio
 async def test_login_account_locked():
-    """Test login with a locked account."""
     # Arrange
     form_data = OAuth2PasswordRequestForm(
         username="locked@example.com",
@@ -187,7 +183,6 @@ async def test_login_account_locked():
 
 @pytest.mark.asyncio
 async def test_login_missing_client():
-    """Test login with missing client information."""
     # Arrange
     form_data = OAuth2PasswordRequestForm(
         username="test@example.com",

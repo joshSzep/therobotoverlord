@@ -11,7 +11,6 @@ BaseModel
 - id: UUID4 (PK)
 - created_at: DateTime (UTC)
 - updated_at: DateTime (UTC)
-- deleted_at: DateTime (UTC, nullable) - For soft deletion
 ```
 
 ## Core Models
@@ -200,10 +199,8 @@ AuditLog
 
 6. **Audit Logging**: All significant administrative actions are logged for accountability.
 
-7. **Soft Deletion**: We use a deleted_at timestamp rather than hard deletion for data integrity.
+7. **Security-First Design**: Login attempts, session tracking, and IP monitoring are built in from the start.
 
-8. **Security-First Design**: Login attempts, session tracking, and IP monitoring are built in from the start.
+8. **Extensible AI Pipeline**: The schema is designed to accommodate future enhancements to the AI moderation system.
 
-9. **Extensible AI Pipeline**: The schema is designed to accommodate future enhancements to the AI moderation system.
-
-10. **Tags vs. Categories**: We use a tagging system for flexible content organization rather than rigid categories.
+9. **Tags vs. Categories**: We use a tagging system for flexible content organization rather than rigid categories.

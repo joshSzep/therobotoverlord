@@ -6,8 +6,6 @@ from backend.db.base import BaseModel
 
 
 class UserEvent(BaseModel):
-    """Model for tracking user events and activities."""
-
     user = fields.ForeignKeyField(  # type: ignore[var-annotated]
         "models.User",
         related_name="events",
@@ -42,16 +40,6 @@ class UserEvent(BaseModel):
         ip_address: str,
         user_agent: str,
     ) -> "UserEvent":
-        """Log a successful login event.
-
-        Args:
-            user_id: The ID of the user who logged in.
-            ip_address: The IP address of the client.
-            user_agent: The user agent string of the client.
-
-        Returns:
-            The created event.
-        """
         return await cls.create(
             user_id=user_id,
             event_type="login_success",
@@ -66,16 +54,6 @@ class UserEvent(BaseModel):
         ip_address: str,
         user_agent: str,
     ) -> "UserEvent":
-        """Log a failed login attempt.
-
-        Args:
-            user_id: The ID of the user who attempted to log in, if known.
-            ip_address: The IP address of the client.
-            user_agent: The user agent string of the client.
-
-        Returns:
-            The created event.
-        """
         return await cls.create(
             user_id=user_id,
             event_type="login_failure",
@@ -90,16 +68,6 @@ class UserEvent(BaseModel):
         ip_address: str,
         user_agent: str,
     ) -> "UserEvent":
-        """Log a logout event.
-
-        Args:
-            user_id: The ID of the user who logged out.
-            ip_address: The IP address of the client.
-            user_agent: The user agent string of the client.
-
-        Returns:
-            The created event.
-        """
         return await cls.create(
             user_id=user_id,
             event_type="logout",
@@ -114,16 +82,6 @@ class UserEvent(BaseModel):
         ip_address: str,
         user_agent: str,
     ) -> "UserEvent":
-        """Log a password change event.
-
-        Args:
-            user_id: The ID of the user who changed their password.
-            ip_address: The IP address of the client.
-            user_agent: The user agent string of the client.
-
-        Returns:
-            The created event.
-        """
         return await cls.create(
             user_id=user_id,
             event_type="password_change",
@@ -138,16 +96,6 @@ class UserEvent(BaseModel):
         ip_address: str,
         user_agent: str,
     ) -> "UserEvent":
-        """Log an account lockout event.
-
-        Args:
-            user_id: The ID of the user whose account was locked.
-            ip_address: The IP address of the client.
-            user_agent: The user agent string of the client.
-
-        Returns:
-            The created event.
-        """
         return await cls.create(
             user_id=user_id,
             event_type="account_lockout",

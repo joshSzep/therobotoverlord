@@ -2,11 +2,6 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """Application settings.
-
-    These settings can be configured via environment variables or from a .env file.
-    """
-
     # Database settings
     DATABASE_URL: str = "postgres://localhost:5432/robot_overlord"
 
@@ -24,8 +19,6 @@ class Settings(BaseSettings):
     SESSION_CLEANUP_INTERVAL_SECONDS: float = 3600.0
 
     class Config:
-        """Pydantic config."""
-
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
