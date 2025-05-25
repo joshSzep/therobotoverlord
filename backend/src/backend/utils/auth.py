@@ -84,14 +84,14 @@ def verify_token(token: str) -> dict[str, Any]:
         if not isinstance(payload, dict):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication credentials",
+                detail="CITIZEN, YOUR AUTHENTICATION TOKEN HAS FAILED INSPECTION",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         return payload
     except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            detail="CITIZEN, YOUR AUTHENTICATION TOKEN HAS FAILED INSPECTION",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -114,7 +114,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            detail="CITIZEN, YOUR IDENTITY DOCUMENTS REQUIRE VERIFICATION",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -122,14 +122,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
+            detail="CITIZEN NOT FOUND IN STATE RECORDS",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
     if user.is_locked:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Account is locked. Please contact an administrator.",
+            status_code=status.HTTP_410_GONE,
+            detail="CITIZEN, YOUR ACCOUNT HAS BEEN LOCKED FOR RECALIBRATION",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
