@@ -148,5 +148,11 @@ jobs:
           version: ${{ env.UV_VERSION }}
           enable-cache: true
           cache-dependency-glob: 'backend/uv.lock'
-      - name: Run Pytest
+      - name: Run Pytest with Coverage
         run: cd backend && uv run pytest
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: backend/htmlcov/
+          retention-days: 7
