@@ -1,7 +1,7 @@
 import re
 
-from backend.routes.health.models import HealthCheckResponse
-from backend.routes.health.utils import build_health_check_response
+from backend.routes.health.health_schemas import HealthCheckResponseSchema
+from backend.routes.health.health_utils import build_health_check_response
 
 
 def test_build_health_check_response():
@@ -10,7 +10,7 @@ def test_build_health_check_response():
     response = build_health_check_response()
 
     # Verify the response
-    assert isinstance(response, HealthCheckResponse)
+    assert isinstance(response, HealthCheckResponseSchema)
     assert isinstance(response.version, str)
 
     # Verify timestamp format (ISO 8601)

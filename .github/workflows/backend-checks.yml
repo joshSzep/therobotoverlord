@@ -6,10 +6,6 @@ env:
 
 on:
   push:
-    paths:
-      - '**.py'
-      - 'backend/**'
-      - '.github/workflows/backend-checks.yml'
   pull_request:
     paths:
       - '**.py'

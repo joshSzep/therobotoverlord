@@ -1,5 +1,19 @@
 # The Robot Overlord Project Guidelines
 
+## IMPORTANT: If you want to learn more, read the plans
+
+Plans markdown files stored in the `plans/` directory. These are technical design documents for the project which are specifically designed for LLM consumption.
+
+## IMPORTANT: Plans are the source of truth for the project
+
+Plans are the source of truth for the project. If you want to learn more about the project, read the plans. If you want to change the project, change the plans. If you want to implement a feature, implement it based on the plans. If you want to change the plans, change the plans.
+
+## IMPORTANT: If you want to implement a feature, implement it based on a ./plans/checklists/ document
+
+Checklists are stored in the `plans/checklists/` directory. These are checklists for implementing features. If you want to implement a feature, implement it based on a checklist. If you want to change a checklist, change the checklist.
+
+As you work through a checklist, mark each item as completed in the checklist. If you want to change a checklist item, change the checklist item. If you want to implement a checklist item, implement the checklist item. If you want to remove a checklist item, remove the checklist item. If you want to add a checklist item, add the checklist item.
+
 ## Project Vision
 - **Concept**: AI-moderated debate platform with satirical Soviet propaganda aesthetic
 - **Core Flow**: Users submit posts → AI analysis → APPROVE (post appears) or REJECT (tombstone counter)
@@ -9,28 +23,38 @@
 
 ## Project Structure
 - `backend/`: FastAPI backend (Python)
+  - `migrations/`: Tortoise ORM/aerich migrations
   - `src/backend/`: Source code
+    - `app.py`: FastAPI application setup
+    - `db/`: Database configuration
+      - `config.py`: Tortoise ORM/aerich configuration
+      - `base.py`: Base model for all database models
+      - `models/`: Database models, 1 model per file
+    - `routes/`: API endpoints by feature, one package per feature
+    - `tasks/`: Background tasks
+    - `utils/`: Shared utilities
   - `tests/`: Test files (mirrors source code directory structure)
+  - `pyproject.toml`: Project configuration
 - `frontend/`: Next.js frontend (TypeScript)
 - `scripts/`: Shell scripts for workflows
 - `plans/`: Markdown files for LLM consumption (technical design documentation)
+- `plans/checklists/`: Markdown files for LLM consumption (checklists)
 - `justfile`: Command runner
 - `LLM_RULES.md`: Central location for AI assistant guidelines
 - `.github/workflows/`: CI/CD configuration
 
-### Backend Organization
-The backend follows a feature-based modular structure:
+### Routes organized by feature
+The backend routes follow a feature-based modular structure, for example:
 ```
 src/backend/
 ├── app.py             # FastAPI application setup
-├── routes/            # API endpoints by feature
-│   └── health/        # Example feature module
-│       ├── __init__.py     # Router setup
-│       ├── check.py        # REST endpoint
-│       ├── heartbeat.py    # WebSocket endpoint
-│       ├── models.py       # Pydantic models
-│       └── utils.py        # Feature utilities
-└── utils/             # Shared utilities
+└── routes/            # API endpoints by feature
+    └── health/        # Example feature module
+        ├── __init__.py     # Router setup
+        ├── check.py        # REST endpoint
+        ├── heartbeat.py    # WebSocket endpoint
+        ├── schemas.py      # Pydantic schema models
+        └── utils.py        # Feature utilities
 ```
 
 **Key principles**: Routes organized by feature with separation of concerns (endpoints, models, utilities). Each feature has consistent module naming (`__init__.py`, `models.py`, `utils.py`). Common functionality in `utils/`.
@@ -84,7 +108,8 @@ async def example(
 ```
 
 ### Documentation & Testing
-- Docstrings for all functions using triple double quotes
+- Avoid writing any docstrings that do not add value
+- NEVER write docstrings for modules, classes, or functions that are 1 line long
 - Tests follow Arrange-Act-Assert pattern with 100% coverage required
 - Code quality enforced via Ruff (rules: E, F, I, UP, N, B, A, C4, RET, SIM, ERA), Mypy, Pyright, and pre-commit hooks
 

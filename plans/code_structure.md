@@ -38,21 +38,21 @@ backend/
     │   │   ├── __init__.py       # Router setup
     │   │   ├── auth.py           # Authentication endpoints
     │   │   ├── profile.py        # User profile endpoints
-    │   │   └── models.py         # Pydantic models for users
+    │   │   └── schemas.py        # Pydantic schemas for users
     │   ├── topics/               # Topic-related endpoints
     │   │   ├── __init__.py       # Router setup
     │   │   ├── create.py         # Topic creation endpoints
     │   │   ├── view.py           # Topic viewing endpoints
-    │   │   └── models.py         # Pydantic models for topics
+    │   │   └── schemas.py        # Pydantic schemas for topics
     │   ├── posts/                # Post-related endpoints
     │   │   ├── __init__.py       # Router setup
     │   │   ├── submit.py         # Post submission endpoints
     │   │   ├── moderate.py       # Post moderation endpoints
-    │   │   └── models.py         # Pydantic models for posts
+    │   │   └── schemas.py        # Pydantic schemas for posts
     │   └── admin/                # Admin endpoints
     │       ├── __init__.py       # Router setup
     │       ├── reports.py        # Admin reporting endpoints
-    │       └── models.py         # Pydantic models for admin
+    │       └── schemas.py        # Pydantic schemas for admin
     ├── utils/                    # Shared utilities
     │   ├── auth.py               # Authentication utilities
     │   ├── ai_client.py          # AI moderation client

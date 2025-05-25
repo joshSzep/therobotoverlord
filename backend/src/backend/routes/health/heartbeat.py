@@ -3,18 +3,22 @@ import asyncio
 from fastapi import APIRouter
 from fastapi import WebSocket
 
-from backend.routes.health.utils import build_health_check_response
+from backend.routes.health.health_schemas import HealthCheckResponseSchema
+from backend.routes.health.health_utils import build_health_check_response
 
 router = APIRouter()
+
+
+HEARTBEAT_INTERVAL_SECONDS: float = 1.0
 
 
 @router.websocket("/heartbeat")
 async def heartbeat(
     websocket: WebSocket,
 ) -> None:
-    """WebSocket endpoint that sends a heartbeat message every second."""
+    """WebSocket endpoint that sends heartbeat messages."""
     await websocket.accept()
     while True:
-        message = build_health_check_response()
+        message: HealthCheckResponseSchema = build_health_check_response()
         await websocket.send_json(message.model_dump())
-        await asyncio.sleep(1)
+        await asyncio.sleep(HEARTBEAT_INTERVAL_SECONDS)

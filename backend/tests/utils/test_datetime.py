@@ -1,13 +1,13 @@
 from datetime import UTC
 from datetime import datetime
 
-from backend.utils.datetime import now
+from backend.utils.datetime import now_utc
 
 
 def test_now():
     """Test the now function returns a datetime in UTC."""
     # Get the current time using the utility function
-    current_time = now()
+    current_time = now_utc()
 
     # Verify it's a datetime object
     assert isinstance(current_time, datetime)

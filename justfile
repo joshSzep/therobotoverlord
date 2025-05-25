@@ -20,10 +20,6 @@ mypy:
 pre-commit:
     @./scripts/pre-commit.sh
 
-# run pre-commit built-in substeps on all files (for CI/CD)
-pre-commit-built-ins:
-    @./scripts/pre-commit-built-ins.sh
-
 # `pyright`: type check the backend (microsoft implementation)
 pyright:
     @./scripts/pyright.sh
