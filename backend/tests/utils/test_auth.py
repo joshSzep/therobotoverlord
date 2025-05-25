@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 import time
+from typing import Union
 from unittest import mock
 
 from fastapi import HTTPException
@@ -97,9 +98,9 @@ async def test_verify_token_valid() -> None:
 async def test_verify_token_expired() -> None:
     """Test verifying an expired token."""
     # Arrange - Create our own expired token for this test
-    payload = {"sub": "test-user-id"}
+    payload: dict[str, Union[str, int]] = {"sub": "test-user-id"}
     expire = int(time.time()) - 3600  # 1 hour in the past
-    payload["exp"] = str(expire)
+    payload["exp"] = expire
     expired_token = jwt.encode(
         payload,
         settings.JWT_SECRET_KEY,
