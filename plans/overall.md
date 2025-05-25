@@ -23,7 +23,7 @@ KEY FEATURES FOR MVP:
 5. Soviet-themed UI with dramatic loading states during AI processing
 6. No real-time features - click and wait for judgment
 
-DATABASE SCHEMA: Already designed in DBML with tables for users, topics, posts, ai_analyses, rejections, etc. Rejection tracking is key for "tombstone" shame counters.
+DATABASE SCHEMA: Will include tables for users, topics, posts, ai_analyses, rejections, etc. Rejection tracking is key for "tombstone" shame counters.
 
 CRITICAL UX FLOW:
 Submit post → "THE OVERLORD DELIBERATES..." loading → Dramatic reveal of approval/rejection → Either post appears in thread OR user sees rejection reason + tombstone count increases
