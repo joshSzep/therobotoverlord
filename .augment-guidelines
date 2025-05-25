@@ -9,8 +9,18 @@
 
 ## Project Structure
 - `backend/`: FastAPI backend (Python)
+  - `migrations/`: Tortoise ORM/aerich migrations
   - `src/backend/`: Source code
+    - `app.py`: FastAPI application setup
+    - `db/`: Database configuration
+      - `config.py`: Tortoise ORM/aerich configuration
+      - `base.py`: Base model for all database models
+      - `models/`: Database models, 1 model per file
+    - `routes/`: API endpoints by feature, one package per feature
+    - `tasks/`: Background tasks
+    - `utils/`: Shared utilities
   - `tests/`: Test files (mirrors source code directory structure)
+  - `pyproject.toml`: Project configuration
 - `frontend/`: Next.js frontend (TypeScript)
 - `scripts/`: Shell scripts for workflows
 - `plans/`: Markdown files for LLM consumption (technical design documentation)
@@ -18,19 +28,18 @@
 - `LLM_RULES.md`: Central location for AI assistant guidelines
 - `.github/workflows/`: CI/CD configuration
 
-### Backend Organization
-The backend follows a feature-based modular structure:
+### Routes organized by feature
+The backend routes follow a feature-based modular structure, for example:
 ```
 src/backend/
 ├── app.py             # FastAPI application setup
-├── routes/            # API endpoints by feature
-│   └── health/        # Example feature module
-│       ├── __init__.py     # Router setup
-│       ├── check.py        # REST endpoint
-│       ├── heartbeat.py    # WebSocket endpoint
-│       ├── models.py       # Pydantic models
-│       └── utils.py        # Feature utilities
-└── utils/             # Shared utilities
+└── routes/            # API endpoints by feature
+    └── health/        # Example feature module
+        ├── __init__.py     # Router setup
+        ├── check.py        # REST endpoint
+        ├── heartbeat.py    # WebSocket endpoint
+        ├── models.py       # Pydantic models
+        └── utils.py        # Feature utilities
 ```
 
 **Key principles**: Routes organized by feature with separation of concerns (endpoints, models, utilities). Each feature has consistent module naming (`__init__.py`, `models.py`, `utils.py`). Common functionality in `utils/`.
