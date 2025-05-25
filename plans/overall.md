@@ -4,7 +4,7 @@ CORE CONCEPT:
 - Users submit posts/replies to threaded debate topics
 - Every submission goes through AI analysis before appearing
 - AI either APPROVES (post appears) or REJECTS (becomes a "tombstone" - permanent shame counter)
-- The theme is satirical Soviet authoritarianism: "iforonewelcomeournewrobotoverlord.com"
+- The theme is satirical Soviet authoritarianism: "TheRobotOverlord.com"
 - Visual style: retro-Soviet industrial propaganda with robot mascot
 - UX voice: authoritarian but helpful ("CITIZEN, YOUR LOGIC REQUIRES CALIBRATION")
 
