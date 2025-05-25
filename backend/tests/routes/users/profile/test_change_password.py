@@ -1,5 +1,3 @@
-"""Tests for the change_password endpoint."""
-
 from typing import Generator
 from unittest import mock
 import uuid
@@ -16,11 +14,11 @@ from backend.utils.constants import UNKNOWN_IP_ADDRESS_MARKER
 
 
 @pytest.fixture
-def mock_user() -> User:
+def mock_user() -> mock.Mock:
     """Return a mock user for testing."""
     user_id = uuid.uuid4()
 
-    mock_user = mock.MagicMock(spec=User)
+    mock_user = mock.Mock(spec=User)
     mock_user.id = user_id
     mock_user.verify_password = mock.AsyncMock()
     mock_user.set_password = mock.AsyncMock()
@@ -39,7 +37,7 @@ def password_data() -> PasswordChangeRequestSchema:
 
 
 @pytest.fixture
-def client(mock_user: User) -> Generator[TestClient, None, None]:
+def client(mock_user) -> Generator[TestClient, None, None]:
     """Return a TestClient instance with overridden dependencies."""
 
     # Override the get_current_user dependency
@@ -58,7 +56,7 @@ def client(mock_user: User) -> Generator[TestClient, None, None]:
 
 def test_change_password_success(
     client: TestClient,
-    mock_user: User,
+    mock_user: mock.Mock,
     password_data: PasswordChangeRequestSchema,
 ) -> None:
     """Test successful password change."""
@@ -103,7 +101,7 @@ def test_change_password_success(
 
 def test_change_password_incorrect_current_password(
     client: TestClient,
-    mock_user: User,
+    mock_user: mock.Mock,
     password_data: PasswordChangeRequestSchema,
 ) -> None:
     """Test password change with incorrect current password."""
@@ -131,7 +129,7 @@ def test_change_password_incorrect_current_password(
 
 def test_change_password_invalid_new_password(
     client: TestClient,
-    mock_user: User,
+    mock_user: mock.Mock,
     password_data: PasswordChangeRequestSchema,
 ) -> None:
     """Test password change with invalid new password."""
@@ -168,7 +166,7 @@ def test_change_password_invalid_new_password(
 
 def test_change_password_no_client_info(
     client: TestClient,
-    mock_user: User,
+    mock_user: mock.Mock,
     password_data: PasswordChangeRequestSchema,
 ) -> None:
     """Test password change when request.client is None."""
@@ -213,7 +211,7 @@ def test_change_password_no_client_info(
 
 def test_change_password_no_user_agent(
     client: TestClient,
-    mock_user: User,
+    mock_user: mock.Mock,
     password_data: PasswordChangeRequestSchema,
 ) -> None:
     """Test password change when User-Agent header is missing."""
@@ -245,6 +243,6 @@ def test_change_password_no_user_agent(
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
         # Verify UserEvent.log_password_change was called with empty user_agent
-        call_args = mock_log_password_change.await_args[0]
+        call_args = mock_log_password_change.await_args[0]  # type: ignore
         assert call_args[0] == mock_user.id  # user_id
         assert call_args[2] == ""  # user_agent (empty string)

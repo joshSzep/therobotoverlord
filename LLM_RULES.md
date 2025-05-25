@@ -1,5 +1,7 @@
 # The Robot Overlord Project Guidelines
 
+RULE #1: **DO NOT** add docstrings unless specifically requested.
+
 ## IMPORTANT: If you want to learn more, read the plans
 
 Plans markdown files stored in the `plans/` directory. These are technical design documents for the project which are specifically designed for LLM consumption.
@@ -103,13 +105,12 @@ from backend.utils.datetime import now
 async def example(
     param: str,
 ) -> ReturnType:
-    """Concise docstring explaining purpose."""
     return result
 ```
 
 ### Documentation & Testing
-- Avoid writing any docstrings that do not add value
-- NEVER write docstrings for modules, classes, or functions that are 1 line long
+- Avoid writing any docstrings at all.
+- **NEVER** add a docstring to the top of a python file unless specifically requested.
 - Tests follow Arrange-Act-Assert pattern with 100% coverage required
 - Code quality enforced via Ruff (rules: E, F, I, UP, N, B, A, C4, RET, SIM, ERA), Mypy, Pyright, and pre-commit hooks
 
@@ -133,3 +134,49 @@ async def check() -> HealthCheckResponse:
 ## Frontend & CI/CD
 - **Frontend**: TypeScript, ESLint, Next.js conventions, TailwindCSS
 - **CI/CD**: GitHub Actions for code quality on push/PR
+
+## MOST IMPORTANTLY: Docstring etiquette
+
+- Docstrings should only be added to functions; not modules!
+- If a module needs documentation that would be a sign that it **needs to be broken up into smaller modules**.
+- If you put a docstring on a module we will have to keep it up to date which is a waste of time and often is forgotten which leads to confusion.
+- This is an application, not a library for external consumption, being built largely by you, the AI assistant.
+- Even in functions, docstrings should only exist if they explain something that cannot be explained by the function definition, parameters, and return type.
+
+BAD EXAMPLE (Docstring adds no value):
+```python
+def check() -> HealthCheckResponse:
+    """Simple health check endpoint."""
+    return build_health_check_response()
+```
+
+GOOD EXAMPLE:
+```python
+def check() -> HealthCheckResponse:
+    return build_health_check_response()
+```
+
+BAD EXAMPLE (Docstring adds only liability):
+```python
+def echo_if_hello(well_named_param: str) -> Optional[str]:
+    """
+    Simple function that returns a string if the param is "hello".
+
+    Args:
+        well_named_param: The param to check.
+
+    Returns:
+        Optional[str]: The string "hello" if the param is "hello", otherwise None.
+    """
+    if well_named_param == "hello":
+        return "hello"
+    return None
+```
+
+GOOD EXAMPLE:
+```python
+def echo_if_hello(well_named_param: str) -> Optional[str]:
+    if well_named_param == "hello":
+        return "hello"
+    return None
+```
