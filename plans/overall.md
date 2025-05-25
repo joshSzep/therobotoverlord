@@ -27,7 +27,3 @@ DATABASE SCHEMA: Will include tables for users, topics, posts, ai_analyses, reje
 
 CRITICAL UX FLOW:
 Submit post → "THE OVERLORD DELIBERATES..." loading → Dramatic reveal of approval/rejection → Either post appears in thread OR user sees rejection reason + tombstone count increases
-
-The human is an experienced Python engineer who's organized, great at AI prompting, but new to React/frontend. They want to build this solo using AI assistance for design/frontend work.
-
-What aspect of this project do you want to work on?
