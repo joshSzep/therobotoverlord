@@ -54,7 +54,6 @@ backend/
     │       ├── reports.py        # Admin reporting endpoints
     │       └── models.py         # Pydantic models for admin
     ├── utils/                    # Shared utilities
-    │   ├── __init__.py
     │   ├── auth.py               # Authentication utilities
     │   ├── ai_client.py          # AI moderation client
     │   └── datetime.py           # DateTime handling utilities
