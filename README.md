@@ -4,7 +4,6 @@
 [![Frontend Checks](https://github.com/joshSzep/therobotoverlord/actions/workflows/frontend-checks.yml/badge.svg)](https://github.com/joshSzep/therobotoverlord/actions/workflows/frontend-checks.yml)
 [![Global Checks](https://github.com/joshSzep/therobotoverlord/actions/workflows/global-checks.yml/badge.svg)](https://github.com/joshSzep/therobotoverlord/actions/workflows/global-checks.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
-[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/joshSzep/therobotoverlord)
 
 
 I FOR ONE WELCOME **THE ROBOT OVERLORD**
