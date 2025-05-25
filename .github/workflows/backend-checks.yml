@@ -1,37 +1,20 @@
-name: Code Quality Checks
+name: Backend Checks
 
 # Define versions at workflow level to avoid duplication
 env:
-  NODE_VERSION: '23.11.0'
   UV_VERSION: '0.7.8'
 
 on:
   push:
     paths:
       - '**.py'
-      - '**.js'
-      - '**.ts'
-      - '**.jsx'
-      - '**.tsx'
-      - '**.json'
-      - '**.yaml'
-      - '**.yml'
       - 'backend/**'
-      - 'frontend/**'
-      - '.github/workflows/**'
+      - '.github/workflows/backend-checks.yml'
   pull_request:
     paths:
       - '**.py'
-      - '**.js'
-      - '**.ts'
-      - '**.jsx'
-      - '**.tsx'
-      - '**.json'
-      - '**.yaml'
-      - '**.yml'
       - 'backend/**'
-      - 'frontend/**'
-      - '.github/workflows/**'
+      - '.github/workflows/backend-checks.yml'
 
 # Cancel in-progress runs when a new workflow with the same ref is triggered
 concurrency:
@@ -39,9 +22,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Common setup job that other jobs depend on
+  # Setup job for backend environment
   setup:
-    name: Setup Environment
+    name: Setup Python Environment
     # Skip running on PR if already running on push to the same branch
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
@@ -56,13 +39,6 @@ jobs:
         with:
           python-version-file: 'backend/.python-version'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
-
       - name: Install and setup uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -70,37 +46,11 @@ jobs:
           enable-cache: true
           cache-dependency-glob: 'backend/uv.lock'
 
-  # Global pre-commit checks
-  global-checks:
-    name: Global Checks
-    needs: setup
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      - uses: actions/setup-python@v5
-        with:
-          python-version-file: 'backend/.python-version'
-      - uses: astral-sh/setup-uv@v5
-        with:
-          version: ${{ env.UV_VERSION }}
-      - name: Run pre-commit built-in substeps
-        run: |
-          cd backend
-          uv run pre-commit run check-merge-conflict --all-files
-          uv run pre-commit run detect-private-key --all-files
-          uv run pre-commit run end-of-file-fixer --all-files
-          uv run pre-commit run trailing-whitespace --all-files
-
-  # Backend code quality checks (run in parallel)
+  # Ruff format check
   ruff-format:
     name: Ruff Format
     needs: setup
     runs-on: ubuntu-latest
-    # Only run when Python files change
-    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'backend') || contains(join(github.event.pull_request.changed_files.*.filename, ' '), '.py') }}
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
@@ -112,9 +62,12 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: 'backend/uv.lock'
       - name: Run Ruff format
         run: cd backend && uv run ruff format --check .
 
+  # Ruff linting check
   ruff-check:
     name: Ruff Check
     needs: setup
@@ -130,9 +83,12 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: 'backend/uv.lock'
       - name: Run Ruff check
         run: cd backend && uv run ruff check .
 
+  # Mypy type checking
   mypy:
     name: Mypy
     needs: setup
@@ -148,9 +104,12 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: 'backend/uv.lock'
       - name: Run Mypy
         run: cd backend && uv run mypy .
 
+  # Pyright type checking
   pyright:
     name: Pyright
     needs: setup
@@ -166,9 +125,12 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: 'backend/uv.lock'
       - name: Run Pyright
         run: cd backend && uv run pyright .
 
+  # Pytest unit tests
   pytest:
     name: Pytest
     needs: setup
@@ -184,27 +146,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: 'backend/uv.lock'
       - name: Run Pytest
         run: cd backend && uv run pytest
-
-  # Frontend code quality checks
-  eslint:
-    name: ESLint
-    needs: setup
-    runs-on: ubuntu-latest
-    # Only run when frontend files change
-    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'frontend') || contains(join(github.event.pull_request.changed_files.*.filename, ' '), '.js') || contains(join(github.event.pull_request.changed_files.*.filename, ' '), '.ts') }}
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
-      - name: Install dependencies
-        run: cd frontend && npm ci
-      - name: Run ESLint
-        run: cd frontend && npm run lint

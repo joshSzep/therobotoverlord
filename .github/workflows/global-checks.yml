@@ -1,0 +1,42 @@
+name: Global Checks
+
+# Define versions at workflow level to avoid duplication
+env:
+  UV_VERSION: '0.7.8'
+
+on:
+  push:
+  pull_request:
+
+# Cancel in-progress runs when a new workflow with the same ref is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Global pre-commit checks
+  global-checks:
+    name: Global Checks
+    # Skip running on PR if already running on push to the same branch
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: 'backend/.python-version'
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: 'backend/uv.lock'
+      - name: Run pre-commit built-in substeps
+        run: |
+          cd backend
+          uv run pre-commit run check-merge-conflict --all-files
+          uv run pre-commit run detect-private-key --all-files
+          uv run pre-commit run end-of-file-fixer --all-files
+          uv run pre-commit run trailing-whitespace --all-files
