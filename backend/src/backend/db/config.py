@@ -4,7 +4,9 @@ from typing import Any
 
 from pydantic_settings import BaseSettings
 from tortoise import Tortoise
-from tortoise.contrib.fastapi import register_tortoise
+from tortoise.contrib.fastapi import (
+    register_tortoise,  # type: ignore[reportUnknownVariableType, unused-ignore]
+)
 
 
 class DatabaseSettings(BaseSettings):

@@ -1,5 +1,3 @@
-"""User model for authentication and user management."""
-
 from datetime import timedelta
 import enum
 
@@ -7,19 +5,19 @@ import bcrypt
 from tortoise import fields
 
 from backend.db.base import BaseModel
-from backend.utils.datetime import now
+from backend.db.models.login_attempt import LoginAttempt
+from backend.db.models.user_session import UserSession
+from backend.utils.datetime import now_utc
 
 
 class UserRole(str, enum.Enum):
-    """User role enum."""
-
     USER = "user"
     MODERATOR = "moderator"
     ADMIN = "admin"
 
 
 class User(BaseModel):
-    """User model with authentication fields."""
+    sessions: fields.ReverseRelation[UserSession]
 
     email = fields.CharField(max_length=255, unique=True)
     password_hash = fields.CharField(max_length=255)
@@ -52,7 +50,7 @@ class User(BaseModel):
             user_agent: The user agent of the client.
         """
         # Update user fields
-        self.last_login = now()
+        self.last_login = now_utc()
         self.failed_login_attempts = 0
         self.is_locked = False
         await self.save()
@@ -63,20 +61,16 @@ class User(BaseModel):
         session_token = secrets.token_hex(32)
 
         # Create a session record
-        from backend.db.models.user_session import UserSession
-
         await UserSession.create(
             user=self,
             ip_address=ip_address,
             user_agent=user_agent,
             session_token=session_token,
             is_active=True,
-            expires_at=now() + timedelta(days=7),
+            expires_at=now_utc() + timedelta(days=7),
         )
 
         # Record the login attempt
-        from backend.db.models.login_attempt import LoginAttempt
-
         await LoginAttempt.create(
             user=self,
             ip_address=ip_address,

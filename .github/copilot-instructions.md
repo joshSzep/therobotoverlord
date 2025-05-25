@@ -53,7 +53,7 @@ src/backend/
         ├── __init__.py     # Router setup
         ├── check.py        # REST endpoint
         ├── heartbeat.py    # WebSocket endpoint
-        ├── models.py       # Pydantic models
+        ├── schemas.py      # Pydantic schema models
         └── utils.py        # Feature utilities
 ```
 
@@ -108,7 +108,8 @@ async def example(
 ```
 
 ### Documentation & Testing
-- Docstrings for all functions using triple double quotes
+- Avoid writing any docstrings that do not add value
+- NEVER write docstrings for modules, classes, or functions that are 1 line long
 - Tests follow Arrange-Act-Assert pattern with 100% coverage required
 - Code quality enforced via Ruff (rules: E, F, I, UP, N, B, A, C4, RET, SIM, ERA), Mypy, Pyright, and pre-commit hooks
 

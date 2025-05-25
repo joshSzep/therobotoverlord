@@ -3,13 +3,13 @@
 from tortoise import fields
 
 from backend.db.base import BaseModel
-from backend.utils.datetime import now
+from backend.utils.datetime import now_utc
 
 
 class UserSession(BaseModel):
     """User session model for tracking active sessions."""
 
-    user = fields.ForeignKeyField("models.User", related_name="sessions")
+    user = fields.ForeignKeyField("models.User", related_name="sessions")  # type: ignore[var-annotated]
     ip_address = fields.CharField(max_length=45)  # IPv6 can be up to 45 chars
     user_agent = fields.CharField(max_length=255)
     session_token = fields.CharField(max_length=255)
@@ -29,7 +29,7 @@ class UserSession(BaseModel):
             int: Number of sessions cleaned up.
         """
         count = await cls.filter(
-            expires_at__lt=now(),
+            expires_at__lt=now_utc(),
             is_active=True,
         ).update(is_active=False)
 

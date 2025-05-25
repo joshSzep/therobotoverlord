@@ -8,12 +8,14 @@ from fastapi import status
 
 from backend.db.models.user import User
 from backend.db.models.user_event import UserEvent
-from backend.routes.users.models import PasswordChangeRequest
-from backend.routes.users.models import UserSchema
+from backend.routes.users.users_schemas import PasswordChangeRequestSchema
+from backend.routes.users.users_schemas import UserSchema
 from backend.utils.auth import get_current_user
 from backend.utils.password import validate_password
 
 router = APIRouter()
+
+UNKNOWN_IP_ADDRESS_MARKER = "<UNKNOWN>"
 
 
 @router.get("/me", response_model=UserSchema)
@@ -43,7 +45,7 @@ async def get_current_user_info(
 @router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
 async def change_password(
     request: Request,
-    password_data: PasswordChangeRequest,
+    password_data: PasswordChangeRequestSchema,
     current_user: User = Depends(get_current_user),
 ) -> None:
     """Change the user's password.
@@ -54,7 +56,8 @@ async def change_password(
         current_user: The current authenticated user.
 
     Raises:
-        HTTPException: If the current password is incorrect or the new password is invalid.
+        HTTPException: If the current password is incorrect or the new password is
+        invalid.
     """
     # Verify current password
     if not await current_user.verify_password(password_data.current_password):
@@ -76,7 +79,7 @@ async def change_password(
     await current_user.save()
 
     # Get client information for event logging
-    ip_address = request.client.host
+    ip_address = request.client.host if request.client else UNKNOWN_IP_ADDRESS_MARKER
     user_agent = request.headers.get("User-Agent", "")
 
     # Log password change event
@@ -98,7 +101,7 @@ async def logout(
         current_user: The current authenticated user.
     """
     # Get client information
-    ip_address = request.client.host
+    ip_address = request.client.host if request.client else UNKNOWN_IP_ADDRESS_MARKER
     user_agent = request.headers.get("User-Agent", "")
 
     # Find and invalidate active sessions for this user with the same IP and user agent

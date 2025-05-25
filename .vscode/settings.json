@@ -4,5 +4,8 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    "python.pythonPath": "./backend/.venv/bin/python",
     "python.venvPath": "./backend/.venv",
+    "windsurfPyright.analysis.typeCheckingMode": "standard",
+    "windsurfPyright.analysis.useLibraryCodeForTypes": true,
 }

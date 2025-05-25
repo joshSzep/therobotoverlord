@@ -7,6 +7,7 @@ from tortoise import Tortoise
 
 from backend.db.config import TORTOISE_ORM
 from backend.db.models.user_session import UserSession
+from backend.utils.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ async def cleanup_expired_sessions() -> int:
         int: Number of sessions cleaned up.
     """
     # Initialize database connection if not already initialized
-    if not Tortoise._inited:
+    if not Tortoise._inited:  # type: ignore[reportPrivateUsage, unused-ignore]
         await Tortoise.init(config=TORTOISE_ORM)
 
     try:
@@ -38,11 +39,13 @@ async def cleanup_expired_sessions() -> int:
 
     finally:
         # Close database connection if we initialized it
-        if Tortoise._inited:
+        if Tortoise._inited:  # type: ignore[reportPrivateUsage, unused-ignore]
             await Tortoise.close_connections()
 
 
-async def run_session_cleanup_task(interval_seconds: int = 3600) -> None:
+async def run_session_cleanup_task(
+    interval_seconds: float = settings.SESSION_CLEANUP_INTERVAL_SECONDS,
+) -> None:
     """Run the session cleanup task periodically.
 
     Args:

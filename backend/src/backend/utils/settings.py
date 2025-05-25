@@ -1,12 +1,10 @@
-"""Settings module for the application."""
-
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     """Application settings.
 
-    These settings can be configured via environment variables.
+    These settings can be configured via environment variables or from a .env file.
     """
 
     # Database settings
@@ -15,12 +13,15 @@ class Settings(BaseSettings):
     # JWT settings
     JWT_SECRET_KEY: str = "your-secret-key-change-in-production"
     JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: float = 30.0
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: float = 7.0
 
     # Application settings
     DEBUG: bool = False
     TESTING: bool = False
+
+    # Session settings
+    SESSION_CLEANUP_INTERVAL_SECONDS: float = 3600.0
 
     class Config:
         """Pydantic config."""
