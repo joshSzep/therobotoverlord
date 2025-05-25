@@ -8,4 +8,5 @@
     "python.venvPath": "./backend/.venv",
     "windsurfPyright.analysis.typeCheckingMode": "standard",
     "windsurfPyright.analysis.useLibraryCodeForTypes": true,
+    "python.testing.pytestPath": "./backend/.venv/bin/pytest",
 }
