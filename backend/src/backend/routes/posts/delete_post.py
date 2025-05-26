@@ -6,11 +6,10 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
-from tortoise.exceptions import DoesNotExist
 
 # Project-specific imports
-from backend.db.models.post import Post
 from backend.db.models.user import User
+from backend.repositories.post_repository import PostRepository
 from backend.utils.auth import get_current_user
 
 router = APIRouter()
@@ -21,9 +20,10 @@ async def delete_post(
     post_id: UUID,
     current_user: User = Depends(get_current_user),
 ) -> None:
-    try:
-        post = await Post.get(id=post_id).prefetch_related("author")
-    except DoesNotExist:
+    # Get post using repository
+    post = await PostRepository.get_post_by_id(post_id)
+
+    if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Post not found",
@@ -37,12 +37,18 @@ async def delete_post(
         )
 
     # Check if the post has replies
-    reply_count = await Post.filter(parent_post=post).count()
+    reply_count = await PostRepository.get_reply_count(post_id)
     if reply_count > 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Cannot delete post as it has {reply_count} replies",
         )
 
-    # Delete the post
-    await post.delete()
+    # Delete the post using repository
+    success = await PostRepository.delete_post(post_id)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete post",
+        )

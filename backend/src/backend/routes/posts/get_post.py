@@ -5,10 +5,9 @@ from uuid import UUID
 from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import status
-from tortoise.exceptions import DoesNotExist
 
 # Project-specific imports
-from backend.db.models.post import Post
+from backend.repositories.post_repository import PostRepository
 from backend.routes.posts.schemas import PostResponse
 
 router = APIRouter()
@@ -16,16 +15,17 @@ router = APIRouter()
 
 @router.get("/{post_id}/", response_model=PostResponse)
 async def get_post(post_id: UUID) -> PostResponse:
-    try:
-        post = await Post.get(id=post_id).prefetch_related("author", "topic")
-    except DoesNotExist:
+    # Get post using repository
+    post = await PostRepository.get_post_by_id(post_id)
+
+    if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Post not found",
         )
 
-    # Get reply count
-    reply_count = await Post.filter(parent_post_id=post.id).count()
+    # Get reply count using repository
+    reply_count = await PostRepository.get_reply_count(post.id)
 
     # Create response object
     post_dict = {

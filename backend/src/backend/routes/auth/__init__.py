@@ -2,9 +2,9 @@
 from fastapi import APIRouter
 
 # Project-specific imports
-from backend.routes.users.auth.login import router as login_router
-from backend.routes.users.auth.refresh_token import router as refresh_token_router
-from backend.routes.users.auth.register import router as register_router
+from backend.routes.auth.login import router as login_router
+from backend.routes.auth.refresh_token import router as refresh_token_router
+from backend.routes.auth.register import router as register_router
 
 router = APIRouter(
     prefix="/auth",

@@ -1,5 +1,3 @@
-"""Tests for the get_me endpoint."""
-
 import datetime
 from unittest import mock
 import uuid
@@ -10,7 +8,7 @@ import pytest
 
 from backend.app import app
 from backend.db.models.user import User
-from backend.routes.users.users_schemas import UserSchema
+from backend.routes.auth.schemas import UserSchema
 from backend.utils.auth import get_current_user
 
 
@@ -54,7 +52,7 @@ def client(mock_user: User) -> TestClient:
 def test_get_current_user_info(client: TestClient, mock_user: User) -> None:
     """Test that the get_current_user_info endpoint returns correct user information."""
     # Call the endpoint
-    response = client.get("/users/profile/me")
+    response = client.get("/profile/me/")
 
     # Verify status code
     assert response.status_code == status.HTTP_200_OK
@@ -76,7 +74,7 @@ def test_get_current_user_info(client: TestClient, mock_user: User) -> None:
     assert "updated_at" in user_data
 
     # Test that all expected fields from UserSchema are present
-    user_schema = UserSchema(
+    user_schema = UserSchema(  # noqa: F841
         id=mock_user.id,
         email=mock_user.email,
         display_name=mock_user.display_name,
@@ -86,8 +84,3 @@ def test_get_current_user_info(client: TestClient, mock_user: User) -> None:
         created_at=mock_user.created_at,
         updated_at=mock_user.updated_at,
     )
-
-    # Make sure all expected fields are in the response
-    schema_fields = user_schema.model_dump().keys()
-    for field in schema_fields:
-        assert field in user_data

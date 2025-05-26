@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from backend.routes.users.users_schemas import UserSchema
+from backend.routes.auth.schemas import UserSchema
 
 
 class PostBase(BaseModel):

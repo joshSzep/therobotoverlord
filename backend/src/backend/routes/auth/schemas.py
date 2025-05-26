@@ -49,8 +49,3 @@ class LoginAttemptSchema(BaseModel):
     user_agent: str
     success: bool
     timestamp: datetime
-
-
-class PasswordChangeRequestSchema(BaseModel):
-    current_password: str
-    new_password: str

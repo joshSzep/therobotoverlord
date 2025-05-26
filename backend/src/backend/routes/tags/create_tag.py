@@ -7,8 +7,8 @@ from slugify import slugify
 from tortoise.exceptions import IntegrityError
 
 # Project-specific imports
-from backend.db.models.tag import Tag
 from backend.db.models.user import User
+from backend.repositories.tag_repository import TagRepository
 from backend.routes.tags.schemas import TagCreate
 from backend.routes.tags.schemas import TagResponse
 from backend.utils.auth import get_current_user
@@ -27,11 +27,14 @@ async def create_tag(
             detail="Only moderators and admins can create tags",
         )
 
+    # Generate slug from name
+    slug = slugify(tag_data.name)
+
     try:
-        # Create the tag
-        tag = await Tag.create(
+        # Create the tag using repository
+        tag = await TagRepository.create_tag(
             name=tag_data.name,
-            slug=slugify(tag_data.name),
+            slug=slug,
         )
         return TagResponse.model_validate(tag)
     except IntegrityError:

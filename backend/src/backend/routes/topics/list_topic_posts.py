@@ -10,9 +10,9 @@ from fastapi import status
 # Project-specific imports
 from backend.db.models.post import Post
 from backend.db.models.topic import Topic
+from backend.routes.auth.schemas import UserSchema
 from backend.routes.posts.schemas import PostList
 from backend.routes.posts.schemas import PostResponse
-from backend.routes.users.users_schemas import UserSchema
 
 router = APIRouter()
 

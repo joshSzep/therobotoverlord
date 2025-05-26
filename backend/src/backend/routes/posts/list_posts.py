@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from fastapi import Query
 
 # Project-specific imports
-from backend.db.models.post import Post
+from backend.repositories.post_repository import PostRepository
 from backend.routes.posts.schemas import PostList
 from backend.routes.posts.schemas import PostResponse
 
@@ -21,26 +21,16 @@ async def list_posts(
     topic_id: Optional[UUID] = None,
     author_id: Optional[UUID] = None,
 ) -> PostList:
-    # Build query with filters
-    query = Post.all().prefetch_related("author", "topic")
-
-    if topic_id:
-        query = query.filter(topic__id=topic_id)
-
-    if author_id:
-        query = query.filter(author_id=author_id)
-
-    # Get total count for pagination
-    count = await query.count()
-
-    # Apply pagination
-    posts = await query.offset(skip).limit(limit)
+    # Use repository to get posts with filters
+    posts, count = await PostRepository.list_posts(
+        skip=skip, limit=limit, topic_id=topic_id, author_id=author_id
+    )
 
     # Prepare response with reply counts
     post_responses: list[PostResponse] = []
     for post in posts:
-        # Get reply count for each post
-        reply_count = await Post.filter(parent_post_id=post.id).count()
+        # Get reply count for each post using repository
+        reply_count = await PostRepository.get_reply_count(post.id)
 
         # Create response object
         post_dict = {

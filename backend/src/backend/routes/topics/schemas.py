@@ -1,12 +1,15 @@
+# Standard library imports
 from datetime import datetime
 from typing import List
 from typing import Optional
 from uuid import UUID
 
+# Third-party imports
 from pydantic import BaseModel
 from pydantic import Field
 
-from backend.routes.users.users_schemas import UserSchema
+# Project-specific imports
+from backend.routes.auth.schemas import UserSchema
 
 
 class TagBase(BaseModel):

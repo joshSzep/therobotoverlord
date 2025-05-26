@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from fastapi import Depends
 
-from backend.db.models.user import User
-from backend.routes.users.users_schemas import UserSchema
+from backend.db.models.user import User  # Keep for type annotation
+from backend.routes.auth.schemas import UserSchema
 from backend.utils.auth import get_current_user
 
 router = APIRouter()

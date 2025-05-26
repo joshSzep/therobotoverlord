@@ -2,11 +2,9 @@
 from fastapi import APIRouter
 
 # Project-specific imports
-from backend.routes.users.profile.change_password import (
-    router as change_password_router,
-)
-from backend.routes.users.profile.get_me import router as get_me_router
-from backend.routes.users.profile.logout import router as logout_router
+from backend.routes.profile.change_password import router as change_password_router
+from backend.routes.profile.get_me import router as get_me_router
+from backend.routes.profile.logout import router as logout_router
 
 router = APIRouter(
     prefix="/profile",

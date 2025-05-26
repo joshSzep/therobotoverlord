@@ -6,11 +6,10 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
-from tortoise.exceptions import DoesNotExist
 
 # Project-specific imports
-from backend.db.models.post import Post
 from backend.db.models.user import User
+from backend.repositories.post_repository import PostRepository
 from backend.routes.posts.schemas import PostResponse
 from backend.routes.posts.schemas import PostUpdate
 from backend.utils.auth import get_current_user
@@ -24,9 +23,10 @@ async def update_post(
     post_data: PostUpdate,
     current_user: User = Depends(get_current_user),
 ) -> PostResponse:
-    try:
-        post = await Post.get(id=post_id).prefetch_related("author", "topic")
-    except DoesNotExist:
+    # Get post using repository
+    post = await PostRepository.get_post_by_id(post_id)
+
+    if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Post not found",
@@ -39,22 +39,29 @@ async def update_post(
             detail="You don't have permission to update this post",
         )
 
-    # Update the post
-    post.content = post_data.content
-    await post.save()
+    # Update the post using repository
+    updated_post = await PostRepository.update_post(post_id, post_data.content)
 
-    # Get reply count
-    reply_count = await Post.filter(parent_post_id=post.id).count()
+    if not updated_post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Failed to update post",
+        )
+
+    # Get reply count using repository
+    reply_count = await PostRepository.get_reply_count(post_id)
 
     # Create response object
     post_dict = {
-        "id": post.id,
-        "content": post.content,
-        "author": post.author,
-        "topic_id": post.topic.id,
-        "parent_post_id": post.parent_post.id if post.parent_post else None,
-        "created_at": post.created_at,
-        "updated_at": post.updated_at,
+        "id": updated_post.id,
+        "content": updated_post.content,
+        "author": updated_post.author,
+        "topic_id": updated_post.topic.id,
+        "parent_post_id": (
+            updated_post.parent_post.id if updated_post.parent_post else None
+        ),
+        "created_at": updated_post.created_at,
+        "updated_at": updated_post.updated_at,
         "reply_count": reply_count,
     }
 

@@ -5,8 +5,8 @@ import jwt
 import pytest
 
 from backend.db.models.user import User
-from backend.routes.users.auth.refresh_token import refresh_token
-from backend.routes.users.users_schemas import TokenSchema
+from backend.routes.auth.refresh_token import refresh_token
+from backend.routes.auth.schemas import TokenSchema
 from backend.utils.settings import settings
 
 
@@ -39,17 +39,17 @@ async def test_refresh_token_success():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.users.auth.refresh_token.decode_token", return_value=payload
+            "backend.routes.auth.refresh_token.decode_token", return_value=payload
         ),
         mock.patch.object(
             User, "get_or_none", new=mock.AsyncMock(return_value=mock_user)
         ),
         mock.patch(
-            "backend.routes.users.auth.refresh_token.create_access_token",
+            "backend.routes.auth.refresh_token.create_access_token",
             return_value="new_access_token",
         ),
         mock.patch(
-            "backend.routes.users.auth.refresh_token.create_refresh_token",
+            "backend.routes.auth.refresh_token.create_refresh_token",
             return_value="new_refresh_token",
         ),
     ):
@@ -78,7 +78,7 @@ async def test_refresh_token_not_refresh_token():
 
     # Mock dependencies
     with mock.patch(
-        "backend.routes.users.auth.refresh_token.decode_token", return_value=payload
+        "backend.routes.auth.refresh_token.decode_token", return_value=payload
     ):
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
@@ -104,7 +104,7 @@ async def test_refresh_token_missing_user_id():
 
     # Mock dependencies
     with mock.patch(
-        "backend.routes.users.auth.refresh_token.decode_token", return_value=payload
+        "backend.routes.auth.refresh_token.decode_token", return_value=payload
     ):
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
@@ -130,7 +130,7 @@ async def test_refresh_token_user_not_found():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.users.auth.refresh_token.decode_token", return_value=payload
+            "backend.routes.auth.refresh_token.decode_token", return_value=payload
         ),
         mock.patch.object(User, "get_or_none", new=mock.AsyncMock(return_value=None)),
     ):
@@ -164,7 +164,7 @@ async def test_refresh_token_locked_account():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.users.auth.refresh_token.decode_token", return_value=payload
+            "backend.routes.auth.refresh_token.decode_token", return_value=payload
         ),
         mock.patch.object(
             User, "get_or_none", new=mock.AsyncMock(return_value=mock_user)
@@ -190,7 +190,7 @@ async def test_refresh_token_invalid_token():
 
     # Mock decode_token to raise an exception
     with mock.patch(
-        "backend.routes.users.auth.refresh_token.decode_token",
+        "backend.routes.auth.refresh_token.decode_token",
         side_effect=Exception("Invalid token"),
     ):
         # Act & Assert

@@ -9,10 +9,10 @@ from fastapi import Query
 from backend.db.models.tag import Tag
 from backend.db.models.topic import Topic
 from backend.db.models.topic_tag import TopicTag
+from backend.routes.auth.schemas import UserSchema
 from backend.routes.topics.schemas import TagResponse
 from backend.routes.topics.schemas import TopicList
 from backend.routes.topics.schemas import TopicResponse
-from backend.routes.users.users_schemas import UserSchema
 
 router = APIRouter()
 

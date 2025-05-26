@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from fastapi import Query
 
 # Project-specific imports
-from backend.db.models.tag import Tag
+from backend.repositories.tag_repository import TagRepository
 from backend.routes.tags.schemas import TagList
 from backend.routes.tags.schemas import TagResponse
 
@@ -19,17 +19,8 @@ async def list_tags(
     limit: int = Query(50, ge=1, le=100),
     search: Optional[str] = None,
 ) -> TagList:
-    query = Tag.all()
-
-    if search:
-        # Filter by name if search parameter is provided
-        query = query.filter(name__icontains=search)
-
-    # Get total count for pagination
-    count = await query.count()
-
-    # Apply pagination
-    tags = await query.offset(skip).limit(limit)
+    # Use the repository to fetch tags
+    tags, count = await TagRepository.list_tags(skip, limit, search)
 
     # Convert to response model
     tag_responses = [TagResponse.model_validate(tag) for tag in tags]
