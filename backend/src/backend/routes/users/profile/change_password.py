@@ -14,7 +14,7 @@ from backend.utils.password import validate_password
 router = APIRouter()
 
 
-@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/change-password/", status_code=status.HTTP_204_NO_CONTENT)
 async def change_password(
     request: Request,
     password_data: PasswordChangeRequestSchema,

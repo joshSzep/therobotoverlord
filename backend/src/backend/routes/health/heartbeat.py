@@ -12,7 +12,7 @@ router = APIRouter()
 HEARTBEAT_INTERVAL_SECONDS: float = 1.0
 
 
-@router.websocket("/heartbeat")
+@router.websocket("/heartbeat/")
 async def heartbeat(
     websocket: WebSocket,
 ) -> None:

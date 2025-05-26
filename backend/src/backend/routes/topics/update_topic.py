@@ -23,7 +23,7 @@ from backend.utils.auth import get_current_user
 router = APIRouter()
 
 
-@router.put("/{topic_id}", response_model=TopicResponse)
+@router.put("/{topic_id}/", response_model=TopicResponse)
 @atomic()
 async def update_topic(
     topic_id: UUID,

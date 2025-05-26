@@ -88,24 +88,24 @@ This checklist outlines the steps to implement the core content structure for Th
 
 ## Database Migrations
 
-- [ ] Create migration for new models:
-  - [ ] Run `aerich migrate` to generate migration
-  - [ ] Review migration file
-  - [ ] Run `aerich upgrade` to apply migration
+- [x] Create migration for new models:
+  - [x] Run `aerich migrate` to generate migration
+  - [x] Review migration file
+  - [x] Run `aerich upgrade` to apply migration
 
 ## Tests
 
 ### Model Tests
-- [ ] Create tests for Topic model
-- [ ] Create tests for Tag model
-- [ ] Create tests for TopicTag model
-- [ ] Create tests for Post model
+- [x] Create tests for Topic model
+- [x] Create tests for Tag model
+- [x] Create tests for TopicTag model
+- [x] Create tests for Post model
 
 ### API Tests
-- [ ] Create tests for Topics API endpoints
-- [ ] Create tests for Tags API endpoints
-- [ ] Create tests for Posts API endpoints
-- [ ] Create tests for threaded post functionality
+- [x] Create tests for Topics API endpoints
+- [x] Create tests for Tags API endpoints
+- [x] Create tests for Posts API endpoints
+- [x] Create tests for threaded post functionality
 
 ## Integration
 
@@ -116,8 +116,8 @@ This checklist outlines the steps to implement the core content structure for Th
 
 ## Documentation
 
-- [ ] Update API documentation with new endpoints
-- [ ] Add example requests/responses
+- [x] Update API documentation with new endpoints
+- [x] Add example requests/responses
 
 ## Manual Testing Checklist
 

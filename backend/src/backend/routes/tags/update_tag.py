@@ -20,7 +20,7 @@ from backend.utils.auth import get_current_user
 router = APIRouter()
 
 
-@router.put("/{tag_id}", response_model=TagResponse)
+@router.put("/{tag_id}/", response_model=TagResponse)
 async def update_tag(
     tag_id: UUID,
     tag_data: TagCreate,

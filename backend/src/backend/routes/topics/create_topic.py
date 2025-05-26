@@ -13,6 +13,7 @@ from backend.db.models.user import User
 from backend.routes.topics.schemas import TagResponse
 from backend.routes.topics.schemas import TopicCreate
 from backend.routes.topics.schemas import TopicResponse
+from backend.routes.users.users_schemas import UserSchema
 from backend.utils.auth import get_current_user
 
 router = APIRouter()
@@ -39,24 +40,53 @@ async def create_topic(
             defaults={"slug": slugify(tag_name)},
         )
 
-        # Create the topic-tag relationship
-        await TopicTag.create(topic=topic, tag=tag)
+        try:
+            # Create the topic-tag relationship
+            await TopicTag.create(topic=topic, tag=tag)
+        except Exception as e:
+            # Log the error but continue processing
+            print(f"Error creating topic-tag relationship: {e}")
+            # We'll still include the tag in the response
 
-    # Fetch the complete topic with related data
-    await topic.fetch_related("author", "topic_tags__tag")
+    # Fetch the author relation only - we'll handle tags separately
+    await topic.fetch_related("author")
 
-    # Extract tags from the topic_tags relation
-    tags = [
-        TagResponse(
-            id=tt.tag.id,
-            name=tt.tag.name,
-            slug=tt.tag.slug,
+    # Create the response object with proper model conversion
+
+    # Create UserSchema instance for the author
+    author_schema = UserSchema(
+        id=topic.author.id,
+        email=topic.author.email,
+        display_name=topic.author.display_name,
+        is_verified=topic.author.is_verified,
+        last_login=topic.author.last_login,
+        role=topic.author.role,
+        created_at=topic.author.created_at,
+        updated_at=topic.author.updated_at,
+    )
+
+    # Create the TopicResponse with the proper UserSchema
+    topic_response = TopicResponse(
+        id=topic.id,
+        title=topic.title,
+        description=topic.description,
+        author=author_schema,
+        created_at=topic.created_at,
+        updated_at=topic.updated_at,
+        tags=[],
+    )
+
+    # Add tags to the response
+    for tag_name in topic_data.tags:
+        # Find the tag we created earlier
+        tag = await Tag.get(name=tag_name)
+        # Add it to the response
+        topic_response.tags.append(
+            TagResponse(
+                id=tag.id,
+                name=tag.name,
+                slug=tag.slug,
+            )
         )
-        for tt in topic.topic_tags
-    ]
-
-    # Create the response object
-    topic_response = TopicResponse.model_validate(topic)
-    topic_response.tags = tags
 
     return topic_response

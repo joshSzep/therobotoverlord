@@ -3,7 +3,7 @@ import re
 
 def test_heartbeat_websocket_message(client):
     """Test that the heartbeat websocket endpoint sends messages."""
-    with client.websocket_connect("/health/heartbeat") as websocket:
+    with client.websocket_connect("/health/heartbeat/") as websocket:
         # Receive a message
         data = websocket.receive_json()
 

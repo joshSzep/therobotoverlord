@@ -1,23 +1,22 @@
 from fastapi import APIRouter
-from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import Request
 from fastapi import status
-from fastapi.security import OAuth2PasswordRequestForm
 
 from backend.db.models.user import User
 from backend.db.models.user_event import UserEvent
 from backend.routes.users.users_schemas import TokenSchema
+from backend.routes.users.users_schemas import UserLoginSchema
 from backend.utils.auth import create_access_token
 from backend.utils.auth import create_refresh_token
 
 router = APIRouter()
 
 
-@router.post("/login", response_model=TokenSchema)
+@router.post("/login/", response_model=TokenSchema)
 async def login(
     request: Request,
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    login_data: UserLoginSchema,
 ) -> TokenSchema:
     if not request.client:
         raise HTTPException(
@@ -31,10 +30,10 @@ async def login(
     user_agent = request.headers.get("User-Agent", "")
 
     # Find user by email
-    user = await User.get_or_none(email=form_data.username)
+    user = await User.get_or_none(email=login_data.email)
 
     # Check if user exists and password is correct
-    if not user or not await user.verify_password(form_data.password):
+    if not user or not await user.verify_password(login_data.password):
         # If user exists, record login failure
         if user:
             await user.record_login_failure(ip_address, user_agent)

@@ -1,9 +1,12 @@
+# Standard library imports
 import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
+# Third-party imports
 from fastapi import FastAPI
 
+# Project-specific imports
 from backend.db import init_tortoise
 from backend.routes import router
 from backend.tasks.session import run_session_cleanup_task
@@ -26,5 +29,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Initialize database
 init_tortoise(app)
+
+# Include main router
 app.include_router(router)

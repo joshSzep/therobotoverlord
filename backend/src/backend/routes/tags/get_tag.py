@@ -14,7 +14,7 @@ from backend.routes.tags.schemas import TagResponse
 router = APIRouter()
 
 
-@router.get("/{tag_id}", response_model=TagResponse)
+@router.get("/{tag_id}/", response_model=TagResponse)
 async def get_tag(tag_id: UUID) -> TagResponse:
     try:
         tag = await Tag.get(id=tag_id)

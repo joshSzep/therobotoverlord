@@ -1,22 +1,21 @@
 from unittest import mock
 
 from fastapi import HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
 import pytest
 
 from backend.db.models.user import User
 from backend.db.models.user_event import UserEvent
 from backend.routes.users.auth.login import login
 from backend.routes.users.users_schemas import TokenSchema
+from backend.routes.users.users_schemas import UserLoginSchema
 
 
 @pytest.mark.asyncio
 async def test_login_success():
     # Arrange
-    form_data = OAuth2PasswordRequestForm(
-        username="test@example.com",
+    login_data = UserLoginSchema(
+        email="test@example.com",
         password="Password123!",
-        scope="",
     )
 
     # Mock the request object
@@ -50,7 +49,7 @@ async def test_login_success():
         ),
     ):
         # Act
-        result = await login(mock_request, form_data)
+        result = await login(mock_request, login_data)
 
         # Assert
         assert isinstance(result, TokenSchema)
@@ -69,10 +68,9 @@ async def test_login_success():
 async def test_login_invalid_credentials():
     """Test login with invalid credentials."""
     # Arrange
-    form_data = OAuth2PasswordRequestForm(
-        username="test@example.com",
+    login_data = UserLoginSchema(
+        email="test@example.com",
         password="WrongPassword",
-        scope="",
     )
 
     # Mock the request object
@@ -96,7 +94,7 @@ async def test_login_invalid_credentials():
     ):
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
-            await login(mock_request, form_data)
+            await login(mock_request, login_data)
 
         # Verify the exception details
         assert excinfo.value.status_code == 401
@@ -113,10 +111,9 @@ async def test_login_invalid_credentials():
 async def test_login_user_not_found():
     """Test login with non-existent user."""
     # Arrange
-    form_data = OAuth2PasswordRequestForm(
-        username="nonexistent@example.com",
+    login_data = UserLoginSchema(
+        email="nonexistent@example.com",
         password="Password123!",
-        scope="",
     )
 
     # Mock the request object
@@ -133,7 +130,7 @@ async def test_login_user_not_found():
     ):
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
-            await login(mock_request, form_data)
+            await login(mock_request, login_data)
 
         # Verify the exception details
         assert excinfo.value.status_code == 401
@@ -148,10 +145,9 @@ async def test_login_user_not_found():
 @pytest.mark.asyncio
 async def test_login_account_locked():
     # Arrange
-    form_data = OAuth2PasswordRequestForm(
-        username="locked@example.com",
+    login_data = UserLoginSchema(
+        email="locked@example.com",
         password="Password123!",
-        scope="",
     )
 
     # Mock the request object
@@ -171,7 +167,7 @@ async def test_login_account_locked():
     ):
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
-            await login(mock_request, form_data)
+            await login(mock_request, login_data)
 
         # Verify the exception details
         assert excinfo.value.status_code == 410
@@ -184,10 +180,9 @@ async def test_login_account_locked():
 @pytest.mark.asyncio
 async def test_login_missing_client():
     # Arrange
-    form_data = OAuth2PasswordRequestForm(
-        username="test@example.com",
+    login_data = UserLoginSchema(
+        email="test@example.com",
         password="Password123!",
-        scope="",
     )
 
     # Mock the request object with client=None
@@ -196,7 +191,7 @@ async def test_login_missing_client():
 
     # Act & Assert
     with pytest.raises(HTTPException) as excinfo:
-        await login(mock_request, form_data)
+        await login(mock_request, login_data)
 
     # Verify the exception details
     assert excinfo.value.status_code == 417

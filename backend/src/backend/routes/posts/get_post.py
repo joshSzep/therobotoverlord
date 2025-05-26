@@ -14,7 +14,7 @@ from backend.routes.posts.schemas import PostResponse
 router = APIRouter()
 
 
-@router.get("/{post_id}", response_model=PostResponse)
+@router.get("/{post_id}/", response_model=PostResponse)
 async def get_post(post_id: UUID) -> PostResponse:
     try:
         post = await Post.get(id=post_id).prefetch_related("author", "topic")

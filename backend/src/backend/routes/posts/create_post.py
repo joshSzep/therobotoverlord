@@ -13,6 +13,7 @@ from backend.db.models.topic import Topic
 from backend.db.models.user import User
 from backend.routes.posts.schemas import PostCreate
 from backend.routes.posts.schemas import PostResponse
+from backend.routes.users.users_schemas import UserSchema
 from backend.utils.auth import get_current_user
 
 router = APIRouter()
@@ -40,6 +41,9 @@ async def create_post(
                 detail="Parent post not found",
             )
 
+        # Fetch the topic relation for the parent post
+        await parent_post.fetch_related("topic")
+
         if str(parent_post.topic.id) != str(post_data.topic_id):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -61,19 +65,31 @@ async def create_post(
         # Get reply count (should be 0 for a new post)
         reply_count = await Post.filter(parent_post=post).count()
 
-        # Create response object
-        post_dict = {
-            "id": post.id,
-            "content": post.content,
-            "author": post.author,
-            "topic_id": post.topic.id,
-            "parent_post_id": post.parent_post.id if post.parent_post else None,
-            "created_at": post.created_at,
-            "updated_at": post.updated_at,
-            "reply_count": reply_count,
-        }
+        # Create author schema from user model
+        author_schema = UserSchema(
+            id=post.author.id,
+            email=post.author.email,
+            display_name=post.author.display_name,
+            is_verified=post.author.is_verified,
+            last_login=post.author.last_login,
+            role=post.author.role,
+            created_at=post.author.created_at,
+            updated_at=post.author.updated_at,
+        )
 
-        return PostResponse.model_validate(post_dict)
+        # Create response object
+        post_response = PostResponse(
+            id=post.id,
+            content=post.content,
+            author=author_schema,
+            topic_id=post.topic.id,
+            parent_post_id=post.parent_post.id if post.parent_post else None,
+            created_at=post.created_at,
+            updated_at=post.updated_at,
+            reply_count=reply_count,
+        )
+
+        return post_response
     except ValidationError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

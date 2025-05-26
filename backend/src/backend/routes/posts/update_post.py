@@ -18,7 +18,7 @@ from backend.utils.auth import get_current_user
 router = APIRouter()
 
 
-@router.put("/{post_id}", response_model=PostResponse)
+@router.put("/{post_id}/", response_model=PostResponse)
 async def update_post(
     post_id: UUID,
     post_data: PostUpdate,

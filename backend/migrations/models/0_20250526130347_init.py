@@ -3,7 +3,14 @@ from tortoise import BaseDBAsyncClient
 
 async def upgrade(db: BaseDBAsyncClient) -> str:
     return """
-        CREATE TABLE IF NOT EXISTS "user" (
+        CREATE TABLE IF NOT EXISTS "tag" (
+    "id" UUID NOT NULL PRIMARY KEY,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "name" VARCHAR(50) NOT NULL UNIQUE,
+    "slug" VARCHAR(50) NOT NULL UNIQUE
+);
+CREATE TABLE IF NOT EXISTS "user" (
     "id" UUID NOT NULL PRIMARY KEY,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -26,6 +33,23 @@ CREATE TABLE IF NOT EXISTS "loginattempt" (
     "user_agent" VARCHAR(255) NOT NULL,
     "success" BOOL NOT NULL,
     "user_id" UUID REFERENCES "user" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "topic" (
+    "id" UUID NOT NULL PRIMARY KEY,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "title" VARCHAR(255) NOT NULL,
+    "description" TEXT,
+    "author_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "post" (
+    "id" UUID NOT NULL PRIMARY KEY,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "content" TEXT NOT NULL,
+    "author_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE,
+    "parent_post_id" UUID REFERENCES "post" ("id") ON DELETE CASCADE,
+    "topic_id" UUID NOT NULL REFERENCES "topic" ("id") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "userevent" (
     "id" UUID NOT NULL PRIMARY KEY,

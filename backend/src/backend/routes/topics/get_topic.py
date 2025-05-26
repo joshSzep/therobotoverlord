@@ -15,7 +15,7 @@ from backend.routes.topics.schemas import TopicResponse
 router = APIRouter()
 
 
-@router.get("/{topic_id}", response_model=TopicResponse)
+@router.get("/{topic_id}/", response_model=TopicResponse)
 async def get_topic(topic_id: UUID) -> TopicResponse:
     try:
         topic = await Topic.get(id=topic_id).prefetch_related(

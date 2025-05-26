@@ -16,7 +16,7 @@ from backend.utils.auth import get_current_user
 router = APIRouter()
 
 
-@router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{post_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(
     post_id: UUID,
     current_user: User = Depends(get_current_user),

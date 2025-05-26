@@ -50,6 +50,7 @@ src/backend/
 - Each feature has consistent module naming (`__init__.py`, `schemas.py`, `utils.py`)
 - **RULE #2: ONE ROUTE PER FILE** - Each API endpoint must be in its own file. For example, `list_posts`, `create_post`, `get_post`, etc. should each be in separate files named accordingly
 - **RULE #3: DESCRIPTIVE ROUTE FILENAMES** - Route filenames must match the function name they contain (e.g., `list_posts.py`, `create_post.py`, `get_post.py`) to ensure clarity and discoverability
+- **RULE #4: TRAILING SLASHES IN ROUTES** - All route paths must end with a trailing slash (`/`). For example, use `/users/profile/me/` instead of `/users/profile/me`
 
 ## Development
 - **Prerequisites**: `git`, `just`, `node`, `uv`, `python` (3.12.10)
@@ -82,7 +83,7 @@ src/backend/
 **General principle**: When in doubt, follow PEP 8.
 
 ### Code Organization
-- **Imports**: Group by source (stdlib → third-party → project), alphabetize, one per line, absolute imports ONLY. NEVER use relative imports. Here is an example, except DO NOT literally use these comments in your code (they are for illustration purposes only):
+- **Imports**: Group by source (stdlib → third-party → project), alphabetize, one per line, absolute imports ONLY. NEVER use relative imports. Here is an example:
 ```python
 # Standard library imports
 import asyncio

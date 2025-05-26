@@ -1,3 +1,4 @@
+# Standard library imports
 from datetime import datetime
 from datetime import timedelta
 import os
@@ -6,14 +7,17 @@ from typing import Any
 from typing import AsyncGenerator
 from typing import Dict
 
+# Third-party imports
 from fastapi.testclient import TestClient
 import jwt
 import pytest
 import pytest_asyncio
-from tortoise.contrib.test import finalizer
-from tortoise.contrib.test import initializer
+from tortoise import Tortoise
 
+# Project-specific imports
 from backend.app import app
+from backend.db import close_db
+from backend.db import init_db
 from backend.db.models.user import User
 from backend.db.models.user_session import UserSession
 from backend.utils.auth import create_access_token
@@ -37,52 +41,25 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope="session", autouse=True)
-def initialize_tests(event_loop):
+@pytest.fixture(scope="session")
+def db_url():
+    """Get the test database URL."""
+    return os.environ.get("TEST_DB_URL", "sqlite://:memory:")
+
+
+@pytest_asyncio.fixture(scope="function", autouse=True)
+async def initialize_tests(db_url):
     """Initialize the test database and create required tables."""
-    import threading
+    # Initialize the database using the app's init_db function
+    await init_db(db_url=db_url)
 
-    db_url = os.environ.get("TEST_DB_URL", "sqlite://:memory:")
-
-    # Initialize the database
-    initializer(
-        [
-            "backend.db.models.user",
-            "backend.db.models.user_session",
-            "backend.db.models.login_attempt",
-            "backend.db.models.user_event",
-        ],
-        db_url=db_url,
-    )
+    # Generate schemas for all apps
+    await Tortoise.generate_schemas()
 
     yield
 
-    # Use threading.Event to track finalizer completion
-    done = threading.Event()
-    exception = None
-
-    def cleanup():
-        nonlocal exception
-        try:
-            finalizer()
-            done.set()
-        except Exception as e:
-            exception = e
-            done.set()
-
-    # Run finalizer in a separate thread
-    thread = threading.Thread(target=cleanup)
-    thread.daemon = True
-    thread.start()
-
-    # Wait for finalizer to complete with a timeout
-    if not done.wait(timeout=5.0):
-        # If timeout occurs, just continue
-        print("Warning: Database cleanup timed out, but tests will continue")
-
-    # If there was an exception, re-raise it
-    if exception:
-        raise exception
+    # Close all connections using the app's close_db function
+    await close_db()
 
 
 @pytest.fixture

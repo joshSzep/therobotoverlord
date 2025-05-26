@@ -12,7 +12,7 @@ from backend.utils.auth import decode_token
 router = APIRouter()
 
 
-@router.post("/refresh", response_model=TokenSchema)
+@router.post("/refresh/", response_model=TokenSchema)
 async def refresh_token(request: Request, refresh_token: str) -> TokenSchema:
     try:
         payload = decode_token(refresh_token)

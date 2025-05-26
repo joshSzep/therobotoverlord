@@ -6,6 +6,6 @@ from backend.routes.health.health_utils import build_health_check_response
 router = APIRouter()
 
 
-@router.get("/check", response_model=HealthCheckResponseSchema)
+@router.get("/check/", response_model=HealthCheckResponseSchema)
 async def check() -> HealthCheckResponseSchema:
     return build_health_check_response()
