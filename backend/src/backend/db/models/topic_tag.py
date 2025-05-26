@@ -11,6 +11,10 @@ if TYPE_CHECKING:
 
 
 class TopicTag(BaseModel):
+    class Meta:  # type: ignore[reportIncompatibleVariableOverride, unused-ignore]
+        table = "topic_tag"
+        unique_together = (("topic", "tag"),)
+
     topic: ForeignKeyRelation["Topic"] = fields.ForeignKeyField(
         "models.Topic",
         related_name="topic_tags",
@@ -19,6 +23,3 @@ class TopicTag(BaseModel):
         "models.Tag",
         related_name="topic_tags",
     )
-
-    class Meta(BaseModel.Meta):
-        unique_together = (("topic", "tag"),)
