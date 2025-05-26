@@ -62,6 +62,12 @@ src/backend/
   - `just eslint`: Lint frontend
   - `just update-llm-rules`: Update all AI assistant rule files from LLM_RULES.md
 
+- **Database Migration Commands**:
+  - `just aerich-downgrade`: Revert the most recent migration
+  - `just aerich-history`: Show migration history
+  - `just aerich-migrate`: Create a new migration after model changes
+  - `just aerich-upgrade`: Apply pending migrations to the database
+
 - **Running Specific Tests**:
   - From project root: `cd backend && uv run pytest tests/path/to/test_file.py`
   - If already in backend dir: `uv run pytest tests/path/to/test_file.py`

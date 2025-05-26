@@ -1,5 +1,21 @@
 # justfile for The Robot Overlord project
 
+# `aerich-downgrade`: downgrade the database by one migration
+aerich-downgrade:
+    @./scripts/aerich-downgrade.sh
+
+# `aerich-history`: show migration history
+aerich-history:
+    @./scripts/aerich-history.sh
+
+# `aerich-migrate`: create a new migration
+aerich-migrate:
+    @./scripts/aerich-migrate.sh
+
+# `aerich-upgrade`: apply migrations to the database
+aerich-upgrade:
+    @./scripts/aerich-upgrade.sh
+
 # List available commands
 default:
     @just --list
