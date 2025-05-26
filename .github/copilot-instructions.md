@@ -41,11 +41,11 @@ src/backend/
         ├── __init__.py     # Router setup
         ├── check.py        # REST endpoint
         ├── heartbeat.py    # WebSocket endpoint
-        ├── schemas.py      # Pydantic schema models
+        ├── schemas.py      # Pydantic schemas
         └── utils.py        # Feature utilities
 ```
 
-**Key principles**: Routes organized by feature with separation of concerns (endpoints, models, utilities). Each feature has consistent module naming (`__init__.py`, `models.py`, `utils.py`). Common functionality in `utils/`.
+**Key principles**: Routes organized by feature with separation of concerns (endpoints, schemas, utilities). Each feature has consistent module naming (`__init__.py`, `schemas.py`, `utils.py`)
 
 ## Development
 - **Prerequisites**: `git`, `just`, `node`, `uv`, `python` (3.12.10)

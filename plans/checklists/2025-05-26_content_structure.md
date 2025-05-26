@@ -5,86 +5,86 @@ This checklist outlines the steps to implement the core content structure for Th
 ## Database Models
 
 ### Topic Model
-- [ ] Create `Topic` model in `backend/db/models/topic.py`
-  - [ ] Implement fields:
-    - [ ] `title`: String
-    - [ ] `author`: ForeignKey(User)
-    - [ ] `description`: Text (optional)
-  - [ ] Inherit from BaseModel (UUID4 PK, created_at, updated_at)
+- [x] Create `Topic` model in `backend/db/models/topic.py`
+  - [x] Implement fields:
+    - [x] `title`: String
+    - [x] `author`: ForeignKey(User)
+    - [x] `description`: Text (optional)
+  - [x] Inherit from BaseModel (UUID4 PK, created_at, updated_at)
 
 ### Tag Model
-- [ ] Create `Tag` model in `backend/db/models/tag.py`
-  - [ ] Implement fields:
-    - [ ] `name`: String (unique)
-    - [ ] `slug`: String (unique)
-  - [ ] Inherit from BaseModel
-  - [ ] Add slug generation logic
+- [x] Create `Tag` model in `backend/db/models/tag.py`
+  - [x] Implement fields:
+    - [x] `name`: String (unique)
+    - [x] `slug`: String (unique)
+  - [x] Inherit from BaseModel
+  - [x] Add slug generation logic
 
 ### TopicTag Model
-- [ ] Create `TopicTag` model in `backend/db/models/topic_tag.py`
-  - [ ] Implement fields:
-    - [ ] `topic`: ForeignKey(Topic)
-    - [ ] `tag`: ForeignKey(Tag)
-  - [ ] Inherit from BaseModel
-  - [ ] Add unique constraint for topic+tag combination
+- [x] Create `TopicTag` model in `backend/db/models/topic_tag.py`
+  - [x] Implement fields:
+    - [x] `topic`: ForeignKey(Topic)
+    - [x] `tag`: ForeignKey(Tag)
+  - [x] Inherit from BaseModel
+  - [x] Add unique constraint for topic+tag combination
 
 ### Post Model
-- [ ] Create `Post` model in `backend/db/models/post.py`
-  - [ ] Implement fields:
-    - [ ] `content`: Text
-    - [ ] `author`: ForeignKey(User)
-    - [ ] `topic`: ForeignKey(Topic)
-    - [ ] `parent_post`: ForeignKey(Post, nullable) - For threaded replies
-  - [ ] Inherit from BaseModel
-  - [ ] Add validation to ensure parent_post belongs to same topic
+- [x] Create `Post` model in `backend/db/models/post.py`
+  - [x] Implement fields:
+    - [x] `content`: Text
+    - [x] `author`: ForeignKey(User)
+    - [x] `topic`: ForeignKey(Topic)
+    - [x] `parent_post`: ForeignKey(Post, nullable) - For threaded replies
+  - [x] Inherit from BaseModel
+  - [x] Add validation to ensure parent_post belongs to same topic
 
 ## API Endpoints
 
 ### Topics API
-- [ ] Create topics feature module in `backend/routes/topics/`
-  - [ ] Create `__init__.py` with router setup
-  - [ ] Create `models.py` with Pydantic schemas:
-    - [ ] `TopicCreate`
-    - [ ] `TopicResponse`
-    - [ ] `TopicList`
-  - [ ] Create CRUD endpoints in `topics.py`:
-    - [ ] `GET /topics/` - List all topics
-    - [ ] `POST /topics/` - Create a new topic
-    - [ ] `GET /topics/{topic_id}` - Get a specific topic
-    - [ ] `PUT /topics/{topic_id}` - Update a topic
-    - [ ] `DELETE /topics/{topic_id}` - Delete a topic
+- [x] Create topics feature module in `backend/routes/topics/`
+  - [x] Create `__init__.py` with router setup
+  - [x] Create `models.py` with Pydantic schemas:
+    - [x] `TopicCreate`
+    - [x] `TopicResponse`
+    - [x] `TopicList`
+  - [x] Create CRUD endpoints in `topics.py`:
+    - [x] `GET /topics/` - List all topics
+    - [x] `POST /topics/` - Create a new topic
+    - [x] `GET /topics/{topic_id}` - Get a specific topic
+    - [x] `PUT /topics/{topic_id}` - Update a topic
+    - [x] `DELETE /topics/{topic_id}` - Delete a topic
 
 ### Tags API
-- [ ] Create tags feature module in `backend/routes/tags/`
-  - [ ] Create `__init__.py` with router setup
-  - [ ] Create `models.py` with Pydantic schemas:
-    - [ ] `TagCreate`
-    - [ ] `TagResponse`
-    - [ ] `TagList`
-  - [ ] Create CRUD endpoints in `tags.py`:
-    - [ ] `GET /tags/` - List all tags
-    - [ ] `POST /tags/` - Create a new tag
-    - [ ] `GET /tags/{tag_id}` - Get a specific tag
-    - [ ] `PUT /tags/{tag_id}` - Update a tag
-    - [ ] `DELETE /tags/{tag_id}` - Delete a tag
+- [x] Create tags feature module in `backend/routes/tags/`
+  - [x] Create `__init__.py` with router setup
+  - [x] Create `schemas.py` with Pydantic schemas:
+    - [x] `TagCreate`
+    - [x] `TagResponse`
+    - [x] `TagList`
+  - [x] Create CRUD endpoints in `tags.py`:
+    - [x] `GET /tags/` - List all tags
+    - [x] `POST /tags/` - Create a new tag
+    - [x] `GET /tags/{tag_id}` - Get a specific tag
+    - [x] `PUT /tags/{tag_id}` - Update a tag
+    - [x] `DELETE /tags/{tag_id}` - Delete a tag
 
 ### Posts API
-- [ ] Create posts feature module in `backend/routes/posts/`
-  - [ ] Create `__init__.py` with router setup
-  - [ ] Create `models.py` with Pydantic schemas:
-    - [ ] `PostCreate`
-    - [ ] `PostResponse`
-    - [ ] `PostList`
-    - [ ] `PostUpdate`
-  - [ ] Create CRUD endpoints in `posts.py`:
-    - [ ] `GET /posts/` - List posts (with topic filter)
-    - [ ] `POST /posts/` - Create a new post
-    - [ ] `GET /posts/{post_id}` - Get a specific post
-    - [ ] `PUT /posts/{post_id}` - Update a post
-    - [ ] `DELETE /posts/{post_id}` - Delete a post
-  - [ ] Create threaded view endpoints:
-    - [ ] `GET /topics/{topic_id}/posts/` - Get all top-level posts for a topic
-    - [ ] `GET /posts/{post_id}/replies/` - Get all replies to a post
+- [x] Create posts feature module in `backend/routes/posts/`
+  - [x] Create `__init__.py` with router setup
+  - [x] Create `schemas.py` with Pydantic schemas:
+    - [x] `PostCreate`
+    - [x] `PostResponse`
+    - [x] `PostList`
+    - [x] `PostUpdate`
+  - [x] Create CRUD endpoints in `posts.py`:
+    - [x] `GET /posts/` - List posts (with topic filter)
+    - [x] `POST /posts/` - Create a new post
+    - [x] `GET /posts/{post_id}` - Get a specific post
+    - [x] `PUT /posts/{post_id}` - Update a post
+    - [x] `DELETE /posts/{post_id}` - Delete a post
+  - [x] Create threaded view endpoints:
+    - [x] `GET /topics/{topic_id}/posts/` - Get all top-level posts for a topic
+    - [x] `GET /posts/{post_id}/replies/` - Get all replies to a post
 
 ## Database Migrations
 
@@ -109,10 +109,10 @@ This checklist outlines the steps to implement the core content structure for Th
 
 ## Integration
 
-- [ ] Register all routers in `app.py`
-- [ ] Ensure proper error handling
-- [ ] Implement authentication/authorization checks
-- [ ] Add models to Tortoise ORM config in `db/config.py`
+- [x] Register all routers in `app.py`
+- [x] Ensure proper error handling
+- [x] Implement authentication/authorization checks
+- [x] Add models to Tortoise ORM config in `db/config.py`
 
 ## Documentation
 
