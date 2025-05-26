@@ -6,35 +6,35 @@ This checklist outlines the steps needed to refactor the existing route files to
 ## Posts Routes Refactoring
 - [ ] Create a new directory structure for posts routes:
   - [ ] Create `/backend/src/backend/routes/posts/__init__.py` (if not exists)
-  - [ ] Create `/backend/src/backend/routes/posts/list.py` for `list_posts`
-  - [ ] Create `/backend/src/backend/routes/posts/create.py` for `create_post`
-  - [ ] Create `/backend/src/backend/routes/posts/get.py` for `get_post`
-  - [ ] Create `/backend/src/backend/routes/posts/update.py` for `update_post`
-  - [ ] Create `/backend/src/backend/routes/posts/delete.py` for `delete_post`
-  - [ ] Create `/backend/src/backend/routes/posts/list_topic.py` for `list_topic_posts`
-  - [ ] Create `/backend/src/backend/routes/posts/list_replies.py` for `list_post_replies`
+  - [ ] Create `/backend/src/backend/routes/posts/list_posts.py` for `list_posts`
+  - [ ] Create `/backend/src/backend/routes/posts/create_post.py` for `create_post`
+  - [ ] Create `/backend/src/backend/routes/posts/get_post.py` for `get_post`
+  - [ ] Create `/backend/src/backend/routes/posts/update_post.py` for `update_post`
+  - [ ] Create `/backend/src/backend/routes/posts/delete_post.py` for `delete_post`
+  - [ ] Create `/backend/src/backend/routes/posts/list_topic_posts.py` for `list_topic_posts`
+  - [ ] Create `/backend/src/backend/routes/posts/list_post_replies.py` for `list_post_replies`
 - [ ] Update `/backend/src/backend/routes/posts/__init__.py` to include all routes
 - [ ] Delete the original `/backend/src/backend/routes/posts/posts.py` file
 
 ## Topics Routes Refactoring
 - [ ] Create a new directory structure for topics routes:
   - [ ] Create `/backend/src/backend/routes/topics/__init__.py` (if not exists)
-  - [ ] Create `/backend/src/backend/routes/topics/list.py` for `list_topics`
-  - [ ] Create `/backend/src/backend/routes/topics/create.py` for `create_topic`
-  - [ ] Create `/backend/src/backend/routes/topics/get.py` for `get_topic`
-  - [ ] Create `/backend/src/backend/routes/topics/update.py` for `update_topic`
-  - [ ] Create `/backend/src/backend/routes/topics/delete.py` for `delete_topic`
+  - [ ] Create `/backend/src/backend/routes/topics/list_topics.py` for `list_topics`
+  - [ ] Create `/backend/src/backend/routes/topics/create_topic.py` for `create_topic`
+  - [ ] Create `/backend/src/backend/routes/topics/get_topic.py` for `get_topic`
+  - [ ] Create `/backend/src/backend/routes/topics/update_topic.py` for `update_topic`
+  - [ ] Create `/backend/src/backend/routes/topics/delete_topic.py` for `delete_topic`
 - [ ] Update `/backend/src/backend/routes/topics/__init__.py` to include all routes
 - [ ] Delete the original `/backend/src/backend/routes/topics/topics.py` file
 
 ## Tags Routes Refactoring
 - [ ] Create a new directory structure for tags routes:
   - [ ] Create `/backend/src/backend/routes/tags/__init__.py` (if not exists)
-  - [ ] Create `/backend/src/backend/routes/tags/list.py` for `list_tags`
-  - [ ] Create `/backend/src/backend/routes/tags/create.py` for `create_tag`
-  - [ ] Create `/backend/src/backend/routes/tags/get.py` for `get_tag`
-  - [ ] Create `/backend/src/backend/routes/tags/update.py` for `update_tag`
-  - [ ] Create `/backend/src/backend/routes/tags/delete.py` for `delete_tag`
+  - [ ] Create `/backend/src/backend/routes/tags/list_tags.py` for `list_tags`
+  - [ ] Create `/backend/src/backend/routes/tags/create_tag.py` for `create_tag`
+  - [ ] Create `/backend/src/backend/routes/tags/get_tag.py` for `get_tag`
+  - [ ] Create `/backend/src/backend/routes/tags/update_tag.py` for `update_tag`
+  - [ ] Create `/backend/src/backend/routes/tags/delete_tag.py` for `delete_tag`
 - [ ] Update `/backend/src/backend/routes/tags/__init__.py` to include all routes
 - [ ] Delete the original `/backend/src/backend/routes/tags/tags.py` file
 
@@ -55,7 +55,7 @@ This checklist outlines the steps needed to refactor the existing route files to
    - [ ] Update any tests that directly import from the original files
 
 ## Example Implementation
-For a single route file (e.g., `/backend/src/backend/routes/posts/list.py`):
+For a single route file (e.g., `/backend/src/backend/routes/posts/list_posts.py`):
 
 ```python
 # Standard library imports
@@ -88,21 +88,21 @@ For the `__init__.py` file:
 ```python
 from fastapi import APIRouter
 
-from backend.routes.posts.list import router as list_router
-from backend.routes.posts.create import router as create_router
-from backend.routes.posts.get import router as get_router
-from backend.routes.posts.update import router as update_router
-from backend.routes.posts.delete import router as delete_router
-from backend.routes.posts.list_topic import router as list_topic_router
-from backend.routes.posts.list_replies import router as list_replies_router
+from backend.routes.posts.list_posts import router as list_posts_router
+from backend.routes.posts.create_post import router as create_post_router
+from backend.routes.posts.get_post import router as get_post_router
+from backend.routes.posts.update_post import router as update_post_router
+from backend.routes.posts.delete_post import router as delete_post_router
+from backend.routes.posts.list_topic_posts import router as list_topic_posts_router
+from backend.routes.posts.list_post_replies import router as list_post_replies_router
 
 router = APIRouter(tags=["posts"])
 
-router.include_router(list_router)
-router.include_router(create_router)
-router.include_router(get_router)
-router.include_router(update_router)
-router.include_router(delete_router)
-router.include_router(list_topic_router)
-router.include_router(list_replies_router)
+router.include_router(list_posts_router)
+router.include_router(create_post_router)
+router.include_router(get_post_router)
+router.include_router(update_post_router)
+router.include_router(delete_post_router)
+router.include_router(list_topic_posts_router)
+router.include_router(list_post_replies_router)
 ```

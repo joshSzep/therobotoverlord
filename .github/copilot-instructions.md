@@ -48,7 +48,8 @@ src/backend/
 **Key principles**:
 - Routes organized by feature with separation of concerns (endpoints, schemas, utilities)
 - Each feature has consistent module naming (`__init__.py`, `schemas.py`, `utils.py`)
-- **RULE #2: ONE ROUTE PER FILE** - Each API endpoint must be in its own file. For example, `list_posts`, `create_post`, `get_post`, etc. should each be in separate files named accordingly (e.g., `list.py`, `create.py`, `get.py`)
+- **RULE #2: ONE ROUTE PER FILE** - Each API endpoint must be in its own file. For example, `list_posts`, `create_post`, `get_post`, etc. should each be in separate files named accordingly
+- **RULE #3: DESCRIPTIVE ROUTE FILENAMES** - Route filenames must match the function name they contain (e.g., `list_posts.py`, `create_post.py`, `get_post.py`) to ensure clarity and discoverability
 
 ## Development
 - **Prerequisites**: `git`, `just`, `node`, `uv`, `python` (3.12.10)
