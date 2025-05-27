@@ -2,12 +2,16 @@
 from fastapi import APIRouter
 
 # Project-specific imports
-from backend.routes.health.health_utils import build_health_check_response
 from backend.schemas.health import HealthCheckResponseSchema
+from backend.utils.datetime import now_utc
+from backend.utils.version import get_version
 
 router = APIRouter()
 
 
 @router.get("/check/", response_model=HealthCheckResponseSchema)
 async def check() -> HealthCheckResponseSchema:
-    return build_health_check_response()
+    return HealthCheckResponseSchema(
+        version=get_version(),
+        timestamp=now_utc().isoformat(),
+    )

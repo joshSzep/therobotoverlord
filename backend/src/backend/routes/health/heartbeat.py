@@ -1,10 +1,14 @@
+# Standard library imports
 import asyncio
 
+# Third-party imports
 from fastapi import APIRouter
 from fastapi import WebSocket
 
-from backend.routes.health.health_utils import build_health_check_response
+# Project-specific imports
 from backend.schemas.health import HealthCheckResponseSchema
+from backend.utils.datetime import now_utc
+from backend.utils.version import get_version
 
 router = APIRouter()
 
@@ -18,6 +22,9 @@ async def heartbeat(
 ) -> None:
     await websocket.accept()
     while True:
-        message: HealthCheckResponseSchema = build_health_check_response()
+        message: HealthCheckResponseSchema = HealthCheckResponseSchema(
+            version=get_version(),
+            timestamp=now_utc().isoformat(),
+        )
         await websocket.send_json(message.model_dump())
         await asyncio.sleep(HEARTBEAT_INTERVAL_SECONDS)
