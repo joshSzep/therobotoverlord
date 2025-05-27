@@ -19,6 +19,11 @@ RULE #1: **DO NOT** add docstrings unless specifically requested.
       - `base.py`: Base model for all database models
       - `models/`: Database models, 1 model per file
     - `routes/`: API endpoints by feature, one package per feature
+    - `schemas/`: Pydantic schemas organized by entity
+      - `user.py`: User-related schemas
+      - `post.py`: Post-related schemas
+      - `topic.py`: Topic-related schemas
+      - etc.
     - `tasks/`: Background tasks
     - `utils/`: Shared utilities
   - `tests/`: Test files (mirrors source code directory structure)
@@ -31,7 +36,9 @@ RULE #1: **DO NOT** add docstrings unless specifically requested.
 - `LLM_RULES.md`: Central location for AI assistant guidelines
 - `.github/workflows/`: CI/CD configuration
 
-### Routes organized by feature
+### Organization by Technical Concern vs. Feature
+
+#### Routes organized by feature
 The backend routes follow a feature-based modular structure, for example:
 ```
 src/backend/
@@ -41,13 +48,24 @@ src/backend/
         ├── __init__.py     # Router setup
         ├── check.py        # REST endpoint
         ├── heartbeat.py    # WebSocket endpoint
-        ├── schemas.py      # Pydantic schemas
         └── utils.py        # Feature utilities
 ```
 
+#### Schemas organized by technical concern
+Pydantic schemas are organized by entity type in a centralized `schemas` directory:
+```
+src/backend/
+├── schemas/           # Centralized schemas by entity
+    ├── user.py        # User-related schemas
+    ├── post.py        # Post-related schemas
+    ├── topic.py       # Topic-related schemas
+    └── tag.py         # Tag-related schemas
+```
+
 **Key principles**:
-- Routes organized by feature with separation of concerns (endpoints, schemas, utilities)
-- Each feature has consistent module naming (`__init__.py`, `schemas.py`, `utils.py`)
+- Routes organized by feature with separation of concerns (endpoints, utilities)
+- Schemas organized by entity type to reduce duplication and improve maintainability
+- Database models and repositories also organized by technical concern
 - **RULE #2: ONE ROUTE PER FILE** - Each API endpoint must be in its own file. For example, `list_posts`, `create_post`, `get_post`, etc. should each be in separate files named accordingly
 - **RULE #3: DESCRIPTIVE ROUTE FILENAMES** - Route filenames must match the function name they contain (e.g., `list_posts.py`, `create_post.py`, `get_post.py`) to ensure clarity and discoverability
 - **RULE #4: TRAILING SLASHES IN ROUTES** - All route paths must end with a trailing slash (`/`). For example, use `/users/profile/me/` instead of `/users/profile/me`

@@ -9,8 +9,8 @@ from tortoise.exceptions import IntegrityError
 # Project-specific imports
 from backend.db.models.user import User
 from backend.repositories.tag_repository import TagRepository
-from backend.routes.tags.schemas import TagCreate
-from backend.routes.tags.schemas import TagResponse
+from backend.schemas.tag import TagCreate
+from backend.schemas.tag import TagResponse
 from backend.utils.auth import get_current_user
 
 router = APIRouter()

@@ -12,8 +12,8 @@ from pydantic import BaseModel
 from backend.repositories.tag_repository import TagRepository
 from backend.repositories.topic_repository import TopicRepository
 from backend.repositories.topic_tag_repository import TopicTagRepository
-from backend.routes.auth.schemas import UserSchema
-from backend.routes.topics.schemas import TagResponse
+from backend.schemas.tag import TagResponse
+from backend.schemas.user import UserSchema
 from backend.utils.auth import get_current_user
 
 router = APIRouter()

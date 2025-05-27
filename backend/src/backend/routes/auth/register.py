@@ -3,8 +3,8 @@ from fastapi import HTTPException
 from fastapi import status
 
 from backend.repositories.user_repository import UserRepository
-from backend.routes.auth.schemas import UserCreateSchema
-from backend.routes.auth.schemas import UserSchema
+from backend.schemas.user import UserCreateSchema
+from backend.schemas.user import UserSchema
 
 router = APIRouter()
 

@@ -8,7 +8,7 @@ from fastapi import status
 
 # Project-specific imports
 from backend.repositories.post_repository import PostRepository
-from backend.routes.posts.schemas import PostResponse
+from backend.schemas.post import PostResponse
 
 router = APIRouter()
 

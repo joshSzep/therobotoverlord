@@ -8,20 +8,10 @@ from uuid import UUID
 from pydantic import BaseModel
 from pydantic import Field
 
+from backend.schemas.tag import TagResponse
+
 # Project-specific imports
-from backend.routes.auth.schemas import UserSchema
-
-
-class TagBase(BaseModel):
-    name: str
-    slug: str
-
-
-class TagResponse(TagBase):
-    id: UUID
-
-    class Config:
-        from_attributes = True
+from backend.schemas.user import UserSchema
 
 
 class TopicBase(BaseModel):

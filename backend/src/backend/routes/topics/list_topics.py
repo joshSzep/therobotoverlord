@@ -9,10 +9,10 @@ from fastapi import Query
 from backend.repositories.tag_repository import TagRepository
 from backend.repositories.topic_repository import TopicRepository
 from backend.repositories.topic_tag_repository import TopicTagRepository
-from backend.routes.auth.schemas import UserSchema
-from backend.routes.topics.schemas import TagResponse
-from backend.routes.topics.schemas import TopicList
-from backend.routes.topics.schemas import TopicResponse
+from backend.schemas.tag import TagResponse
+from backend.schemas.topic import TopicList
+from backend.schemas.topic import TopicResponse
+from backend.schemas.user import UserSchema
 
 router = APIRouter()
 

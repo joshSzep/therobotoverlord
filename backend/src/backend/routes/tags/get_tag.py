@@ -8,7 +8,7 @@ from fastapi import status
 
 # Project-specific imports
 from backend.repositories.tag_repository import TagRepository
-from backend.routes.tags.schemas import TagResponse
+from backend.schemas.tag import TagResponse
 
 router = APIRouter()
 

@@ -14,10 +14,10 @@ from backend.db.models.user import User
 from backend.repositories.tag_repository import TagRepository
 from backend.repositories.topic_repository import TopicRepository
 from backend.repositories.topic_tag_repository import TopicTagRepository
-from backend.routes.auth.schemas import UserSchema
-from backend.routes.topics.schemas import TagResponse
-from backend.routes.topics.schemas import TopicCreate
-from backend.routes.topics.schemas import TopicResponse
+from backend.schemas.tag import TagResponse
+from backend.schemas.topic import TopicCreate
+from backend.schemas.topic import TopicResponse
+from backend.schemas.user import UserSchema
 from backend.utils.auth import get_current_user
 
 router = APIRouter()

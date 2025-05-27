@@ -11,9 +11,9 @@ from tortoise.exceptions import ValidationError
 from backend.db.models.user import User
 from backend.repositories.post_repository import PostRepository
 from backend.repositories.topic_repository import TopicRepository
-from backend.routes.auth.schemas import UserSchema
-from backend.routes.posts.schemas import PostCreate
-from backend.routes.posts.schemas import PostResponse
+from backend.schemas.post import PostCreate
+from backend.schemas.post import PostResponse
+from backend.schemas.user import UserSchema
 from backend.utils.auth import get_current_user
 
 router = APIRouter()

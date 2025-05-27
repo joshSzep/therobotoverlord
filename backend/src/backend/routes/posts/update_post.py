@@ -10,8 +10,8 @@ from fastapi import status
 # Project-specific imports
 from backend.db.models.user import User
 from backend.repositories.post_repository import PostRepository
-from backend.routes.posts.schemas import PostResponse
-from backend.routes.posts.schemas import PostUpdate
+from backend.schemas.post import PostResponse
+from backend.schemas.post import PostUpdate
 from backend.utils.auth import get_current_user
 
 router = APIRouter()

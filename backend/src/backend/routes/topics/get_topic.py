@@ -9,8 +9,8 @@ from fastapi import status
 # Project-specific imports
 from backend.repositories.topic_repository import TopicRepository
 from backend.repositories.topic_tag_repository import TopicTagRepository
-from backend.routes.topics.schemas import TagResponse
-from backend.routes.topics.schemas import TopicResponse
+from backend.schemas.tag import TagResponse
+from backend.schemas.topic import TopicResponse
 
 router = APIRouter()
 

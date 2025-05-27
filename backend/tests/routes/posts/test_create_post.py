@@ -5,8 +5,8 @@ from fastapi import HTTPException
 import pytest
 
 from backend.routes.posts.create_post import create_post
-from backend.routes.posts.schemas import PostCreate
-from backend.routes.posts.schemas import PostResponse
+from backend.schemas.post import PostCreate
+from backend.schemas.post import PostResponse
 
 
 @pytest.mark.asyncio

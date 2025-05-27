@@ -8,8 +8,8 @@ from fastapi import Query
 
 # Project-specific imports
 from backend.repositories.post_repository import PostRepository
-from backend.routes.posts.schemas import PostList
-from backend.routes.posts.schemas import PostResponse
+from backend.schemas.post import PostList
+from backend.schemas.post import PostResponse
 
 router = APIRouter()
 

@@ -7,7 +7,7 @@ import pytest
 
 # Project-specific imports
 from backend.routes.tags.list_tags import list_tags
-from backend.routes.tags.schemas import TagList
+from backend.schemas.tag import TagList
 
 
 @pytest.mark.asyncio

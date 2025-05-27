@@ -5,8 +5,8 @@ from fastapi import status
 
 from backend.repositories.user_event_repository import UserEventRepository
 from backend.repositories.user_repository import UserRepository
-from backend.routes.auth.schemas import TokenSchema
-from backend.routes.auth.schemas import UserLoginSchema
+from backend.schemas.user import TokenSchema
+from backend.schemas.user import UserLoginSchema
 from backend.utils.auth import create_access_token
 from backend.utils.auth import create_refresh_token
 

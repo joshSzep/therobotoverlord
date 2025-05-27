@@ -1,7 +1,7 @@
 from pydantic import ValidationError
 import pytest
 
-from backend.routes.health.health_schemas import HealthCheckResponseSchema
+from backend.schemas.health import HealthCheckResponseSchema
 
 
 def test_health_check_response_valid_data():

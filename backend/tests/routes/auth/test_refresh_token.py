@@ -6,7 +6,7 @@ import pytest
 
 from backend.db.models.user import User
 from backend.routes.auth.refresh_token import refresh_token
-from backend.routes.auth.schemas import TokenSchema
+from backend.schemas.user import TokenSchema
 from backend.utils.settings import settings
 
 

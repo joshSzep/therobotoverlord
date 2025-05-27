@@ -5,9 +5,9 @@ import uuid
 from fastapi import HTTPException
 import pytest
 
-from backend.routes.auth.schemas import UserSchema
 from backend.routes.posts.list_post_replies import list_post_replies
-from backend.routes.posts.schemas import PostList
+from backend.schemas.post import PostList
+from backend.schemas.user import UserSchema
 
 
 @pytest.mark.asyncio

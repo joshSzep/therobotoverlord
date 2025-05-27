@@ -3,8 +3,8 @@ import asyncio
 from fastapi import APIRouter
 from fastapi import WebSocket
 
-from backend.routes.health.health_schemas import HealthCheckResponseSchema
 from backend.routes.health.health_utils import build_health_check_response
+from backend.schemas.health import HealthCheckResponseSchema
 
 router = APIRouter()
 
