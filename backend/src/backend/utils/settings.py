@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -18,10 +19,9 @@ class Settings(BaseSettings):
     # Session settings
     SESSION_CLEANUP_INTERVAL_SECONDS: float = 3600.0
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=True
+    )
 
 
 # Create a global instance of settings

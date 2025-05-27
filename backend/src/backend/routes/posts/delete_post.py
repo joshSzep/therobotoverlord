@@ -20,9 +20,8 @@ async def delete_post(
     post_id: UUID,
     current_user: User = Depends(get_current_user),
 ) -> None:
-    # Get post using repository
+    # Check if post exists
     post = await PostRepository.get_post_by_id(post_id)
-
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -30,7 +29,8 @@ async def delete_post(
         )
 
     # Check if the current user is the author or an admin
-    if str(post.author.id) != str(current_user.id) and current_user.role != "admin":
+    is_author = await PostRepository.is_user_post_author(post_id, current_user.id)
+    if not is_author and current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to delete this post",

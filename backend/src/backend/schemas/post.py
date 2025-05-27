@@ -30,9 +30,6 @@ class PostResponse(PostBase):
     updated_at: datetime
     reply_count: int = 0
 
-    class Config:
-        from_attributes = True
-
 
 class PostList(BaseModel):
     posts: List[PostResponse]

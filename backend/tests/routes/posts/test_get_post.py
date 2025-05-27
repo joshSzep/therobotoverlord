@@ -14,6 +14,7 @@ from backend.schemas.user import UserSchema
 async def test_get_post_success():
     # Arrange
     post_id = uuid.uuid4()
+    topic_id = uuid.uuid4()
 
     # Create user schema
     user_id = uuid.uuid4()
@@ -28,31 +29,22 @@ async def test_get_post_success():
         updated_at=datetime.fromisoformat("2025-05-25T00:00:00"),
     )
 
-    # Create mock topic
-    mock_topic = mock.AsyncMock()
-    mock_topic.id = uuid.uuid4()
-
-    # Create mock post
-    mock_post = mock.AsyncMock()
-    mock_post.id = post_id
-    mock_post.content = "Test post content"
-    mock_post.author = user_schema
-    mock_post.topic = mock_topic
-    mock_post.topic.id = mock_topic.id  # Ensure topic.id is accessible
-    mock_post.parent_post = None
-    mock_post.created_at = datetime.fromisoformat("2025-05-25T00:00:00")
-    mock_post.updated_at = datetime.fromisoformat("2025-05-25T00:00:00")
+    # Create mock post response directly as a schema
+    mock_post_response = PostResponse(
+        id=post_id,
+        content="Test post content",
+        author=user_schema,
+        topic_id=topic_id,
+        parent_post_id=None,
+        created_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        updated_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        reply_count=0,
+    )
 
     # Mock dependencies
-    with (
-        mock.patch(
-            "backend.routes.posts.get_post.PostRepository.get_post_by_id",
-            new=mock.AsyncMock(return_value=mock_post),
-        ),
-        mock.patch(
-            "backend.routes.posts.get_post.PostRepository.get_reply_count",
-            new=mock.AsyncMock(return_value=0),
-        ),
+    with mock.patch(
+        "backend.routes.posts.get_post.PostRepository.get_post_by_id",
+        new=mock.AsyncMock(return_value=mock_post_response),
     ):
         # Act
         result = await get_post(post_id)
@@ -61,7 +53,7 @@ async def test_get_post_success():
         assert isinstance(result, PostResponse)
         assert result.id == post_id
         assert result.content == "Test post content"
-        assert result.topic_id == mock_topic.id
+        assert result.topic_id == topic_id
         assert result.parent_post_id is None
         assert result.reply_count == 0
 

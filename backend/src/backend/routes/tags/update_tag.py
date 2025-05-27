@@ -10,7 +10,7 @@ from slugify import slugify
 from tortoise.exceptions import IntegrityError
 
 # Project-specific imports
-from backend.db.models.user import User  # Keep for type annotation
+from backend.db.models.user import User
 from backend.repositories.tag_repository import TagRepository
 from backend.schemas.tag import TagCreate
 from backend.schemas.tag import TagResponse

@@ -14,6 +14,10 @@ RULE #1: **DO NOT** add docstrings unless specifically requested.
   - `migrations/`: Tortoise ORM/aerich migrations
   - `src/backend/`: Source code
     - `app.py`: FastAPI application setup
+    - `converters/`: Functions to convert between database models and Pydantic schemas
+      - `post_to_schema.py`: Converts Post model to PostResponse schema
+      - `user_to_schema.py`: Converts User model to UserSchema
+      - etc.
     - `db/`: Database configuration
       - `config.py`: Tortoise ORM/aerich configuration
       - `base.py`: Base model for all database models
@@ -66,6 +70,10 @@ src/backend/
 - Routes organized by feature with separation of concerns (endpoints, utilities)
 - Schemas organized by entity type to reduce duplication and improve maintainability
 - Database models and repositories also organized by technical concern
+- **Converters** handle the transformation between database models and Pydantic schemas
+  - Each converter function is responsible for a specific model-to-schema conversion
+  - Converters are used by repositories to return schema objects instead of ORM models
+  - This keeps the conversion logic centralized and consistent across the application
 - **RULE #2: ONE ROUTE PER FILE** - Each API endpoint must be in its own file. For example, `list_posts`, `create_post`, `get_post`, etc. should each be in separate files named accordingly
 - **RULE #3: DESCRIPTIVE ROUTE FILENAMES** - Route filenames must match the function name they contain (e.g., `list_posts.py`, `create_post.py`, `get_post.py`) to ensure clarity and discoverability
 - **RULE #4: TRAILING SLASHES IN ROUTES** - All route paths must end with a trailing slash (`/`). For example, use `/users/profile/me/` instead of `/users/profile/me`

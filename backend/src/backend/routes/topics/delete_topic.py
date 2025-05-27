@@ -20,7 +20,7 @@ async def delete_topic(
     topic_id: UUID,
     current_user: User = Depends(get_current_user),
 ) -> None:
-    # Get the topic
+    # Check if topic exists
     topic = await TopicRepository.get_topic_by_id(topic_id)
     if not topic:
         raise HTTPException(
@@ -28,11 +28,9 @@ async def delete_topic(
             detail="Topic not found",
         )
 
-    # Fetch related author
-    await topic.fetch_related("author")
-
     # Check if the current user is the author
-    if str(topic.author.id) != str(current_user.id):
+    is_author = await TopicRepository.is_user_topic_author(topic_id, current_user.id)
+    if not is_author:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to delete this topic",

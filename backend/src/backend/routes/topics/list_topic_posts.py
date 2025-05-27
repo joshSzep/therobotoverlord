@@ -12,7 +12,6 @@ from backend.repositories.post_repository import PostRepository
 from backend.repositories.topic_repository import TopicRepository
 from backend.schemas.post import PostList
 from backend.schemas.post import PostResponse
-from backend.schemas.user import UserSchema
 
 router = APIRouter()
 
@@ -31,48 +30,17 @@ async def list_topic_posts(
             detail="Topic not found",
         )
 
-    # Get top-level posts for this topic
-    posts, count = await PostRepository.list_posts(
+    # Get posts for this topic
+    post_list = await PostRepository.list_posts(
         skip=skip,
         limit=limit,
         topic_id=topic_id,
     )
 
-    # Filter out posts that have a parent (only show top-level posts)
-    # We need to fetch the parent_post relation first
-    for post in posts:
-        await post.fetch_related("parent_post")
-    posts = [post for post in posts if post.parent_post is None]
+    # Filter to only include top-level posts (no parent)
+    top_level_posts: list[PostResponse] = []
+    for post in post_list.posts:
+        if post.parent_post_id is None:
+            top_level_posts.append(post)
 
-    # Prepare response with reply counts
-    post_responses: list[PostResponse] = []
-    for post in posts:
-        # Get reply count for each post
-        reply_count = await PostRepository.get_reply_count(post.id)
-
-        # Create author schema
-        author_schema = UserSchema(
-            id=post.author.id,
-            email=post.author.email,
-            display_name=post.author.display_name,
-            is_verified=post.author.is_verified,
-            last_login=post.author.last_login,
-            role=post.author.role,
-            created_at=post.author.created_at,
-            updated_at=post.author.updated_at,
-        )
-
-        # Create response object
-        post_response = PostResponse(
-            id=post.id,
-            content=post.content,
-            author=author_schema,
-            topic_id=post.topic.id,
-            parent_post_id=post.parent_post.id if post.parent_post else None,
-            created_at=post.created_at,
-            updated_at=post.updated_at,
-            reply_count=reply_count,
-        )
-        post_responses.append(post_response)
-
-    return PostList(posts=post_responses, count=count)
+    return PostList(posts=top_level_posts, count=len(top_level_posts))

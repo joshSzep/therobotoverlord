@@ -23,9 +23,8 @@ async def update_post(
     post_data: PostUpdate,
     current_user: User = Depends(get_current_user),
 ) -> PostResponse:
-    # Get post using repository
+    # Check if post exists
     post = await PostRepository.get_post_by_id(post_id)
-
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -33,7 +32,8 @@ async def update_post(
         )
 
     # Check if the current user is the author or an admin
-    if str(post.author.id) != str(current_user.id) and current_user.role != "admin":
+    is_author = await PostRepository.is_user_post_author(post_id, current_user.id)
+    if not is_author and current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to update this post",
@@ -41,28 +41,10 @@ async def update_post(
 
     # Update the post using repository
     updated_post = await PostRepository.update_post(post_id, post_data.content)
-
     if not updated_post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Failed to update post",
         )
 
-    # Get reply count using repository
-    reply_count = await PostRepository.get_reply_count(post_id)
-
-    # Create response object
-    post_dict = {
-        "id": updated_post.id,
-        "content": updated_post.content,
-        "author": updated_post.author,
-        "topic_id": updated_post.topic.id,
-        "parent_post_id": (
-            updated_post.parent_post.id if updated_post.parent_post else None
-        ),
-        "created_at": updated_post.created_at,
-        "updated_at": updated_post.updated_at,
-        "reply_count": reply_count,
-    }
-
-    return PostResponse.model_validate(post_dict)
+    return updated_post

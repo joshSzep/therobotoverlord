@@ -1,12 +1,16 @@
+# Standard library imports
 from datetime import datetime
 from unittest import mock
 import uuid
 
+# Third-party imports
 from fastapi import HTTPException
 import pytest
 
+# Project-specific imports
 from backend.routes.posts.list_post_replies import list_post_replies
 from backend.schemas.post import PostList
+from backend.schemas.post import PostResponse
 from backend.schemas.user import UserSchema
 
 
@@ -15,6 +19,7 @@ async def test_list_post_replies_success():
     """Test successful listing of post replies."""
     # Arrange
     post_id = uuid.uuid4()
+    topic_id = uuid.uuid4()
 
     # Create user schema
     user_id = uuid.uuid4()
@@ -29,43 +34,46 @@ async def test_list_post_replies_success():
         updated_at=datetime.fromisoformat("2025-05-25T00:00:00"),
     )
 
-    # Create mock topic
-    mock_topic = mock.AsyncMock()
-    mock_topic.id = uuid.uuid4()
+    # Create mock parent post response
+    mock_parent_post = PostResponse(
+        id=post_id,
+        content="Parent post content",
+        author=user_schema,
+        topic_id=topic_id,
+        parent_post_id=None,
+        created_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        updated_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        reply_count=2,
+    )
 
-    # Create mock parent post
-    mock_parent_post = mock.AsyncMock()
-    mock_parent_post.id = post_id
-    mock_parent_post.content = "Parent post content"
-    mock_parent_post.author = user_schema
-    mock_parent_post.topic = mock_topic
-    mock_parent_post.parent_post = None
+    # Create mock reply post responses
+    reply_id1 = uuid.uuid4()
+    reply_id2 = uuid.uuid4()
 
-    # Create mock reply posts
-    mock_reply1 = mock.AsyncMock()
-    mock_reply1.id = uuid.uuid4()
-    mock_reply1.content = "Reply post content 1"
-    mock_reply1.author = user_schema
-    mock_reply1.topic = mock_topic
-    mock_reply1.topic.id = mock_topic.id  # Ensure topic.id is accessible
-    mock_reply1.parent_post = mock_parent_post
-    mock_reply1.parent_post.id = post_id  # Ensure parent_post.id is accessible
-    mock_reply1.created_at = datetime.fromisoformat("2025-05-25T00:00:00")
-    mock_reply1.updated_at = datetime.fromisoformat("2025-05-25T00:00:00")
+    mock_reply1 = PostResponse(
+        id=reply_id1,
+        content="Reply post content 1",
+        author=user_schema,
+        topic_id=topic_id,
+        parent_post_id=post_id,
+        created_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        updated_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        reply_count=0,
+    )
 
-    mock_reply2 = mock.AsyncMock()
-    mock_reply2.id = uuid.uuid4()
-    mock_reply2.content = "Reply post content 2"
-    mock_reply2.author = user_schema
-    mock_reply2.topic = mock_topic
-    mock_reply2.topic.id = mock_topic.id  # Ensure topic.id is accessible
-    mock_reply2.parent_post = mock_parent_post
-    mock_reply2.parent_post.id = post_id  # Ensure parent_post.id is accessible
-    mock_reply2.created_at = datetime.fromisoformat("2025-05-25T00:00:00")
-    mock_reply2.updated_at = datetime.fromisoformat("2025-05-25T00:00:00")
+    mock_reply2 = PostResponse(
+        id=reply_id2,
+        content="Reply post content 2",
+        author=user_schema,
+        topic_id=topic_id,
+        parent_post_id=post_id,
+        created_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        updated_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        reply_count=0,
+    )
 
-    mock_replies = [mock_reply1, mock_reply2]
-    mock_count = 2
+    # Create mock PostList response
+    mock_post_list = PostList(posts=[mock_reply1, mock_reply2], count=2)
 
     # Mock dependencies
     with (
@@ -75,11 +83,7 @@ async def test_list_post_replies_success():
         ),
         mock.patch(
             "backend.routes.posts.list_post_replies.PostRepository.list_post_replies",
-            new=mock.AsyncMock(return_value=(mock_replies, mock_count)),
-        ),
-        mock.patch(
-            "backend.routes.posts.list_post_replies.PostRepository.get_reply_count",
-            new=mock.AsyncMock(return_value=0),
+            new=mock.AsyncMock(return_value=mock_post_list),
         ),
     ):
         # Act
@@ -118,6 +122,7 @@ async def test_list_post_replies_pagination():
     """Test listing post replies with pagination."""
     # Arrange
     post_id = uuid.uuid4()
+    topic_id = uuid.uuid4()
 
     # Create user schema
     user_id = uuid.uuid4()
@@ -132,32 +137,37 @@ async def test_list_post_replies_pagination():
         updated_at=datetime.fromisoformat("2025-05-25T00:00:00"),
     )
 
-    # Create mock topic
-    mock_topic = mock.AsyncMock()
-    mock_topic.id = uuid.uuid4()
+    # Create mock parent post response
+    mock_parent_post = PostResponse(
+        id=post_id,
+        content="Parent post content",
+        author=user_schema,
+        topic_id=topic_id,
+        parent_post_id=None,
+        created_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        updated_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        reply_count=30,
+    )
 
-    # Create mock parent post
-    mock_parent_post = mock.AsyncMock()
-    mock_parent_post.id = post_id
-    mock_parent_post.content = "Parent post content"
-    mock_parent_post.author = user_schema
-    mock_parent_post.topic = mock_topic
-    mock_parent_post.parent_post = None
+    # Create mock reply post response
+    reply_id = uuid.uuid4()
 
-    # Create mock reply post
-    mock_reply = mock.AsyncMock()
-    mock_reply.id = uuid.uuid4()
-    mock_reply.content = "Reply post content"
-    mock_reply.author = user_schema
-    mock_reply.topic = mock_topic
-    mock_reply.topic.id = mock_topic.id  # Ensure topic.id is accessible
-    mock_reply.parent_post = mock_parent_post
-    mock_reply.parent_post.id = post_id  # Ensure parent_post.id is accessible
-    mock_reply.created_at = datetime.fromisoformat("2025-05-25T00:00:00")
-    mock_reply.updated_at = datetime.fromisoformat("2025-05-25T00:00:00")
+    mock_reply = PostResponse(
+        id=reply_id,
+        content="Reply post content",
+        author=user_schema,
+        topic_id=topic_id,
+        parent_post_id=post_id,
+        created_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        updated_at=datetime.fromisoformat("2025-05-25T00:00:00"),
+        reply_count=0,
+    )
 
-    mock_replies = [mock_reply]
-    mock_count = 30  # Total count is higher than the returned replies
+    # Create mock PostList response with pagination
+    mock_post_list = PostList(
+        posts=[mock_reply],
+        count=30,  # Total count is higher than the returned replies
+    )
 
     # Mock dependencies
     with (
@@ -167,11 +177,7 @@ async def test_list_post_replies_pagination():
         ),
         mock.patch(
             "backend.routes.posts.list_post_replies.PostRepository.list_post_replies",
-            new=mock.AsyncMock(return_value=(mock_replies, mock_count)),
-        ),
-        mock.patch(
-            "backend.routes.posts.list_post_replies.PostRepository.get_reply_count",
-            new=mock.AsyncMock(return_value=0),
+            new=mock.AsyncMock(return_value=mock_post_list),
         ),
     ):
         # Act

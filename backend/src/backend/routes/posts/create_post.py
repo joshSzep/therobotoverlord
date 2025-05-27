@@ -13,7 +13,6 @@ from backend.repositories.post_repository import PostRepository
 from backend.repositories.topic_repository import TopicRepository
 from backend.schemas.post import PostCreate
 from backend.schemas.post import PostResponse
-from backend.schemas.user import UserSchema
 from backend.utils.auth import get_current_user
 
 router = APIRouter()
@@ -32,7 +31,6 @@ async def create_post(
         )
 
     # Verify that the parent post exists and belongs to the same topic if provided
-    parent_post = None
     if post_data.parent_post_id:
         parent_post = await PostRepository.get_post_by_id(post_data.parent_post_id)
         if not parent_post:
@@ -41,7 +39,8 @@ async def create_post(
                 detail="Parent post not found",
             )
 
-        if str(parent_post.topic.id) != str(post_data.topic_id):
+        # Check if parent post belongs to the same topic
+        if str(parent_post.topic_id) != str(post_data.topic_id):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Parent post must belong to the same topic",
@@ -49,41 +48,12 @@ async def create_post(
 
     try:
         # Create the post using repository
-        post = await PostRepository.create_post(
+        return await PostRepository.create_post(
             content=post_data.content,
             author_id=current_user.id,
-            topic_id=topic.id,
+            topic_id=post_data.topic_id,
             parent_post_id=post_data.parent_post_id,
         )
-
-        # Get reply count (should be 0 for a new post)
-        reply_count = await PostRepository.get_reply_count(post.id)
-
-        # Create author schema from user model
-        author_schema = UserSchema(
-            id=post.author.id,
-            email=post.author.email,
-            display_name=post.author.display_name,
-            is_verified=post.author.is_verified,
-            last_login=post.author.last_login,
-            role=post.author.role,
-            created_at=post.author.created_at,
-            updated_at=post.author.updated_at,
-        )
-
-        # Create response object
-        post_response = PostResponse(
-            id=post.id,
-            content=post.content,
-            author=author_schema,
-            topic_id=post.topic.id,
-            parent_post_id=post.parent_post.id if post.parent_post else None,
-            created_at=post.created_at,
-            updated_at=post.updated_at,
-            reply_count=reply_count,
-        )
-
-        return post_response
     except ValidationError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

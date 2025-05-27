@@ -35,9 +35,6 @@ class TopicResponse(TopicBase):
     updated_at: datetime
     tags: List[TagResponse] = Field(default_factory=list)
 
-    class Config:
-        from_attributes = True
-
 
 class TopicList(BaseModel):
     topics: List[TopicResponse]

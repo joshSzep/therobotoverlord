@@ -16,9 +16,6 @@ class TagCreate(BaseModel):
 class TagResponse(TagBase):
     id: UUID
 
-    class Config:
-        from_attributes = True
-
 
 class TagList(BaseModel):
     tags: List[TagResponse]

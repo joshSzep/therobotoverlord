@@ -1,6 +1,7 @@
 from typing import Any
 
 from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import (
     register_tortoise,  # type: ignore[reportUnknownVariableType, unused-ignore]
@@ -10,10 +11,9 @@ from tortoise.contrib.fastapi import (
 class DatabaseSettings(BaseSettings):
     DATABASE_URL: str = "postgres://localhost:5432/robot_overlord"
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=True
+    )
 
 
 # Create a global instance of settings

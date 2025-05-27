@@ -7,9 +7,8 @@ from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
 
-from backend.db.models.user import User
-
 # Project-specific imports
+from backend.db.models.user import User
 from backend.repositories.tag_repository import TagRepository
 from backend.repositories.topic_tag_repository import TopicTagRepository
 from backend.utils.auth import get_current_user

@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest import mock
 import uuid
 
@@ -7,6 +8,7 @@ import pytest
 from backend.routes.posts.create_post import create_post
 from backend.schemas.post import PostCreate
 from backend.schemas.post import PostResponse
+from backend.schemas.user import UserSchema
 
 
 @pytest.mark.asyncio
@@ -18,7 +20,7 @@ async def test_create_post_success():
         topic_id=uuid.uuid4(),
     )
 
-    # Create mock topic
+    # Create mock topic response
     mock_topic = mock.AsyncMock()
     mock_topic.id = post_data.topic_id
 
@@ -30,18 +32,46 @@ async def test_create_post_success():
     mock_user.is_verified = True
     mock_user.last_login = None
     mock_user.role = "user"
-    mock_user.created_at = "2025-05-25T00:00:00"
-    mock_user.updated_at = "2025-05-25T00:00:00"
+    mock_user.created_at = datetime(2025, 5, 25)
+    mock_user.updated_at = datetime(2025, 5, 25)
 
-    # Create mock post
-    mock_post = mock.AsyncMock()
-    mock_post.id = uuid.uuid4()
-    mock_post.content = post_data.content
-    mock_post.author = mock_user
-    mock_post.topic = mock_topic
-    mock_post.parent_post = None
-    mock_post.created_at = "2025-05-25T00:00:00"
-    mock_post.updated_at = "2025-05-25T00:00:00"
+    # Create mock post response
+    post_id = uuid.uuid4()
+
+    # Create a mock that will be returned by the repository
+    mock_post_response = mock.AsyncMock()
+    mock_post_response.id = post_id
+    mock_post_response.content = post_data.content
+    mock_post_response.author_id = mock_user.id
+    mock_post_response.author = mock_user
+    mock_post_response.topic_id = post_data.topic_id
+    mock_post_response.parent_post_id = None
+    mock_post_response.created_at = datetime(2025, 5, 25)
+    mock_post_response.updated_at = datetime(2025, 5, 25)
+
+    # Create a proper UserSchema for the author field
+    user_schema = UserSchema(
+        id=mock_user.id,
+        email=mock_user.email,
+        display_name=mock_user.display_name,
+        is_verified=mock_user.is_verified,
+        last_login=mock_user.last_login,
+        role=mock_user.role,
+        created_at=mock_user.created_at,
+        updated_at=mock_user.updated_at,
+    )
+
+    # Create a PostResponse object that will be returned by the repository
+    post_response = PostResponse(
+        id=post_id,
+        content=post_data.content,
+        author=user_schema,
+        topic_id=post_data.topic_id,
+        parent_post_id=None,
+        created_at=datetime(2025, 5, 25),
+        updated_at=datetime(2025, 5, 25),
+        reply_count=0,
+    )
 
     # Mock dependencies
     with (
@@ -55,11 +85,7 @@ async def test_create_post_success():
         ),
         mock.patch(
             "backend.routes.posts.create_post.PostRepository.create_post",
-            new=mock.AsyncMock(return_value=mock_post),
-        ),
-        mock.patch(
-            "backend.routes.posts.create_post.PostRepository.get_reply_count",
-            new=mock.AsyncMock(return_value=0),
+            new=mock.AsyncMock(return_value=post_response),
         ),
     ):
         # Act
@@ -112,15 +138,14 @@ async def test_create_post_with_parent():
         parent_post_id=parent_post_id,
     )
 
-    # Create mock topic
+    # Create mock topic response
     mock_topic = mock.AsyncMock()
     mock_topic.id = topic_id
 
-    # Create mock parent post
+    # Create mock parent post response
     mock_parent_post = mock.AsyncMock()
     mock_parent_post.id = parent_post_id
-    mock_parent_post.topic = mock.AsyncMock()
-    mock_parent_post.topic.id = str(topic_id)
+    mock_parent_post.topic_id = topic_id
 
     # Create mock user
     mock_user = mock.AsyncMock()
@@ -130,18 +155,46 @@ async def test_create_post_with_parent():
     mock_user.is_verified = True
     mock_user.last_login = None
     mock_user.role = "user"
-    mock_user.created_at = "2025-05-25T00:00:00"
-    mock_user.updated_at = "2025-05-25T00:00:00"
+    mock_user.created_at = datetime(2025, 5, 25)
+    mock_user.updated_at = datetime(2025, 5, 25)
 
-    # Create mock post
-    mock_post = mock.AsyncMock()
-    mock_post.id = uuid.uuid4()
-    mock_post.content = post_data.content
-    mock_post.author = mock_user
-    mock_post.topic = mock_topic
-    mock_post.parent_post = mock_parent_post
-    mock_post.created_at = "2025-05-25T00:00:00"
-    mock_post.updated_at = "2025-05-25T00:00:00"
+    # Create mock post response
+    post_id = uuid.uuid4()
+
+    # Create a mock that will be returned by the repository
+    mock_post_response = mock.AsyncMock()
+    mock_post_response.id = post_id
+    mock_post_response.content = post_data.content
+    mock_post_response.author_id = mock_user.id
+    mock_post_response.author = mock_user
+    mock_post_response.topic_id = topic_id
+    mock_post_response.parent_post_id = parent_post_id
+    mock_post_response.created_at = datetime(2025, 5, 25)
+    mock_post_response.updated_at = datetime(2025, 5, 25)
+
+    # Create a proper UserSchema for the author field
+    user_schema = UserSchema(
+        id=mock_user.id,
+        email=mock_user.email,
+        display_name=mock_user.display_name,
+        is_verified=mock_user.is_verified,
+        last_login=mock_user.last_login,
+        role=mock_user.role,
+        created_at=mock_user.created_at,
+        updated_at=mock_user.updated_at,
+    )
+
+    # Create a PostResponse object that will be returned by the repository
+    post_response = PostResponse(
+        id=post_id,
+        content=post_data.content,
+        author=user_schema,
+        topic_id=topic_id,
+        parent_post_id=parent_post_id,
+        created_at=datetime(2025, 5, 25),
+        updated_at=datetime(2025, 5, 25),
+        reply_count=0,
+    )
 
     # Mock dependencies
     with (
@@ -155,11 +208,7 @@ async def test_create_post_with_parent():
         ),
         mock.patch(
             "backend.routes.posts.create_post.PostRepository.create_post",
-            new=mock.AsyncMock(return_value=mock_post),
-        ),
-        mock.patch(
-            "backend.routes.posts.create_post.PostRepository.get_reply_count",
-            new=mock.AsyncMock(return_value=0),
+            new=mock.AsyncMock(return_value=post_response),
         ),
     ):
         # Act
@@ -219,15 +268,14 @@ async def test_create_post_parent_different_topic():
         parent_post_id=uuid.uuid4(),
     )
 
-    # Create mock topic
+    # Create mock topic response
     mock_topic = mock.AsyncMock()
     mock_topic.id = post_data.topic_id
 
-    # Create mock parent post with different topic
+    # Create mock parent post response with different topic
     mock_parent_post = mock.AsyncMock()
     mock_parent_post.id = post_data.parent_post_id
-    mock_parent_post.topic = mock.AsyncMock()
-    mock_parent_post.topic.id = str(uuid.uuid4())  # Different topic ID
+    mock_parent_post.topic_id = uuid.uuid4()  # Different topic ID
 
     # Create mock user
     mock_user = mock.AsyncMock()

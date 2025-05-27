@@ -10,8 +10,6 @@ from fastapi import status
 # Project-specific imports
 from backend.repositories.post_repository import PostRepository
 from backend.schemas.post import PostList
-from backend.schemas.post import PostResponse
-from backend.schemas.user import UserSchema
 
 router = APIRouter()
 
@@ -31,37 +29,4 @@ async def list_post_replies(
         )
 
     # Get replies to the post using repository
-    replies, count = await PostRepository.list_post_replies(post_id, skip, limit)
-
-    # Prepare response with reply counts
-    post_responses: list[PostResponse] = []
-    for post in replies:
-        # Get reply count for each post using repository
-        reply_count = await PostRepository.get_reply_count(post.id)
-
-        # Create author schema
-        author_schema = UserSchema(
-            id=post.author.id,
-            email=post.author.email,
-            display_name=post.author.display_name,
-            is_verified=post.author.is_verified,
-            last_login=post.author.last_login,
-            role=post.author.role,
-            created_at=post.author.created_at,
-            updated_at=post.author.updated_at,
-        )
-
-        # Create response object
-        post_response = PostResponse(
-            id=post.id,
-            content=post.content,
-            author=author_schema,
-            topic_id=post.topic.id,
-            parent_post_id=post.parent_post.id if post.parent_post else None,
-            created_at=post.created_at,
-            updated_at=post.updated_at,
-            reply_count=reply_count,
-        )
-        post_responses.append(post_response)
-
-    return PostList(posts=post_responses, count=count)
+    return await PostRepository.list_post_replies(post_id, skip, limit)
