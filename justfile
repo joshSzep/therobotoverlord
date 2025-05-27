@@ -1,5 +1,9 @@
 # justfile for The Robot Overlord project
 
+# List available commands
+_help:
+    @just --list
+
 # `aerich-downgrade`: downgrade the database by one migration
 aerich-downgrade:
     @./scripts/aerich-downgrade.sh
@@ -16,9 +20,9 @@ aerich-migrate:
 aerich-upgrade:
     @./scripts/aerich-upgrade.sh
 
-# List available commands
-default:
-    @just --list
+# `db-migration-fresh-start`: reset database, clear migrations, and initialize from scratch
+db-migration-fresh-start:
+    @./scripts/db-migration-fresh-start.sh
 
 # `eslint`: lint the frontend
 eslint:

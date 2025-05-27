@@ -1,4 +1,3 @@
-from backend.db.models.login_attempt import LoginAttempt
 from backend.db.models.post import Post
 from backend.db.models.tag import Tag
 from backend.db.models.topic import Topic
@@ -12,7 +11,6 @@ from backend.db.models.user_session import UserSession
 models = [
     User,
     UserSession,
-    LoginAttempt,
     UserEvent,
     Topic,
     Tag,
@@ -24,7 +22,6 @@ __all__ = [
     "User",
     "UserRole",
     "UserSession",
-    "LoginAttempt",
     "UserEvent",
     "Topic",
     "Tag",

@@ -42,9 +42,10 @@ class UserEvent(BaseModel):
     ) -> "UserEvent":
         return await cls.create(
             user_id=user_id,
-            event_type="login_success",
+            event_type="login",
             ip_address=ip_address,
             user_agent=user_agent,
+            metadata={"success": True},
         )
 
     @classmethod
@@ -56,9 +57,10 @@ class UserEvent(BaseModel):
     ) -> "UserEvent":
         return await cls.create(
             user_id=user_id,
-            event_type="login_failure",
+            event_type="login",
             ip_address=ip_address,
             user_agent=user_agent,
+            metadata={"success": False},
         )
 
     @classmethod

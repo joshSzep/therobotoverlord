@@ -1,4 +1,5 @@
 # Standard library imports
+from datetime import timedelta
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -6,6 +7,9 @@ from uuid import UUID
 
 # Project-specific imports
 from backend.db.models.user import User
+from backend.db.models.user_event import UserEvent
+from backend.db.models.user_session import UserSession
+from backend.utils.datetime import now_utc
 
 
 class UserRepository:
@@ -73,7 +77,36 @@ class UserRepository:
         if not user:
             return None
 
-        await user.record_login_success(ip_address, user_agent)
+        # Update user fields
+        user.last_login = now_utc()
+        user.failed_login_attempts = 0
+        user.is_locked = False
+        await user.save()
+
+        # Generate a session token
+        import secrets
+
+        session_token = secrets.token_hex(32)
+
+        # Create a session record
+        await UserSession.create(
+            user=user,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            session_token=session_token,
+            is_active=True,
+            expires_at=now_utc() + timedelta(days=7),
+        )
+
+        # Record the login event
+        await UserEvent.create(
+            user=user,
+            event_type="login",
+            ip_address=ip_address,
+            user_agent=user_agent,
+            metadata={"success": True},
+        )
+
         return user
 
     @staticmethod
@@ -84,7 +117,30 @@ class UserRepository:
         if not user:
             return None
 
-        await user.record_login_failure(ip_address, user_agent)
+        # Update user fields
+        user.failed_login_attempts += 1
+
+        # Lock account after 5 failed attempts
+        was_locked = False
+        if user.failed_login_attempts >= 5 and not user.is_locked:
+            user.is_locked = True
+            was_locked = True
+
+        await user.save()
+
+        # Record the login event
+        await UserEvent.create(
+            user=user,
+            event_type="login",
+            ip_address=ip_address,
+            user_agent=user_agent,
+            metadata={"success": False},
+        )
+
+        # Log account lockout event if account was just locked
+        if was_locked:
+            await UserEvent.log_account_lockout(user.id, ip_address, user_agent)
+
         return user
 
     @staticmethod

@@ -41,11 +41,3 @@ class UserSessionSchema(BaseModel):
     expires_at: datetime
     is_active: bool
     created_at: datetime
-
-
-class LoginAttemptSchema(BaseModel):
-    id: uuid.UUID
-    ip_address: str
-    user_agent: str
-    success: bool
-    timestamp: datetime

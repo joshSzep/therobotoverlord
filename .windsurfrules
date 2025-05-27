@@ -68,6 +68,7 @@ src/backend/
   - `just update-llm-rules`: Update all AI assistant rule files from LLM_RULES.md
 
 - **Database Migration Commands**:
+  - `just db-migration-fresh-start`: Reset database, clear migrations, and initialize from scratch (for development)
   - `just aerich-downgrade`: Revert the most recent migration
   - `just aerich-history`: Show migration history
   - `just aerich-migrate`: Create a new migration after model changes

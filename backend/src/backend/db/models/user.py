@@ -1,13 +1,10 @@
-from datetime import timedelta
 import enum
 
 import bcrypt
 from tortoise import fields
 
 from backend.db.base import BaseModel
-from backend.db.models.login_attempt import LoginAttempt
 from backend.db.models.user_session import UserSession
-from backend.utils.datetime import now_utc
 
 
 class UserRole(str, enum.Enum):
@@ -39,61 +36,3 @@ class User(BaseModel):
         password_bytes = password.encode("utf-8")
         hash_bytes = self.password_hash.encode("utf-8")
         return bcrypt.checkpw(password_bytes, hash_bytes)
-
-    async def record_login_success(self, ip_address: str, user_agent: str) -> None:
-        # Update user fields
-        self.last_login = now_utc()
-        self.failed_login_attempts = 0
-        self.is_locked = False
-        await self.save()
-
-        # Generate a session token
-        import secrets
-
-        session_token = secrets.token_hex(32)
-
-        # Create a session record
-        await UserSession.create(
-            user=self,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            session_token=session_token,
-            is_active=True,
-            expires_at=now_utc() + timedelta(days=7),
-        )
-
-        # Record the login attempt
-        await LoginAttempt.create(
-            user=self,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            success=True,
-        )
-
-    async def record_login_failure(self, ip_address: str, user_agent: str) -> None:
-        self.failed_login_attempts += 1
-
-        # Lock account after 5 failed attempts
-        was_locked = False
-        if self.failed_login_attempts >= 5 and not self.is_locked:
-            self.is_locked = True
-            was_locked = True
-
-        await self.save()
-
-        # Record the login attempt
-        from backend.db.models.login_attempt import LoginAttempt
-
-        await LoginAttempt.create(
-            user=self,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            success=False,
-        )
-
-        # Log account lockout event if account was just locked
-        if was_locked:
-            # Import here to avoid circular import
-            from backend.db.models.user_event import UserEvent
-
-            await UserEvent.log_account_lockout(self.id, ip_address, user_agent)
