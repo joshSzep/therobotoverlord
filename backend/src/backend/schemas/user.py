@@ -28,12 +28,6 @@ class UserLoginSchema(BaseModel):
     password: str
 
 
-class TokenSchema(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    refresh_token: str | None = None
-
-
 class UserSessionSchema(BaseModel):
     id: uuid.UUID
     ip_address: str

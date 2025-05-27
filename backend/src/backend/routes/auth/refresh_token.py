@@ -4,7 +4,7 @@ from fastapi import Request
 from fastapi import status
 
 from backend.repositories.user_repository import UserRepository
-from backend.schemas.user import TokenSchema
+from backend.schemas.token import TokenSchema
 from backend.utils.auth import create_access_token
 from backend.utils.auth import create_refresh_token
 from backend.utils.auth import decode_token
