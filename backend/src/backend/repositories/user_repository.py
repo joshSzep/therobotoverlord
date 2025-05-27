@@ -6,23 +6,31 @@ from typing import Tuple
 from uuid import UUID
 
 # Project-specific imports
+from backend.converters import user_to_schema
 from backend.db.models.user import User
 from backend.db.models.user_event import UserEvent
 from backend.db.models.user_session import UserSession
+from backend.schemas.user import UserSchema
 from backend.utils.datetime import now_utc
 
 
 class UserRepository:
     @staticmethod
-    async def get_user_by_id(user_id: UUID) -> Optional[User]:
-        return await User.get_or_none(id=user_id)
+    async def get_user_by_id(user_id: UUID) -> Optional[UserSchema]:
+        user = await User.get_or_none(id=user_id)
+        if user:
+            return await user_to_schema(user)
+        return None
 
     @staticmethod
-    async def get_user_by_email(email: str) -> Optional[User]:
-        return await User.get_or_none(email=email)
+    async def get_user_by_email(email: str) -> Optional[UserSchema]:
+        user = await User.get_or_none(email=email)
+        if user:
+            return await user_to_schema(user)
+        return None
 
     @staticmethod
-    async def create_user(email: str, password: str, display_name: str) -> User:
+    async def create_user(email: str, password: str, display_name: str) -> UserSchema:
         user = await User.create(
             email=email,
             password_hash="",  # Temporary placeholder
@@ -30,14 +38,14 @@ class UserRepository:
         )
         await user.set_password(password)
         await user.save()
-        return user
+        return await user_to_schema(user)
 
     @staticmethod
     async def update_user(
         user_id: UUID,
         display_name: Optional[str] = None,
         email: Optional[str] = None,
-    ) -> Optional[User]:
+    ) -> Optional[UserSchema]:
         user = await User.get_or_none(id=user_id)
         if not user:
             return None
@@ -49,17 +57,17 @@ class UserRepository:
             user.email = email
 
         await user.save()
-        return user
+        return await user_to_schema(user)
 
     @staticmethod
-    async def set_user_password(user_id: UUID, password: str) -> Optional[User]:
+    async def set_user_password(user_id: UUID, password: str) -> Optional[UserSchema]:
         user = await User.get_or_none(id=user_id)
         if not user:
             return None
 
         await user.set_password(password)
         await user.save()
-        return user
+        return await user_to_schema(user)
 
     @staticmethod
     async def verify_user_password(user_id: UUID, password: str) -> bool:
@@ -72,7 +80,7 @@ class UserRepository:
     @staticmethod
     async def record_login_success(
         user_id: UUID, ip_address: str, user_agent: str
-    ) -> Optional[User]:
+    ) -> Optional[UserSchema]:
         user = await User.get_or_none(id=user_id)
         if not user:
             return None
@@ -107,12 +115,12 @@ class UserRepository:
             metadata={"success": True},
         )
 
-        return user
+        return await user_to_schema(user)
 
     @staticmethod
     async def record_login_failure(
         user_id: UUID, ip_address: str, user_agent: str
-    ) -> Optional[User]:
+    ) -> Optional[UserSchema]:
         user = await User.get_or_none(id=user_id)
         if not user:
             return None
@@ -141,20 +149,20 @@ class UserRepository:
         if was_locked:
             await UserEvent.log_account_lockout(user.id, ip_address, user_agent)
 
-        return user
+        return await user_to_schema(user)
 
     @staticmethod
-    async def lock_user_account(user_id: UUID) -> Optional[User]:
+    async def lock_user_account(user_id: UUID) -> Optional[UserSchema]:
         user = await User.get_or_none(id=user_id)
         if not user:
             return None
 
         user.is_locked = True
         await user.save()
-        return user
+        return await user_to_schema(user)
 
     @staticmethod
-    async def unlock_user_account(user_id: UUID) -> Optional[User]:
+    async def unlock_user_account(user_id: UUID) -> Optional[UserSchema]:
         user = await User.get_or_none(id=user_id)
         if not user:
             return None
@@ -162,14 +170,21 @@ class UserRepository:
         user.is_locked = False
         user.failed_login_attempts = 0
         await user.save()
-        return user
+        return await user_to_schema(user)
 
     @staticmethod
-    async def list_users(skip: int = 0, limit: int = 20) -> Tuple[List[User], int]:
+    async def list_users(
+        skip: int = 0, limit: int = 20
+    ) -> Tuple[List[UserSchema], int]:
         # Get total count for pagination
         count = await User.all().count()
 
         # Apply pagination
         users = await User.all().offset(skip).limit(limit)
 
-        return users, count
+        # Convert ORM models to schema objects using async converter
+        user_schemas: List[UserSchema] = []
+        for user in users:
+            user_schemas.append(await user_to_schema(user))
+
+        return user_schemas, count

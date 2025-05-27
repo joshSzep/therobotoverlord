@@ -32,8 +32,8 @@ async def update_tag(
             detail="Only moderators and admins can update tags",
         )
 
-    # Get the tag
-    tag = await TagRepository.get_tag_by_id(str(tag_id))
+    # Get the tag - repository now expects UUID objects and returns TagResponse objects
+    tag = await TagRepository.get_tag_by_id(tag_id)
     if not tag:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -41,9 +41,10 @@ async def update_tag(
         )
 
     try:
-        # Update the tag
+        # Update the tag - repository now expects UUID objects
+        # Returns TagResponse objects directly
         updated_tag = await TagRepository.update_tag(
-            tag_id=str(tag_id),
+            tag_id=tag_id,
             name=tag_data.name,
             slug=slugify(tag_data.name),
         )
@@ -52,7 +53,7 @@ async def update_tag(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Tag not found after update",
             )
-        return TagResponse.model_validate(updated_tag)
+        return updated_tag
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

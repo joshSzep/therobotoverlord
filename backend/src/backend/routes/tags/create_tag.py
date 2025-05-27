@@ -32,11 +32,11 @@ async def create_tag(
 
     try:
         # Create the tag using repository
-        tag = await TagRepository.create_tag(
+        # The repository now returns a TagResponse object directly
+        return await TagRepository.create_tag(
             name=tag_data.name,
             slug=slug,
         )
-        return TagResponse.model_validate(tag)
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

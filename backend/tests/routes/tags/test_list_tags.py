@@ -8,6 +8,7 @@ import pytest
 # Project-specific imports
 from backend.routes.tags.list_tags import list_tags
 from backend.schemas.tag import TagList
+from backend.schemas.tag import TagResponse
 
 
 @pytest.mark.asyncio
@@ -27,12 +28,24 @@ async def test_list_tags_no_filters():
 
     mock_tags = [mock_tag_1, mock_tag_2]
 
+    # Create proper TagResponse objects for the TagList
+    from backend.schemas.tag import TagResponse
+
+    tag1 = TagResponse(name=mock_tag_1.name, id=mock_tag_1.id, slug=mock_tag_1.slug)
+    tag2 = TagResponse(name=mock_tag_2.name, id=mock_tag_2.id, slug=mock_tag_2.slug)
+
+    # Create the TagList with the proper TagResponse objects
+    mock_tag_list = TagList(
+        tags=[tag1, tag2],
+        count=len(mock_tags),
+    )
+
     # Mock the repository method
     with mock.patch(
         "backend.routes.tags.list_tags.TagRepository.list_tags"
     ) as mock_list_tags:
-        # Configure the mock to return our tags and count
-        mock_list_tags.return_value = (mock_tags, len(mock_tags))
+        # Configure the mock to return our TagList directly
+        mock_list_tags.return_value = mock_tag_list
 
         # Act
         result = await list_tags()
@@ -63,12 +76,21 @@ async def test_list_tags_with_search():
 
     mock_tags = [mock_tag]
 
+    # Create a proper TagResponse object for the TagList
+    tag_response = TagResponse(name=mock_tag.name, id=mock_tag.id, slug=mock_tag.slug)
+
+    # Create the TagList with the proper TagResponse object
+    mock_tag_list = TagList(
+        tags=[tag_response],
+        count=len(mock_tags),
+    )
+
     # Mock the repository method
     with mock.patch(
         "backend.routes.tags.list_tags.TagRepository.list_tags"
     ) as mock_list_tags:
-        # Configure the mock to return our tags and count
-        mock_list_tags.return_value = (mock_tags, len(mock_tags))
+        # Configure the mock to return our TagList directly
+        mock_list_tags.return_value = mock_tag_list
 
         # Act
         result = await list_tags(search=search_term)
@@ -80,7 +102,9 @@ async def test_list_tags_with_search():
         assert result.tags[0].name == mock_tag.name
 
         # Verify repository was called with search parameter
+        mock_list_tags.assert_called_once()
         args, kwargs = mock_list_tags.call_args
+        # The search parameter should be passed to the repository
         assert len(args) >= 3  # At least 3 args (skip, limit, search)
         assert args[2] == search_term  # Third argument should be search term
 
@@ -102,12 +126,28 @@ async def test_list_tags_with_pagination():
         mock_tag.slug = f"test-tag-{i + 1}"
         mock_tags.append(mock_tag)
 
+    # Create proper TagResponse objects for the TagList
+    from backend.schemas.tag import TagResponse
+
+    tag_responses = []
+    for i, mock_tag in enumerate(mock_tags):
+        tag_response = TagResponse(
+            name=mock_tag.name, id=mock_tag.id, slug=mock_tag.slug
+        )
+        tag_responses.append(tag_response)
+
+    # Create a TagList to return from the mock
+    mock_tag_list = TagList(
+        tags=tag_responses,
+        count=total_count,  # Use the total count, not just the length of mock_tags
+    )
+
     # Mock the repository method
     with mock.patch(
         "backend.routes.tags.list_tags.TagRepository.list_tags"
     ) as mock_list_tags:
-        # Configure the mock to return our tags and count
-        mock_list_tags.return_value = (mock_tags, total_count)
+        # Configure the mock to return our TagList directly
+        mock_list_tags.return_value = mock_tag_list
 
         # Act
         result = await list_tags(skip=skip, limit=limit)
@@ -118,7 +158,7 @@ async def test_list_tags_with_pagination():
         assert len(result.tags) == len(mock_tags)
 
         # Verify repository was called with pagination parameters
+        mock_list_tags.assert_called_once()
         args, kwargs = mock_list_tags.call_args
         # The first two arguments should be skip and limit values
         # We can't check the Query objects directly, but we can check they were passed
-        assert mock_list_tags.call_count == 1

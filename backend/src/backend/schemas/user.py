@@ -13,6 +13,7 @@ class UserSchema(BaseModel):
     is_verified: bool
     last_login: datetime | None = None
     role: str
+    is_locked: bool = False
     created_at: datetime
     updated_at: datetime
 
@@ -32,6 +33,7 @@ class UserSessionSchema(BaseModel):
     id: uuid.UUID
     ip_address: str
     user_agent: str
+    session_token: str
     expires_at: datetime
     is_active: bool
     created_at: datetime

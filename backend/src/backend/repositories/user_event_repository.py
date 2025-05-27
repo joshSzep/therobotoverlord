@@ -3,11 +3,13 @@ from datetime import timedelta
 from typing import Any
 from typing import List
 from typing import Optional
-from typing import Tuple
 from uuid import UUID
 
 # Project-specific imports
+from backend.converters import user_event_to_schema
 from backend.db.models.user_event import UserEvent
+from backend.schemas.user_event import UserEventListSchema
+from backend.schemas.user_event import UserEventSchema
 from backend.utils.datetime import now_utc
 
 
@@ -21,8 +23,8 @@ class UserEventRepository:
         resource_type: Optional[str] = None,
         resource_id: Optional[UUID] = None,
         metadata: Optional[dict[str, Any]] = None,
-    ) -> UserEvent:
-        return await UserEvent.create(
+    ) -> UserEventSchema:
+        event = await UserEvent.create(
             user_id=user_id,
             event_type=event_type,
             ip_address=ip_address,
@@ -31,70 +33,76 @@ class UserEventRepository:
             resource_id=resource_id,
             metadata=metadata,
         )
+        return await user_event_to_schema(event)
 
     @staticmethod
     async def log_login_success(
         user_id: UUID,
         ip_address: str,
         user_agent: str,
-    ) -> UserEvent:
-        return await UserEvent.create(
+    ) -> UserEventSchema:
+        event = await UserEvent.create(
             user_id=user_id,
             event_type="login",
             ip_address=ip_address,
             user_agent=user_agent,
             metadata={"success": True},
         )
+        return await user_event_to_schema(event)
 
     @staticmethod
     async def log_login_failure(
         user_id: Optional[UUID],
         ip_address: str,
         user_agent: str,
-    ) -> UserEvent:
-        return await UserEvent.create(
+    ) -> UserEventSchema:
+        event = await UserEvent.create(
             user_id=user_id,
             event_type="login",
             ip_address=ip_address,
             user_agent=user_agent,
             metadata={"success": False},
         )
+        return await user_event_to_schema(event)
 
     @staticmethod
     async def log_logout(
         user_id: UUID,
         ip_address: str,
         user_agent: str,
-    ) -> UserEvent:
-        return await UserEvent.log_logout(
+    ) -> UserEventSchema:
+        event = await UserEvent.log_logout(
             user_id=user_id,
             ip_address=ip_address,
             user_agent=user_agent,
         )
+        return await user_event_to_schema(event)
 
     @staticmethod
     async def log_password_change(
         user_id: UUID,
         ip_address: str,
         user_agent: str,
-    ) -> UserEvent:
-        return await UserEvent.log_password_change(
+    ) -> UserEventSchema:
+        event = await UserEvent.log_password_change(
             user_id=user_id,
             ip_address=ip_address,
             user_agent=user_agent,
         )
+        return await user_event_to_schema(event)
 
     @staticmethod
     async def log_account_lockout(
         user_id: UUID,
         ip_address: str,
         user_agent: str,
-    ) -> UserEvent:
-        return await UserEvent.log_account_lockout(
+    ) -> UserEventSchema:
+        event = await UserEvent.log_account_lockout(
             user_id=user_id,
             ip_address=ip_address,
             user_agent=user_agent,
         )
+        return await user_event_to_schema(event)
 
     @staticmethod
     async def get_user_events(
@@ -102,7 +110,7 @@ class UserEventRepository:
         skip: int = 0,
         limit: int = 20,
         event_type: Optional[str] = None,
-    ) -> Tuple[List[UserEvent], int]:
+    ) -> UserEventListSchema:
         query = UserEvent.filter(user_id=user_id)
 
         if event_type:
@@ -114,7 +122,12 @@ class UserEventRepository:
         # Apply pagination
         events = await query.offset(skip).limit(limit).order_by("-created_at")
 
-        return events, count
+        # Convert ORM models to schema objects using async converter
+        event_schemas: list[UserEventSchema] = []
+        for event in events:
+            event_schemas.append(await user_event_to_schema(event))
+
+        return UserEventListSchema(events=event_schemas, count=count)
 
     @staticmethod
     async def create_login_attempt(
@@ -122,22 +135,23 @@ class UserEventRepository:
         ip_address: str,
         user_agent: str,
         success: bool,
-    ) -> UserEvent:
+    ) -> UserEventSchema:
         # Create a user event with login information
-        return await UserEvent.create(
+        event = await UserEvent.create(
             user_id=user_id,
             event_type="login",
             ip_address=ip_address,
             user_agent=user_agent,
             metadata={"success": success},
         )
+        return await user_event_to_schema(event)
 
     @staticmethod
     async def get_recent_login_attempts(
         user_id: UUID,
         limit: int = 10,
-    ) -> List[UserEvent]:
-        return (
+    ) -> List[UserEventSchema]:
+        events = (
             await UserEvent.filter(
                 user_id=user_id,
                 event_type="login",
@@ -146,15 +160,22 @@ class UserEventRepository:
             .limit(limit)
         )
 
+        # Convert ORM models to schema objects using async converter
+        event_schemas: list[UserEventSchema] = []
+        for event in events:
+            event_schemas.append(await user_event_to_schema(event))
+
+        return event_schemas
+
     @staticmethod
     async def get_recent_failed_login_attempts(
         user_id: UUID,
         hours: int = 24,
         limit: int = 10,
-    ) -> List[UserEvent]:
+    ) -> List[UserEventSchema]:
         time_threshold = now_utc() - timedelta(hours=hours)
 
-        return (
+        events = (
             await UserEvent.filter(
                 user_id=user_id,
                 event_type="login",
@@ -164,6 +185,13 @@ class UserEventRepository:
             .order_by("-created_at")
             .limit(limit)
         )
+
+        # Convert ORM models to schema objects using async converter
+        event_schemas: list[UserEventSchema] = []
+        for event in events:
+            event_schemas.append(await user_event_to_schema(event))
+
+        return event_schemas
 
     @staticmethod
     async def count_recent_failed_login_attempts(
@@ -189,7 +217,7 @@ class UserEventRepository:
         success: Optional[bool] = None,
         skip: int = 0,
         limit: int = 20,
-    ) -> Tuple[List[UserEvent], int]:
+    ) -> UserEventListSchema:
         query = UserEvent.filter(event_type="login")
 
         if user_id:
@@ -207,4 +235,9 @@ class UserEventRepository:
         # Apply pagination
         attempts = await query.offset(skip).limit(limit).order_by("-created_at")
 
-        return attempts, count
+        # Convert ORM models to schema objects using async converter
+        event_schemas: list[UserEventSchema] = []
+        for attempt in attempts:
+            event_schemas.append(await user_event_to_schema(attempt))
+
+        return UserEventListSchema(events=event_schemas, count=count)

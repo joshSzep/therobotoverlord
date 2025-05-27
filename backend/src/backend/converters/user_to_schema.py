@@ -9,6 +9,7 @@ async def user_to_schema(user: User) -> UserSchema:
         display_name=user.display_name,
         is_verified=user.is_verified,
         role=user.role,
+        is_locked=user.is_locked,
         created_at=user.created_at,
         updated_at=user.updated_at,
         last_login=user.last_login,

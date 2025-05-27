@@ -15,7 +15,8 @@ router = APIRouter()
 
 @router.get("/{tag_id}/", response_model=TagResponse)
 async def get_tag(tag_id: UUID) -> TagResponse:
-    tag = await TagRepository.get_tag_by_id(str(tag_id))
+    # The repository now returns a TagResponse object directly
+    tag = await TagRepository.get_tag_by_id(tag_id)
 
     if not tag:
         raise HTTPException(
@@ -23,4 +24,4 @@ async def get_tag(tag_id: UUID) -> TagResponse:
             detail="Tag not found",
         )
 
-    return TagResponse.model_validate(tag)
+    return tag

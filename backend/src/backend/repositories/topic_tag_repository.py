@@ -5,9 +5,11 @@ from typing import Tuple
 from uuid import UUID
 
 # Project-specific imports
-from backend.db.models.tag import Tag
-from backend.db.models.topic import Topic
+from backend.converters import tag_to_schema
+from backend.converters import topic_to_schema
 from backend.db.models.topic_tag import TopicTag
+from backend.schemas.tag import TagResponse
+from backend.schemas.topic import TopicResponse
 
 
 class TopicTagRepository:
@@ -28,14 +30,20 @@ class TopicTagRepository:
         return False
 
     @staticmethod
-    async def get_tags_for_topic(topic_id: UUID) -> List[Tag]:
+    async def get_tags_for_topic(topic_id: UUID) -> List[TagResponse]:
         topic_tags = await TopicTag.filter(topic_id=topic_id).prefetch_related("tag")
-        return [tt.tag for tt in topic_tags]
+        tag_responses = []
+        for tt in topic_tags:
+            tag_responses.append(await tag_to_schema(tt.tag))
+        return tag_responses
 
     @staticmethod
-    async def get_topics_for_tag(tag_id: UUID) -> List[Topic]:
+    async def get_topics_for_tag(tag_id: UUID) -> List[TopicResponse]:
         topic_tags = await TopicTag.filter(tag_id=tag_id).prefetch_related("topic")
-        return [tt.topic for tt in topic_tags]
+        topic_responses = []
+        for tt in topic_tags:
+            topic_responses.append(await topic_to_schema(tt.topic))
+        return topic_responses
 
     @staticmethod
     async def add_tags_to_topic(topic_id: UUID, tag_ids: List[UUID]) -> List[TopicTag]:

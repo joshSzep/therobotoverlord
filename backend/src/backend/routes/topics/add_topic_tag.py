@@ -38,7 +38,7 @@ async def add_topic_tag(
         )
 
     # Verify that the tag exists
-    tag = await TagRepository.get_tag_by_id(str(request.tag_id))
+    tag = await TagRepository.get_tag_by_id(request.tag_id)
     if not tag:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

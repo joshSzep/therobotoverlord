@@ -6,12 +6,10 @@ from fastapi import APIRouter
 from fastapi import Query
 
 # Project-specific imports
-from backend.converters import topic_to_schema
 from backend.repositories.tag_repository import TagRepository
 from backend.repositories.topic_repository import TopicRepository
 from backend.repositories.topic_tag_repository import TopicTagRepository
 from backend.schemas.topic import TopicList
-from backend.schemas.topic import TopicResponse
 
 router = APIRouter()
 
@@ -30,19 +28,14 @@ async def list_topics(
             db_tag = await TagRepository.get_tag_by_name(tag)
 
         if db_tag:
-            # Get topics that have this tag
-            topic_list = await TopicTagRepository.get_topics_for_tag(db_tag.id)
+            # Get topics that have this tag (now returns TopicResponse objects)
+            topic_responses = await TopicTagRepository.get_topics_for_tag(db_tag.id)
 
             # Apply pagination manually
-            count = len(topic_list)
-            paginated_topics = topic_list[skip : skip + limit]
+            count = len(topic_responses)
+            paginated_responses = topic_responses[skip : skip + limit]
 
-            # Convert to response model using converter
-            topic_responses: list[TopicResponse] = []
-            for topic in paginated_topics:
-                topic_responses.append(await topic_to_schema(topic))
-
-            return TopicList(topics=topic_responses, count=count)
+            return TopicList(topics=paginated_responses, count=count)
 
         # If tag not found, return empty list
         return TopicList(topics=[], count=0)

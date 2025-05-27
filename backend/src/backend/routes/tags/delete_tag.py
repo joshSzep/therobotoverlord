@@ -28,8 +28,8 @@ async def delete_tag(
             detail="Only admins can delete tags",
         )
 
-    # Get the tag
-    tag = await TagRepository.get_tag_by_id(str(tag_id))
+    # Get the tag - repository now expects UUID objects
+    tag = await TagRepository.get_tag_by_id(tag_id)
     if not tag:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -44,8 +44,8 @@ async def delete_tag(
             detail=f"Cannot delete tag as it is used by {len(topics)} topics",
         )
 
-    # Delete the tag
-    success = await TagRepository.delete_tag(str(tag_id))
+    # Delete the tag - repository now expects UUID objects
+    success = await TagRepository.delete_tag(tag_id)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

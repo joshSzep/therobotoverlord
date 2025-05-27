@@ -16,8 +16,10 @@ RULE #1: **DO NOT** add docstrings unless specifically requested.
     - `app.py`: FastAPI application setup
     - `converters/`: Functions to convert between database models and Pydantic schemas
       - `post_to_schema.py`: Converts Post model to PostResponse schema
+      - `tag_to_schema.py`: Converts Tag model to TagResponse schema
+      - `topic_to_schema.py`: Converts Topic model to TopicResponse schema
       - `user_to_schema.py`: Converts User model to UserSchema
-      - etc.
+      - `user_session_to_schema.py`: Converts UserSession model to UserSessionSchema
     - `db/`: Database configuration
       - `config.py`: Tortoise ORM/aerich configuration
       - `base.py`: Base model for all database models
@@ -74,6 +76,35 @@ src/backend/
   - Each converter function is responsible for a specific model-to-schema conversion
   - Converters are used by repositories to return schema objects instead of ORM models
   - This keeps the conversion logic centralized and consistent across the application
+
+### Converters Pattern
+
+- **Purpose**: Converters provide a clean separation between database models and API schemas, ensuring consistent data transformation across the application.
+
+- **Implementation**:
+  - Each converter is an async function in its own file under `src/backend/converters/`
+  - Converters transform ORM models to Pydantic schemas (e.g., `user_to_schema`, `post_to_schema`)
+  - All repositories should use converters to return schema objects instead of raw ORM models
+  - Converters handle nested relationships and complex transformations
+
+- **Benefits**:
+  - Prevents circular dependencies between models and schemas
+  - Centralizes transformation logic for better maintainability
+  - Allows for validation and data enrichment during transformation
+  - Keeps ORM models focused on database interactions
+
+### Repository Pattern
+
+- **RULE #5: REPOSITORIES RETURN SCHEMAS** - All repository methods that return data should return Pydantic schema objects, not ORM models
+- **RULE #6: REPOSITORY NAMING** - Repository method names should be descriptive and follow consistent patterns:
+  - `get_*_by_id`: Retrieve a single item by ID
+  - `list_*`: Return a paginated list of items
+  - `create_*`: Create a new item
+  - `update_*`: Update an existing item
+  - `delete_*`: Delete an item
+
+- Repositories should handle all database interactions, including validation and error handling
+- Business logic should be kept minimal in repositories
 - **RULE #2: ONE ROUTE PER FILE** - Each API endpoint must be in its own file. For example, `list_posts`, `create_post`, `get_post`, etc. should each be in separate files named accordingly
 - **RULE #3: DESCRIPTIVE ROUTE FILENAMES** - Route filenames must match the function name they contain (e.g., `list_posts.py`, `create_post.py`, `get_post.py`) to ensure clarity and discoverability
 - **RULE #4: TRAILING SLASHES IN ROUTES** - All route paths must end with a trailing slash (`/`). For example, use `/users/profile/me/` instead of `/users/profile/me`
@@ -138,11 +169,40 @@ async def example(
 - Tests follow Arrange-Act-Assert pattern with 100% coverage required
 - Code quality enforced via Ruff (rules: E, F, I, UP, N, B, A, C4, RET, SIM, ERA), Mypy, Pyright, and pre-commit hooks
 
+## Testing
+
+- **Test Coverage**: Aim for high test coverage, especially for repositories and routes
+- **Test Organization**: Tests should mirror the structure of the source code
+- **Test Naming**: Test functions should be named descriptively, e.g., `test_list_tags_with_search`
+- **Mock Objects**: When testing routes, use proper schema objects for mocks, not raw ORM models
+- **Async Testing**: Use `pytest.mark.asyncio` for testing async functions
+- **Test Isolation**: Each test should be independent and not rely on the state of other tests
+
 ### Error Handling
 - Prefer using exceptions for error handling
 - NEVER overload return types (e.g., don't use `Optional[<type>]` with `None` to signal errors)
 - Raise specific exceptions rather than generic ones
 - Handle exceptions at appropriate levels of abstraction
+
+## Error Handling in Routes
+
+- Use FastAPI's `HTTPException` for client-facing errors
+- Include descriptive error messages that align with the project's theme
+- Use appropriate HTTP status codes:
+  - 400: Bad Request (client error)
+  - 401: Unauthorized (authentication required)
+  - 403: Forbidden (insufficient permissions)
+  - 404: Not Found (resource doesn't exist)
+  - 500: Internal Server Error (unexpected server error)
+- Log detailed error information for debugging but return sanitized messages to clients
+
+## Schema Design
+
+- **Base and Response Schemas**: Use inheritance to create base schemas (for input) and response schemas (for output)
+- **Validation**: Use Pydantic validators for complex validation logic
+- **Documentation**: Use Field descriptions for OpenAPI documentation
+- **Consistency**: Use similar field names across related schemas
+- **List Schemas**: For paginated responses, use consistent list schemas (e.g., `TagList`, `PostList`) with `items` and `count` fields
 
 ## Async Programming
 - **All API endpoints MUST be async** (`async def`)

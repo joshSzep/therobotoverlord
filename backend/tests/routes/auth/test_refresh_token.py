@@ -1,12 +1,13 @@
 from unittest import mock
+import uuid
 
 from fastapi import HTTPException
 import jwt
 import pytest
 
-from backend.db.models.user import User
 from backend.routes.auth.refresh_token import refresh_token
 from backend.schemas.token import TokenSchema
+from backend.schemas.user import UserSchema
 from backend.utils.settings import settings
 
 
@@ -15,9 +16,9 @@ async def test_refresh_token_success():
     """Test successful token refresh."""
     # Arrange
     # Create a valid refresh token payload
-    user_id = "test-user-id"
+    user_id = uuid.uuid4()
     payload = {
-        "sub": user_id,
+        "sub": str(user_id),
         "refresh": True,
     }
     token = jwt.encode(
@@ -29,20 +30,26 @@ async def test_refresh_token_success():
     # Mock the request object
     mock_request = mock.MagicMock()
 
-    # Create a mock user
-    mock_user = mock.AsyncMock()
-    mock_user.id = user_id
-    mock_user.email = "test@example.com"
-    mock_user.role = "user"
-    mock_user.is_locked = False
+    # Create a mock UserSchema
+    mock_user = UserSchema(
+        id=user_id,
+        email="test@example.com",
+        display_name="Test User",
+        is_verified=True,
+        role="user",
+        is_locked=False,
+        created_at=mock.MagicMock(),
+        updated_at=mock.MagicMock(),
+    )
 
     # Mock dependencies
     with (
         mock.patch(
             "backend.routes.auth.refresh_token.decode_token", return_value=payload
         ),
-        mock.patch.object(
-            User, "get_or_none", new=mock.AsyncMock(return_value=mock_user)
+        mock.patch(
+            "backend.routes.auth.refresh_token.UserRepository.get_user_by_id",
+            new=mock.AsyncMock(return_value=mock_user),
         ),
         mock.patch(
             "backend.routes.auth.refresh_token.create_access_token",
@@ -132,7 +139,10 @@ async def test_refresh_token_user_not_found():
         mock.patch(
             "backend.routes.auth.refresh_token.decode_token", return_value=payload
         ),
-        mock.patch.object(User, "get_or_none", new=mock.AsyncMock(return_value=None)),
+        mock.patch(
+            "backend.routes.auth.refresh_token.UserRepository.get_user_by_id",
+            new=mock.AsyncMock(return_value=None),
+        ),
     ):
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
@@ -147,27 +157,35 @@ async def test_refresh_token_user_not_found():
 async def test_refresh_token_locked_account():
     """Test refresh token with a locked account."""
     # Arrange
-    user_id = "locked-user-id"
+    user_id = uuid.uuid4()
     payload = {
-        "sub": user_id,
+        "sub": str(user_id),
         "refresh": True,
     }
 
     # Mock the request object
     mock_request = mock.MagicMock()
 
-    # Create a mock user with is_locked=True
-    mock_user = mock.AsyncMock()
-    mock_user.id = user_id
-    mock_user.is_locked = True
+    # Create a mock UserSchema with is_locked=True
+    mock_user = UserSchema(
+        id=user_id,
+        email="locked@example.com",
+        display_name="Locked User",
+        is_verified=True,
+        role="user",
+        is_locked=True,
+        created_at=mock.MagicMock(),
+        updated_at=mock.MagicMock(),
+    )
 
     # Mock dependencies
     with (
         mock.patch(
             "backend.routes.auth.refresh_token.decode_token", return_value=payload
         ),
-        mock.patch.object(
-            User, "get_or_none", new=mock.AsyncMock(return_value=mock_user)
+        mock.patch(
+            "backend.routes.auth.refresh_token.UserRepository.get_user_by_id",
+            new=mock.AsyncMock(return_value=mock_user),
         ),
     ):
         # Act & Assert
