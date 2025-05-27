@@ -31,4 +31,4 @@ async def get_user_events(
     for event in events:
         event_schemas.append(await user_event_to_schema(event))
 
-    return UserEventListSchema(events=event_schemas, count=count)
+    return UserEventListSchema(user_events=event_schemas, count=count)

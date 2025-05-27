@@ -38,4 +38,4 @@ async def list_login_attempts(
     for attempt in attempts:
         event_schemas.append(await user_event_to_schema(attempt))
 
-    return UserEventListSchema(events=event_schemas, count=count)
+    return UserEventListSchema(user_events=event_schemas, count=count)
