@@ -5,10 +5,10 @@ from uuid import UUID
 from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import status
-from tortoise.exceptions import DoesNotExist
 
 # Project-specific imports
-from backend.db.models.topic import Topic
+from backend.repositories.topic_repository import TopicRepository
+from backend.repositories.topic_tag_repository import TopicTagRepository
 from backend.routes.topics.schemas import TagResponse
 from backend.routes.topics.schemas import TopicResponse
 
@@ -17,24 +17,26 @@ router = APIRouter()
 
 @router.get("/{topic_id}/", response_model=TopicResponse)
 async def get_topic(topic_id: UUID) -> TopicResponse:
-    try:
-        topic = await Topic.get(id=topic_id).prefetch_related(
-            "author", "topic_tags__tag"
-        )
-    except DoesNotExist:
+    # Get the topic
+    topic = await TopicRepository.get_topic_by_id(topic_id)
+    if not topic:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Topic not found",
         )
 
-    # Extract tags from the topic_tags relation
+    # Fetch related author
+    await topic.fetch_related("author")
+
+    # Get tags for this topic
+    topic_tags = await TopicTagRepository.get_tags_for_topic(topic.id)
     tags = [
         TagResponse(
-            id=tt.tag.id,
-            name=tt.tag.name,
-            slug=tt.tag.slug,
+            id=tag.id,
+            name=tag.name,
+            slug=tag.slug,
         )
-        for tt in topic.topic_tags
+        for tag in topic_tags
     ]
 
     # Create the response object

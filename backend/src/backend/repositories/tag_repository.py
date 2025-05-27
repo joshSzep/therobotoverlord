@@ -34,6 +34,10 @@ class TagRepository:
         return await Tag.get_or_none(slug=slug)
 
     @staticmethod
+    async def get_tag_by_name(name: str) -> Optional[Tag]:
+        return await Tag.get_or_none(name=name)
+
+    @staticmethod
     async def create_tag(name: str, slug: str) -> Tag:
         return await Tag.create(name=name, slug=slug)
 

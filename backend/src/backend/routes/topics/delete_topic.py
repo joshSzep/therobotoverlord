@@ -6,11 +6,10 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
-from tortoise.exceptions import DoesNotExist
 
 # Project-specific imports
-from backend.db.models.topic import Topic
-from backend.db.models.user import User
+from backend.db.models.user import User  # Keep for type annotation
+from backend.repositories.topic_repository import TopicRepository
 from backend.utils.auth import get_current_user
 
 router = APIRouter()
@@ -21,13 +20,16 @@ async def delete_topic(
     topic_id: UUID,
     current_user: User = Depends(get_current_user),
 ) -> None:
-    try:
-        topic = await Topic.get(id=topic_id).prefetch_related("author")
-    except DoesNotExist:
+    # Get the topic
+    topic = await TopicRepository.get_topic_by_id(topic_id)
+    if not topic:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Topic not found",
         )
+
+    # Fetch related author
+    await topic.fetch_related("author")
 
     # Check if the current user is the author
     if str(topic.author.id) != str(current_user.id):
@@ -37,4 +39,9 @@ async def delete_topic(
         )
 
     # Delete the topic (this will also delete related topic_tags due to cascading)
-    await topic.delete()
+    success = await TopicRepository.delete_topic(topic_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete topic",
+        )

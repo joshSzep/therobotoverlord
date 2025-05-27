@@ -25,24 +25,24 @@ class TopicRepository:
 
     @staticmethod
     async def create_topic(
-        name: str,
+        title: str,
         description: str,
         created_by_id: UUID,
     ) -> Topic:
         return await Topic.create(
-            name=name,
+            title=title,
             description=description,
-            created_by_id=created_by_id,
+            author_id=created_by_id,
         )
 
     @staticmethod
     async def update_topic(
-        topic_id: UUID, name: Optional[str] = None, description: Optional[str] = None
+        topic_id: UUID, title: Optional[str] = None, description: Optional[str] = None
     ) -> Optional[Topic]:
         topic = await Topic.get_or_none(id=topic_id)
         if topic:
-            if name is not None:
-                topic.name = name
+            if title is not None:
+                topic.title = title
             if description is not None:
                 topic.description = description
             await topic.save()

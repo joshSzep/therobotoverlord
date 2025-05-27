@@ -6,9 +6,9 @@ from fastapi import APIRouter
 from fastapi import Query
 
 # Project-specific imports
-from backend.db.models.tag import Tag
-from backend.db.models.topic import Topic
-from backend.db.models.topic_tag import TopicTag
+from backend.repositories.tag_repository import TagRepository
+from backend.repositories.topic_repository import TopicRepository
+from backend.repositories.topic_tag_repository import TopicTagRepository
 from backend.routes.auth.schemas import UserSchema
 from backend.routes.topics.schemas import TagResponse
 from backend.routes.topics.schemas import TopicList
@@ -23,25 +23,31 @@ async def list_topics(
     limit: int = Query(10, ge=1, le=100),
     tag: Optional[str] = None,
 ) -> TopicList:
-    # Start with all topics and prefetch the author relation
-    query = Topic.all().prefetch_related("author")
+    # Get topics with pagination
+    topics = []
+    count = 0
 
     # Filter by tag if provided
     if tag:
         # Find the tag by name or slug
-        db_tag = await Tag.get_or_none(name=tag) or await Tag.get_or_none(slug=tag)
+        db_tag = await TagRepository.get_tag_by_slug(tag)
+        if not db_tag:
+            db_tag = await TagRepository.get_tag_by_name(tag)
         if db_tag:
-            # Get topic IDs that have this tag
-            topic_tags = await TopicTag.filter(tag=db_tag).prefetch_related("topic")
-            topic_ids = [tt.topic.id for tt in topic_tags]
-            # Filter topics by these IDs
-            query = query.filter(id__in=topic_ids)
-
-    # Get total count for pagination
-    count = await query.count()
-
-    # Apply pagination
-    topics = await query.offset(skip).limit(limit)
+            # Get topics that have this tag
+            topic_list = await TopicTagRepository.get_topics_for_tag(db_tag.id)
+            # Apply pagination manually
+            count = len(topic_list)
+            topics = topic_list[skip : skip + limit]
+            # Fetch related author for each topic
+            for topic in topics:
+                await topic.fetch_related("author")
+    else:
+        # Get all topics with pagination
+        topics, count = await TopicRepository.list_topics(skip=skip, limit=limit)
+        # Fetch related author for each topic
+        for topic in topics:
+            await topic.fetch_related("author")
 
     # Convert to response model
     topic_responses: list[TopicResponse] = []
@@ -58,9 +64,16 @@ async def list_topics(
             updated_at=topic.author.updated_at,
         )
 
-        # For now, we'll use an empty list for tags
-        # The topic_tags relation is not properly set up yet
-        tags: list[TagResponse] = []
+        # Get tags for this topic
+        topic_tags = await TopicTagRepository.get_tags_for_topic(topic.id)
+        tags = [
+            TagResponse(
+                id=tag.id,
+                name=tag.name,
+                slug=tag.slug,
+            )
+            for tag in topic_tags
+        ]
 
         # Create the response object
         topic_response = TopicResponse(

@@ -1,4 +1,5 @@
 # Standard library imports
+from typing import List
 from uuid import UUID
 
 # Third-party imports
@@ -7,14 +8,13 @@ from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
 from slugify.slugify import slugify
-from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
 # Project-specific imports
-from backend.db.models.tag import Tag
-from backend.db.models.topic import Topic
-from backend.db.models.topic_tag import TopicTag
 from backend.db.models.user import User
+from backend.repositories.tag_repository import TagRepository
+from backend.repositories.topic_repository import TopicRepository
+from backend.repositories.topic_tag_repository import TopicTagRepository
 from backend.routes.topics.schemas import TagResponse
 from backend.routes.topics.schemas import TopicResponse
 from backend.routes.topics.schemas import TopicUpdate
@@ -30,13 +30,16 @@ async def update_topic(
     topic_data: TopicUpdate,
     current_user: User = Depends(get_current_user),
 ) -> TopicResponse:
-    try:
-        topic = await Topic.get(id=topic_id).prefetch_related("author")
-    except DoesNotExist:
+    # Get the topic
+    topic = await TopicRepository.get_topic_by_id(topic_id)
+    if not topic:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Topic not found",
         )
+
+    # Fetch related author
+    await topic.fetch_related("author")
 
     # Check if the current user is the author
     if str(topic.author.id) != str(current_user.id):
@@ -46,41 +49,43 @@ async def update_topic(
         )
 
     # Update topic fields if provided
-    if topic_data.title is not None:
-        topic.title = topic_data.title
-
-    if topic_data.description is not None:
-        topic.description = topic_data.description
-
-    await topic.save()
+    topic = await TopicRepository.update_topic(
+        topic_id=topic_id,
+        title=topic_data.title,
+        description=topic_data.description,
+    )
+    if not topic:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Topic not found after update",
+        )
 
     # Update tags if provided
     if topic_data.tags is not None:
-        # Remove existing topic-tag relationships
-        await TopicTag.filter(topic_id=topic.id).delete()
-
-        # Create new topic-tag relationships
+        # Process tags
+        tag_ids: List[UUID] = []
         for tag_name in topic_data.tags:
             # Try to find existing tag or create a new one
-            tag, _ = await Tag.get_or_create(
-                name=tag_name,
-                defaults={"slug": slugify(tag_name)},
-            )
+            tag = await TagRepository.get_tag_by_slug(slugify(tag_name))
+            if not tag:
+                tag = await TagRepository.create_tag(tag_name, slugify(tag_name))
 
-            # Create the topic-tag relationship
-            await TopicTag.create(topic=topic, tag=tag)
+            tag_ids.append(tag.id)
 
-    # Fetch the updated topic with related data
-    await topic.fetch_related("topic_tags__tag")
+        # Set topic tags (this will handle adding new ones and removing old ones)
+        await TopicTagRepository.set_topic_tags(topic.id, tag_ids)
 
-    # Extract tags from the topic_tags relation
+    # Get tags for the topic
+    tags_list = await TopicTagRepository.get_tags_for_topic(topic.id)
+
+    # Convert to TagResponse objects
     tags = [
         TagResponse(
-            id=tt.tag.id,
-            name=tt.tag.name,
-            slug=tt.tag.slug,
+            id=tag.id,
+            name=tag.name,
+            slug=tag.slug,
         )
-        for tt in topic.topic_tags
+        for tag in tags_list
     ]
 
     # Create the response object

@@ -8,8 +8,8 @@ from fastapi import Query
 from fastapi import status
 
 # Project-specific imports
-from backend.db.models.post import Post
-from backend.db.models.topic import Topic
+from backend.repositories.post_repository import PostRepository
+from backend.repositories.topic_repository import TopicRepository
 from backend.routes.auth.schemas import UserSchema
 from backend.routes.posts.schemas import PostList
 from backend.routes.posts.schemas import PostResponse
@@ -24,28 +24,31 @@ async def list_topic_posts(
     limit: int = Query(20, ge=1, le=100),
 ) -> PostList:
     # Verify that the topic exists
-    topic = await Topic.get_or_none(id=topic_id)
+    topic = await TopicRepository.get_topic_by_id(topic_id)
     if not topic:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Topic not found",
         )
 
-    # Get top-level posts (no parent post)
-    query = Post.filter(topic=topic, parent_post=None)
-    query = query.prefetch_related("author", "topic")
+    # Get top-level posts for this topic
+    posts, count = await PostRepository.list_posts(
+        skip=skip,
+        limit=limit,
+        topic_id=topic_id,
+    )
 
-    # Get total count for pagination
-    count = await query.count()
-
-    # Apply pagination
-    posts = await query.offset(skip).limit(limit)
+    # Filter out posts that have a parent (only show top-level posts)
+    # We need to fetch the parent_post relation first
+    for post in posts:
+        await post.fetch_related("parent_post")
+    posts = [post for post in posts if post.parent_post is None]
 
     # Prepare response with reply counts
     post_responses: list[PostResponse] = []
     for post in posts:
         # Get reply count for each post
-        reply_count = await Post.filter(parent_post_id=post.id).count()
+        reply_count = await PostRepository.get_reply_count(post.id)
 
         # Create author schema
         author_schema = UserSchema(
