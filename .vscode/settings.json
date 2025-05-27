@@ -6,10 +6,11 @@
     "python.testing.pytestEnabled": true,
     "python.pythonPath": "./backend/.venv/bin/python",
     "python.venvPath": "./backend/.venv",
-    "windsurfPyright.analysis.exclude": [
-        "./backend/tests/**",
-    ],
-    "windsurfPyright.analysis.typeCheckingMode": "standard",
-    "windsurfPyright.analysis.useLibraryCodeForTypes": true,
     "python.testing.pytestPath": "./backend/.venv/bin/pytest",
+
+    "windsurfPyright.analysis.typeCheckingMode": "standard",
+    "windsurfPyright.analysis.exclude": [
+        "./backend/tests/**"
+    ],
+    "windsurfPyright.analysis.useLibraryCodeForTypes": true
 }
