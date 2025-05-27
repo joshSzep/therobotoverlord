@@ -7,7 +7,7 @@ from fastapi import status
 from backend.db.models.user import User  # Keep for type annotation
 from backend.repositories.user_event_repository import UserEventRepository
 from backend.repositories.user_repository import UserRepository
-from backend.schemas.profile import PasswordChangeRequestSchema
+from backend.schemas.password import PasswordChangeRequestSchema
 from backend.utils.auth import get_current_user
 from backend.utils.constants import UNKNOWN_IP_ADDRESS_MARKER
 from backend.utils.password import validate_password

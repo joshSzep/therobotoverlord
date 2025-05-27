@@ -8,9 +8,8 @@ from uuid import UUID
 from pydantic import BaseModel
 from pydantic import Field
 
-from backend.schemas.tag import TagResponse
-
 # Project-specific imports
+from backend.schemas.tag import TagResponse
 from backend.schemas.user import UserSchema
 
 
