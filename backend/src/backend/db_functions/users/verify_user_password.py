@@ -1,6 +1,9 @@
 # Standard library imports
 from uuid import UUID
 
+# Third-party imports
+import bcrypt
+
 # Project-specific imports
 from backend.db.models.user import User
 
@@ -10,4 +13,6 @@ async def verify_user_password(user_id: UUID, password: str) -> bool:
     if not user:
         return False
 
-    return await user.verify_password(password)
+    password_bytes = password.encode("utf-8")
+    hash_bytes = user.password_hash.encode("utf-8")
+    return bcrypt.checkpw(password_bytes, hash_bytes)

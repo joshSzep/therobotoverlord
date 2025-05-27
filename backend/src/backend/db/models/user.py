@@ -1,6 +1,5 @@
 import enum
 
-import bcrypt
 from tortoise import fields
 
 from backend.db.base import BaseModel
@@ -25,14 +24,3 @@ class User(BaseModel):
     failed_login_attempts = fields.IntField(default=0)
     role = fields.CharEnumField(UserRole, default=UserRole.USER)
     is_locked = fields.BooleanField(default=False)
-
-    async def set_password(self, password: str) -> None:
-        password_bytes = password.encode("utf-8")
-        salt = bcrypt.gensalt()
-        hashed = bcrypt.hashpw(password_bytes, salt)
-        self.password_hash = hashed.decode("utf-8")
-
-    async def verify_password(self, password: str) -> bool:
-        password_bytes = password.encode("utf-8")
-        hash_bytes = self.password_hash.encode("utf-8")
-        return bcrypt.checkpw(password_bytes, hash_bytes)

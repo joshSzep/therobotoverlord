@@ -1,10 +1,15 @@
+# Standard library imports
 import asyncio
 import logging
 
+# Third-party imports
 from tortoise import Tortoise
 
+# Project-specific imports
 from backend.db.config import TORTOISE_ORM
-from backend.db.models.user_session import UserSession
+from backend.db_functions.user_sessions.cleanup_expired_sessions import (
+    cleanup_expired_sessions as db_cleanup_expired_sessions,
+)
 from backend.utils.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -16,8 +21,8 @@ async def cleanup_expired_sessions() -> int:
         await Tortoise.init(config=TORTOISE_ORM)
 
     try:
-        # Cleanup expired sessions
-        count = await UserSession.cleanup_expired()
+        # Cleanup expired sessions using the db_functions implementation
+        count = await db_cleanup_expired_sessions()
 
         if count > 0:
             logger.info(f"Cleaned up {count} expired sessions")

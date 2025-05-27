@@ -6,6 +6,7 @@ from uuid import UUID
 from backend.converters import user_to_schema
 from backend.db.models.user import User
 from backend.db.models.user_event import UserEvent
+from backend.db_functions.user_events.log_account_lockout import log_account_lockout
 from backend.schemas.user import UserSchema
 
 
@@ -38,6 +39,6 @@ async def record_login_failure(
 
     # Log account lockout event if account was just locked
     if was_locked:
-        await UserEvent.log_account_lockout(user.id, ip_address, user_agent)
+        await log_account_lockout(user.id, ip_address, user_agent)
 
     return await user_to_schema(user)

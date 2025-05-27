@@ -7,13 +7,8 @@ from backend.utils.datetime import now_utc
 
 async def cleanup_expired_sessions() -> int:
     """Deactivate all expired sessions."""
-    current_time = now_utc()
-    sessions = await UserSession.filter(is_active=True, expires_at__lt=current_time)
-    count = 0
-
-    for session in sessions:
-        session.is_active = False
-        await session.save()
-        count += 1
-
+    count = await UserSession.filter(
+        expires_at__lt=now_utc(),
+        is_active=True,
+    ).update(is_active=False)
     return count
