@@ -6,9 +6,10 @@ from fastapi import APIRouter
 from fastapi import Query
 
 # Project-specific imports
-from backend.repositories.tag_repository import TagRepository
-from backend.repositories.topic_repository import TopicRepository
-from backend.repositories.topic_tag_repository import TopicTagRepository
+from backend.db_functions.tags import get_tag_by_name
+from backend.db_functions.tags import get_tag_by_slug
+from backend.db_functions.topic_tags import get_topics_for_tag
+from backend.db_functions.topics import list_topics as db_list_topics
 from backend.schemas.topic import TopicList
 
 router = APIRouter()
@@ -23,13 +24,13 @@ async def list_topics(
     # Check if filtering by tag
     if tag:
         # Find the tag by name or slug
-        db_tag = await TagRepository.get_tag_by_slug(tag)
+        db_tag = await get_tag_by_slug(tag)
         if not db_tag:
-            db_tag = await TagRepository.get_tag_by_name(tag)
+            db_tag = await get_tag_by_name(tag)
 
         if db_tag:
             # Get topics that have this tag (now returns TopicResponse objects)
-            topic_responses = await TopicTagRepository.get_topics_for_tag(db_tag.id)
+            topic_responses = await get_topics_for_tag(db_tag.id)
 
             # Apply pagination manually
             count = len(topic_responses)
@@ -40,5 +41,5 @@ async def list_topics(
         # If tag not found, return empty list
         return TopicList(topics=[], count=0)
     else:
-        # Get all topics with pagination using repository
-        return await TopicRepository.list_topics(skip=skip, limit=limit)
+        # Get all topics with pagination using data access function
+        return await db_list_topics(skip=skip, limit=limit)

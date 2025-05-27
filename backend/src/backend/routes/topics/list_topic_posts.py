@@ -8,8 +8,8 @@ from fastapi import Query
 from fastapi import status
 
 # Project-specific imports
-from backend.repositories.post_repository import PostRepository
-from backend.repositories.topic_repository import TopicRepository
+from backend.db_functions.posts import list_posts
+from backend.db_functions.topics import get_topic_by_id
 from backend.schemas.post import PostList
 from backend.schemas.post import PostResponse
 
@@ -23,7 +23,7 @@ async def list_topic_posts(
     limit: int = Query(20, ge=1, le=100),
 ) -> PostList:
     # Verify that the topic exists
-    topic = await TopicRepository.get_topic_by_id(topic_id)
+    topic = await get_topic_by_id(topic_id)
     if not topic:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -31,7 +31,7 @@ async def list_topic_posts(
         )
 
     # Get posts for this topic
-    post_list = await PostRepository.list_posts(
+    post_list = await list_posts(
         skip=skip,
         limit=limit,
         topic_id=topic_id,

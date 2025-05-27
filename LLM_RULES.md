@@ -1,6 +1,20 @@
 # The Robot Overlord Project Guidelines
 
-RULE #1: **DO NOT** add docstrings unless specifically requested.
+## Project Rules
+
+- **RULE #1: NO DOCSTRINGS** - **DO NOT** add docstrings unless specifically requested.
+- **RULE #2: ONE ROUTE PER FILE** - Each API endpoint must be in its own file. For example, `list_posts`, `create_post`, `get_post`, etc. should each be in separate files named accordingly.
+- **RULE #3: DESCRIPTIVE ROUTE FILENAMES** - Route filenames must match the function name they contain (e.g., `list_posts.py`, `create_post.py`, `get_post.py`) to ensure clarity and discoverability.
+- **RULE #4: TRAILING SLASHES IN ROUTES** - All route paths must end with a trailing slash (`/`). For example, use `/users/profile/me/` instead of `/users/profile/me`.
+- **RULE #5: DATABASE FUNCTIONS RETURN SCHEMAS** - All database functions that return data should return Pydantic schema objects, not ORM models.
+- **RULE #6: DATABASE FUNCTION NAMING** - Database function names should be descriptive and follow consistent patterns:
+  - `get_*_by_id`: Retrieve a single item by ID
+  - `list_*`: Return a paginated list of items
+  - `create_*`: Create a new item
+  - `update_*`: Update an existing item
+  - `delete_*`: Delete an item
+- **RULE #7: ONE FUNCTION PER FILE** - Each database function must be in its own file. For example, `get_user_by_id`, `list_users`, `create_user`, etc. should each be in separate files named accordingly.
+- **RULE #8: DESCRIPTIVE FUNCTION FILENAMES** - Database function filenames must match the function name they contain (e.g., `get_user_by_id.py`, `list_users.py`, `create_user.py`) to ensure clarity and discoverability.
 
 ## Project Vision
 - **Concept**: AI-moderated debate platform with satirical Soviet propaganda aesthetic
@@ -24,6 +38,14 @@ RULE #1: **DO NOT** add docstrings unless specifically requested.
       - `config.py`: Tortoise ORM/aerich configuration
       - `base.py`: Base model for all database models
       - `models/`: Database models, 1 model per file
+    - `db_functions/`: Database access functions organized by entity
+      - `users/`: User-related database functions
+      - `posts/`: Post-related database functions
+      - `topics/`: Topic-related database functions
+      - `tags/`: Tag-related database functions
+      - `user_sessions/`: User session-related database functions
+      - `user_events/`: User event-related database functions
+      - `topic_tags/`: Topic-tag relationship database functions
     - `routes/`: API endpoints by feature, one package per feature
     - `schemas/`: Pydantic schemas organized by entity
       - `user.py`: User-related schemas
@@ -71,10 +93,10 @@ src/backend/
 **Key principles**:
 - Routes organized by feature with separation of concerns (endpoints, utilities)
 - Schemas organized by entity type to reduce duplication and improve maintainability
-- Database models and repositories also organized by technical concern
+- Database models and functions organized by technical concern
 - **Converters** handle the transformation between database models and Pydantic schemas
   - Each converter function is responsible for a specific model-to-schema conversion
-  - Converters are used by repositories to return schema objects instead of ORM models
+  - Converters are used by database functions to return schema objects instead of ORM models
   - This keeps the conversion logic centralized and consistent across the application
 
 ### Converters Pattern
@@ -84,7 +106,7 @@ src/backend/
 - **Implementation**:
   - Each converter is an async function in its own file under `src/backend/converters/`
   - Converters transform ORM models to Pydantic schemas (e.g., `user_to_schema`, `post_to_schema`)
-  - All repositories should use converters to return schema objects instead of raw ORM models
+  - All database functions should use converters to return schema objects instead of raw ORM models
   - Converters handle nested relationships and complex transformations
 
 - **Benefits**:
@@ -93,21 +115,11 @@ src/backend/
   - Allows for validation and data enrichment during transformation
   - Keeps ORM models focused on database interactions
 
-### Repository Pattern
+### Database Functions Pattern
 
-- **RULE #5: REPOSITORIES RETURN SCHEMAS** - All repository methods that return data should return Pydantic schema objects, not ORM models
-- **RULE #6: REPOSITORY NAMING** - Repository method names should be descriptive and follow consistent patterns:
-  - `get_*_by_id`: Retrieve a single item by ID
-  - `list_*`: Return a paginated list of items
-  - `create_*`: Create a new item
-  - `update_*`: Update an existing item
-  - `delete_*`: Delete an item
-
-- Repositories should handle all database interactions, including validation and error handling
-- Business logic should be kept minimal in repositories
-- **RULE #2: ONE ROUTE PER FILE** - Each API endpoint must be in its own file. For example, `list_posts`, `create_post`, `get_post`, etc. should each be in separate files named accordingly
-- **RULE #3: DESCRIPTIVE ROUTE FILENAMES** - Route filenames must match the function name they contain (e.g., `list_posts.py`, `create_post.py`, `get_post.py`) to ensure clarity and discoverability
-- **RULE #4: TRAILING SLASHES IN ROUTES** - All route paths must end with a trailing slash (`/`). For example, use `/users/profile/me/` instead of `/users/profile/me`
+- Database functions should handle all database interactions, including validation and error handling
+- Business logic should be kept minimal in database functions
+- Each entity's functions are grouped in their own directory under `db_functions/`
 
 ## Development
 - **Prerequisites**: `git`, `just`, `node`, `uv`, `python` (3.12.10)

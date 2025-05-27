@@ -3,8 +3,12 @@ from fastapi import HTTPException
 from fastapi import Request
 from fastapi import status
 
-from backend.repositories.user_event_repository import UserEventRepository
-from backend.repositories.user_repository import UserRepository
+from backend.db_functions.user_events import log_login_failure
+from backend.db_functions.user_events import log_login_success
+from backend.db_functions.users import get_user_by_email
+from backend.db_functions.users import record_login_failure
+from backend.db_functions.users import record_login_success
+from backend.db_functions.users import verify_user_password
 from backend.schemas.token import TokenSchema
 from backend.schemas.user import UserLoginSchema
 from backend.utils.auth import create_access_token
@@ -29,22 +33,22 @@ async def login(
     ip_address = request.client.host
     user_agent = request.headers.get("User-Agent", "")
 
-    # Find user by email using repository
-    user = await UserRepository.get_user_by_email(login_data.email)
+    # Find user by email using data access function
+    user = await get_user_by_email(login_data.email)
 
     # Check if user exists and password is correct
-    if not user or not await UserRepository.verify_user_password(
+    if not user or not await verify_user_password(
         user.id,
         login_data.password,
     ):
         # If user exists, record login failure
         if user:
-            await UserRepository.record_login_failure(user.id, ip_address, user_agent)
+            await record_login_failure(user.id, ip_address, user_agent)
             # Log the event
-            await UserEventRepository.log_login_failure(user.id, ip_address, user_agent)
+            await log_login_failure(user.id, ip_address, user_agent)
         else:
             # Log anonymous login failure
-            await UserEventRepository.log_login_failure(None, ip_address, user_agent)
+            await log_login_failure(None, ip_address, user_agent)
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -61,10 +65,10 @@ async def login(
         )
 
     # Record successful login
-    await UserRepository.record_login_success(user.id, ip_address, user_agent)
+    await record_login_success(user.id, ip_address, user_agent)
 
     # Log the event
-    await UserEventRepository.log_login_success(user.id, ip_address, user_agent)
+    await log_login_success(user.id, ip_address, user_agent)
 
     # Create token data
     token_data = {

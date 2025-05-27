@@ -41,9 +41,7 @@ async def test_list_tags_no_filters():
     )
 
     # Mock the repository method
-    with mock.patch(
-        "backend.routes.tags.list_tags.TagRepository.list_tags"
-    ) as mock_list_tags:
+    with mock.patch("backend.routes.tags.list_tags.db_list_tags") as mock_list_tags:
         # Configure the mock to return our TagList directly
         mock_list_tags.return_value = mock_tag_list
 
@@ -86,9 +84,7 @@ async def test_list_tags_with_search():
     )
 
     # Mock the repository method
-    with mock.patch(
-        "backend.routes.tags.list_tags.TagRepository.list_tags"
-    ) as mock_list_tags:
+    with mock.patch("backend.routes.tags.list_tags.db_list_tags") as mock_list_tags:
         # Configure the mock to return our TagList directly
         mock_list_tags.return_value = mock_tag_list
 
@@ -143,9 +139,7 @@ async def test_list_tags_with_pagination():
     )
 
     # Mock the repository method
-    with mock.patch(
-        "backend.routes.tags.list_tags.TagRepository.list_tags"
-    ) as mock_list_tags:
+    with mock.patch("backend.routes.tags.list_tags.db_list_tags") as mock_list_tags:
         # Configure the mock to return our TagList directly
         mock_list_tags.return_value = mock_tag_list
 

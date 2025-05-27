@@ -76,15 +76,15 @@ async def test_create_post_success():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.posts.create_post.TopicRepository.get_topic_by_id",
+            "backend.routes.posts.create_post.get_topic_by_id",
             new=mock.AsyncMock(return_value=mock_topic),
         ),
         mock.patch(
-            "backend.routes.posts.create_post.PostRepository.get_post_by_id",
+            "backend.routes.posts.create_post.get_post_by_id",
             new=mock.AsyncMock(return_value=None),
         ),
         mock.patch(
-            "backend.routes.posts.create_post.PostRepository.create_post",
+            "backend.routes.posts.create_post.db_create_post",
             new=mock.AsyncMock(return_value=post_response),
         ),
     ):
@@ -113,7 +113,7 @@ async def test_create_post_topic_not_found():
 
     # Mock dependencies - simulate topic not found
     with mock.patch(
-        "backend.routes.posts.create_post.TopicRepository.get_topic_by_id",
+        "backend.routes.posts.create_post.get_topic_by_id",
         new=mock.AsyncMock(return_value=None),
     ):
         # Act & Assert
@@ -199,15 +199,15 @@ async def test_create_post_with_parent():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.posts.create_post.TopicRepository.get_topic_by_id",
+            "backend.routes.posts.create_post.get_topic_by_id",
             new=mock.AsyncMock(return_value=mock_topic),
         ),
         mock.patch(
-            "backend.routes.posts.create_post.PostRepository.get_post_by_id",
+            "backend.routes.posts.create_post.get_post_by_id",
             new=mock.AsyncMock(return_value=mock_parent_post),
         ),
         mock.patch(
-            "backend.routes.posts.create_post.PostRepository.create_post",
+            "backend.routes.posts.create_post.db_create_post",
             new=mock.AsyncMock(return_value=post_response),
         ),
     ):
@@ -241,11 +241,11 @@ async def test_create_post_parent_not_found():
     # Mock dependencies - simulate parent post not found
     with (
         mock.patch(
-            "backend.routes.posts.create_post.TopicRepository.get_topic_by_id",
+            "backend.routes.posts.create_post.get_topic_by_id",
             new=mock.AsyncMock(return_value=mock_topic),
         ),
         mock.patch(
-            "backend.routes.posts.create_post.PostRepository.get_post_by_id",
+            "backend.routes.posts.create_post.get_post_by_id",
             new=mock.AsyncMock(return_value=None),
         ),
     ):
@@ -283,11 +283,11 @@ async def test_create_post_parent_different_topic():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.posts.create_post.TopicRepository.get_topic_by_id",
+            "backend.routes.posts.create_post.get_topic_by_id",
             new=mock.AsyncMock(return_value=mock_topic),
         ),
         mock.patch(
-            "backend.routes.posts.create_post.PostRepository.get_post_by_id",
+            "backend.routes.posts.create_post.get_post_by_id",
             new=mock.AsyncMock(return_value=mock_parent_post),
         ),
     ):

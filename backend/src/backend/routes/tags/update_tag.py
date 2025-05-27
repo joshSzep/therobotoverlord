@@ -11,7 +11,8 @@ from tortoise.exceptions import IntegrityError
 
 # Project-specific imports
 from backend.db.models.user import User
-from backend.repositories.tag_repository import TagRepository
+from backend.db_functions.tags import get_tag_by_id
+from backend.db_functions.tags import update_tag as db_update_tag
 from backend.schemas.tag import TagCreate
 from backend.schemas.tag import TagResponse
 from backend.utils.auth import get_current_user
@@ -32,8 +33,8 @@ async def update_tag(
             detail="Only moderators and admins can update tags",
         )
 
-    # Get the tag - repository now expects UUID objects and returns TagResponse objects
-    tag = await TagRepository.get_tag_by_id(tag_id)
+    # Get the tag - function expects UUID objects and returns TagResponse objects
+    tag = await get_tag_by_id(tag_id)
     if not tag:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -41,9 +42,9 @@ async def update_tag(
         )
 
     try:
-        # Update the tag - repository now expects UUID objects
+        # Update the tag - function expects UUID objects
         # Returns TagResponse objects directly
-        updated_tag = await TagRepository.update_tag(
+        updated_tag = await db_update_tag(
             tag_id=tag_id,
             name=tag_data.name,
             slug=slugify(tag_data.name),

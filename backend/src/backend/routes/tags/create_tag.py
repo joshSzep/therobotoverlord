@@ -8,7 +8,7 @@ from tortoise.exceptions import IntegrityError
 
 # Project-specific imports
 from backend.db.models.user import User
-from backend.repositories.tag_repository import TagRepository
+from backend.db_functions.tags import create_tag as db_create_tag
 from backend.schemas.tag import TagCreate
 from backend.schemas.tag import TagResponse
 from backend.utils.auth import get_current_user
@@ -31,9 +31,9 @@ async def create_tag(
     slug = slugify(tag_data.name)
 
     try:
-        # Create the tag using repository
-        # The repository now returns a TagResponse object directly
-        return await TagRepository.create_tag(
+        # Create the tag using data access function
+        # The function returns a TagResponse object directly
+        return await db_create_tag(
             name=tag_data.name,
             slug=slug,
         )

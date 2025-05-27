@@ -78,11 +78,11 @@ async def test_list_post_replies_success():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.posts.list_post_replies.PostRepository.get_post_by_id",
+            "backend.routes.posts.list_post_replies.get_post_by_id",
             new=mock.AsyncMock(return_value=mock_parent_post),
         ),
         mock.patch(
-            "backend.routes.posts.list_post_replies.PostRepository.list_post_replies",
+            "backend.routes.posts.list_post_replies.db_list_post_replies",
             new=mock.AsyncMock(return_value=mock_post_list),
         ),
     ):
@@ -105,7 +105,7 @@ async def test_list_post_replies_parent_not_found():
 
     # Mock dependencies - simulate parent post not found
     with mock.patch(
-        "backend.routes.posts.list_post_replies.PostRepository.get_post_by_id",
+        "backend.routes.posts.list_post_replies.get_post_by_id",
         new=mock.AsyncMock(return_value=None),
     ):
         # Act & Assert
@@ -172,11 +172,11 @@ async def test_list_post_replies_pagination():
     # Mock dependencies
     with (
         mock.patch(
-            "backend.routes.posts.list_post_replies.PostRepository.get_post_by_id",
+            "backend.routes.posts.list_post_replies.get_post_by_id",
             new=mock.AsyncMock(return_value=mock_parent_post),
         ),
         mock.patch(
-            "backend.routes.posts.list_post_replies.PostRepository.list_post_replies",
+            "backend.routes.posts.list_post_replies.db_list_post_replies",
             new=mock.AsyncMock(return_value=mock_post_list),
         ),
     ):

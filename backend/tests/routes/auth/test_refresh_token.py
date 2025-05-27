@@ -48,7 +48,7 @@ async def test_refresh_token_success():
             "backend.routes.auth.refresh_token.decode_token", return_value=payload
         ),
         mock.patch(
-            "backend.routes.auth.refresh_token.UserRepository.get_user_by_id",
+            "backend.routes.auth.refresh_token.get_user_by_id",
             new=mock.AsyncMock(return_value=mock_user),
         ),
         mock.patch(
@@ -140,7 +140,7 @@ async def test_refresh_token_user_not_found():
             "backend.routes.auth.refresh_token.decode_token", return_value=payload
         ),
         mock.patch(
-            "backend.routes.auth.refresh_token.UserRepository.get_user_by_id",
+            "backend.routes.auth.refresh_token.get_user_by_id",
             new=mock.AsyncMock(return_value=None),
         ),
     ):
@@ -184,7 +184,7 @@ async def test_refresh_token_locked_account():
             "backend.routes.auth.refresh_token.decode_token", return_value=payload
         ),
         mock.patch(
-            "backend.routes.auth.refresh_token.UserRepository.get_user_by_id",
+            "backend.routes.auth.refresh_token.get_user_by_id",
             new=mock.AsyncMock(return_value=mock_user),
         ),
     ):

@@ -11,9 +11,11 @@ from tortoise.transactions import atomic
 
 # Project-specific imports
 from backend.db.models.user import User
-from backend.repositories.tag_repository import TagRepository
-from backend.repositories.topic_repository import TopicRepository
-from backend.repositories.topic_tag_repository import TopicTagRepository
+from backend.db_functions.tags import create_tag
+from backend.db_functions.tags import get_tag_by_slug
+from backend.db_functions.topic_tags import add_tags_to_topic
+from backend.db_functions.topic_tags import get_tags_for_topic
+from backend.db_functions.topics import create_topic as db_create_topic
 from backend.schemas.tag import TagResponse
 from backend.schemas.topic import TopicCreate
 from backend.schemas.topic import TopicResponse
@@ -30,7 +32,7 @@ async def create_topic(
     current_user: User = Depends(get_current_user),
 ) -> TopicResponse:
     # Create the topic
-    topic = await TopicRepository.create_topic(
+    topic = await db_create_topic(
         title=topic_data.title,
         description=topic_data.description or "",  # Ensure description is not None
         created_by_id=current_user.id,
@@ -40,15 +42,15 @@ async def create_topic(
     tag_ids: List[UUID] = []
     for tag_name in topic_data.tags:
         # Try to find existing tag or create a new one
-        tag = await TagRepository.get_tag_by_slug(slugify(tag_name))
+        tag = await get_tag_by_slug(slugify(tag_name))
         if not tag:
-            tag = await TagRepository.create_tag(tag_name, slugify(tag_name))
+            tag = await create_tag(tag_name, slugify(tag_name))
 
         tag_ids.append(tag.id)
 
     # Create topic-tag relationships
     try:
-        await TopicTagRepository.add_tags_to_topic(topic.id, tag_ids)
+        await add_tags_to_topic(topic.id, tag_ids)
     except Exception as e:
         # Log the error but continue processing
         print(f"Error creating topic-tag relationships: {e}")
@@ -82,7 +84,7 @@ async def create_topic(
     )
 
     # Add tags to the response
-    tags = await TopicTagRepository.get_tags_for_topic(topic.id)
+    tags = await get_tags_for_topic(topic.id)
     for tag in tags:
         topic_response.tags.append(
             TagResponse(

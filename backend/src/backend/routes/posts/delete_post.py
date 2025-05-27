@@ -9,7 +9,10 @@ from fastapi import status
 
 # Project-specific imports
 from backend.db.models.user import User
-from backend.repositories.post_repository import PostRepository
+from backend.db_functions.posts import delete_post as db_delete_post
+from backend.db_functions.posts import get_post_by_id
+from backend.db_functions.posts import get_reply_count
+from backend.db_functions.posts import is_user_post_author
 from backend.utils.auth import get_current_user
 
 router = APIRouter()
@@ -21,7 +24,7 @@ async def delete_post(
     current_user: User = Depends(get_current_user),
 ) -> None:
     # Check if post exists
-    post = await PostRepository.get_post_by_id(post_id)
+    post = await get_post_by_id(post_id)
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -29,7 +32,7 @@ async def delete_post(
         )
 
     # Check if the current user is the author or an admin
-    is_author = await PostRepository.is_user_post_author(post_id, current_user.id)
+    is_author = await is_user_post_author(post_id, current_user.id)
     if not is_author and current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -37,15 +40,15 @@ async def delete_post(
         )
 
     # Check if the post has replies
-    reply_count = await PostRepository.get_reply_count(post_id)
+    reply_count = await get_reply_count(post_id)
     if reply_count > 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Cannot delete post as it has {reply_count} replies",
         )
 
-    # Delete the post using repository
-    success = await PostRepository.delete_post(post_id)
+    # Delete the post using data access function
+    success = await db_delete_post(post_id)
 
     if not success:
         raise HTTPException(

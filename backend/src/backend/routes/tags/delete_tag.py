@@ -9,8 +9,9 @@ from fastapi import status
 
 # Project-specific imports
 from backend.db.models.user import User
-from backend.repositories.tag_repository import TagRepository
-from backend.repositories.topic_tag_repository import TopicTagRepository
+from backend.db_functions.tags import delete_tag as db_delete_tag
+from backend.db_functions.tags import get_tag_by_id
+from backend.db_functions.topic_tags import get_topics_for_tag
 from backend.utils.auth import get_current_user
 
 router = APIRouter()
@@ -28,8 +29,8 @@ async def delete_tag(
             detail="Only admins can delete tags",
         )
 
-    # Get the tag - repository now expects UUID objects
-    tag = await TagRepository.get_tag_by_id(tag_id)
+    # Get the tag - function expects UUID objects
+    tag = await get_tag_by_id(tag_id)
     if not tag:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -37,15 +38,15 @@ async def delete_tag(
         )
 
     # Check if the tag is used by any topics
-    topics = await TopicTagRepository.get_topics_for_tag(tag_id)
+    topics = await get_topics_for_tag(tag_id)
     if topics:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Cannot delete tag as it is used by {len(topics)} topics",
         )
 
-    # Delete the tag - repository now expects UUID objects
-    success = await TagRepository.delete_tag(tag_id)
+    # Delete the tag - function expects UUID objects
+    success = await db_delete_tag(tag_id)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

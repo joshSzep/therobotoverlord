@@ -12,9 +12,12 @@ from tortoise.transactions import atomic
 
 # Project-specific imports
 from backend.db.models.user import User
-from backend.repositories.tag_repository import TagRepository
-from backend.repositories.topic_repository import TopicRepository
-from backend.repositories.topic_tag_repository import TopicTagRepository
+from backend.db_functions.tags import create_tag
+from backend.db_functions.tags import get_tag_by_slug
+from backend.db_functions.topic_tags import set_topic_tags
+from backend.db_functions.topics import get_topic_by_id
+from backend.db_functions.topics import is_user_topic_author
+from backend.db_functions.topics import update_topic as db_update_topic
 from backend.schemas.topic import TopicResponse
 from backend.schemas.topic import TopicUpdate
 from backend.utils.auth import get_current_user
@@ -30,7 +33,7 @@ async def update_topic(
     current_user: User = Depends(get_current_user),
 ) -> TopicResponse:
     # Check if topic exists
-    topic = await TopicRepository.get_topic_by_id(topic_id)
+    topic = await get_topic_by_id(topic_id)
     if not topic:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -38,7 +41,7 @@ async def update_topic(
         )
 
     # Check if the current user is the author
-    is_author = await TopicRepository.is_user_topic_author(topic_id, current_user.id)
+    is_author = await is_user_topic_author(topic_id, current_user.id)
     if not is_author:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -46,7 +49,7 @@ async def update_topic(
         )
 
     # Update topic fields if provided
-    updated_topic = await TopicRepository.update_topic(
+    updated_topic = await db_update_topic(
         topic_id=topic_id,
         title=topic_data.title,
         description=topic_data.description,
@@ -63,17 +66,17 @@ async def update_topic(
         tag_ids: List[UUID] = []
         for tag_name in topic_data.tags:
             # Try to find existing tag or create a new one
-            tag = await TagRepository.get_tag_by_slug(slugify(tag_name))
+            tag = await get_tag_by_slug(slugify(tag_name))
             if not tag:
-                tag = await TagRepository.create_tag(tag_name, slugify(tag_name))
+                tag = await create_tag(tag_name, slugify(tag_name))
 
             tag_ids.append(tag.id)
 
         # Set topic tags (this will handle adding new ones and removing old ones)
-        await TopicTagRepository.set_topic_tags(updated_topic.id, tag_ids)
+        await set_topic_tags(updated_topic.id, tag_ids)
 
-    # Get the updated topic with all relations via repository and converter
-    final_topic = await TopicRepository.get_topic_by_id(topic_id)
+    # Get the updated topic with all relations via data access function
+    final_topic = await get_topic_by_id(topic_id)
     if not final_topic:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -43,7 +43,7 @@ async def test_get_post_success():
 
     # Mock dependencies
     with mock.patch(
-        "backend.routes.posts.get_post.PostRepository.get_post_by_id",
+        "backend.routes.posts.get_post.get_post_by_id",
         new=mock.AsyncMock(return_value=mock_post_response),
     ):
         # Act
@@ -65,7 +65,7 @@ async def test_get_post_not_found():
 
     # Mock dependencies - simulate post not found
     with mock.patch(
-        "backend.routes.posts.get_post.PostRepository.get_post_by_id",
+        "backend.routes.posts.get_post.get_post_by_id",
         new=mock.AsyncMock(return_value=None),
     ):
         # Act & Assert

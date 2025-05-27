@@ -9,8 +9,9 @@ from tortoise.exceptions import ValidationError
 
 # Project-specific imports
 from backend.db.models.user import User
-from backend.repositories.post_repository import PostRepository
-from backend.repositories.topic_repository import TopicRepository
+from backend.db_functions.posts import create_post as db_create_post
+from backend.db_functions.posts import get_post_by_id
+from backend.db_functions.topics import get_topic_by_id
 from backend.schemas.post import PostCreate
 from backend.schemas.post import PostResponse
 from backend.utils.auth import get_current_user
@@ -23,7 +24,7 @@ async def create_post(
     post_data: PostCreate, current_user: User = Depends(get_current_user)
 ) -> PostResponse:
     # Verify that the topic exists
-    topic = await TopicRepository.get_topic_by_id(post_data.topic_id)
+    topic = await get_topic_by_id(post_data.topic_id)
     if not topic:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -32,7 +33,7 @@ async def create_post(
 
     # Verify that the parent post exists and belongs to the same topic if provided
     if post_data.parent_post_id:
-        parent_post = await PostRepository.get_post_by_id(post_data.parent_post_id)
+        parent_post = await get_post_by_id(post_data.parent_post_id)
         if not parent_post:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -47,8 +48,8 @@ async def create_post(
             )
 
     try:
-        # Create the post using repository
-        return await PostRepository.create_post(
+        # Create the post using data access function
+        return await db_create_post(
             content=post_data.content,
             author_id=current_user.id,
             topic_id=post_data.topic_id,

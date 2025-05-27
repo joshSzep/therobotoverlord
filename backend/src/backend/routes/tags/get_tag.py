@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from fastapi import status
 
 # Project-specific imports
-from backend.repositories.tag_repository import TagRepository
+from backend.db_functions.tags import get_tag_by_id
 from backend.schemas.tag import TagResponse
 
 router = APIRouter()
@@ -15,8 +15,8 @@ router = APIRouter()
 
 @router.get("/{tag_id}/", response_model=TagResponse)
 async def get_tag(tag_id: UUID) -> TagResponse:
-    # The repository now returns a TagResponse object directly
-    tag = await TagRepository.get_tag_by_id(tag_id)
+    # The function returns a TagResponse object directly
+    tag = await get_tag_by_id(tag_id)
 
     if not tag:
         raise HTTPException(

@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from fastapi import Request
 from fastapi import status
 
-from backend.repositories.user_repository import UserRepository
+from backend.db_functions.users import get_user_by_id
 from backend.schemas.token import TokenSchema
 from backend.utils.auth import create_access_token
 from backend.utils.auth import create_refresh_token
@@ -33,8 +33,8 @@ async def refresh_token(request: Request, refresh_token: str) -> TokenSchema:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        # Get the user using repository
-        user = await UserRepository.get_user_by_id(user_id)
+        # Get the user using data access function
+        user = await get_user_by_id(user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

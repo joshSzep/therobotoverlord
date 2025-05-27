@@ -63,7 +63,7 @@ async def test_list_posts_no_filters():
 
     # Mock dependencies
     with mock.patch(
-        "backend.routes.posts.list_posts.PostRepository.list_posts",
+        "backend.routes.posts.list_posts.db_list_posts",
         new=mock.AsyncMock(return_value=mock_post_list),
     ):
         # Act
@@ -113,7 +113,7 @@ async def test_list_posts_with_topic_filter():
 
     # Mock dependencies
     with mock.patch(
-        "backend.routes.posts.list_posts.PostRepository.list_posts",
+        "backend.routes.posts.list_posts.db_list_posts",
         new=mock.AsyncMock(return_value=mock_post_list),
     ):
         # Act
@@ -164,7 +164,7 @@ async def test_list_posts_with_author_filter():
 
     # Mock dependencies
     with mock.patch(
-        "backend.routes.posts.list_posts.PostRepository.list_posts",
+        "backend.routes.posts.list_posts.db_list_posts",
         new=mock.AsyncMock(return_value=mock_post_list),
     ):
         # Act
@@ -218,7 +218,7 @@ async def test_list_posts_pagination():
 
     # Mock dependencies
     with mock.patch(
-        "backend.routes.posts.list_posts.PostRepository.list_posts",
+        "backend.routes.posts.list_posts.db_list_posts",
         new=mock.AsyncMock(return_value=mock_post_list),
     ):
         # Act

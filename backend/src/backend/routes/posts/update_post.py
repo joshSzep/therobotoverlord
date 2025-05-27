@@ -9,7 +9,9 @@ from fastapi import status
 
 # Project-specific imports
 from backend.db.models.user import User
-from backend.repositories.post_repository import PostRepository
+from backend.db_functions.posts import get_post_by_id
+from backend.db_functions.posts import is_user_post_author
+from backend.db_functions.posts import update_post as db_update_post
 from backend.schemas.post import PostResponse
 from backend.schemas.post import PostUpdate
 from backend.utils.auth import get_current_user
@@ -24,7 +26,7 @@ async def update_post(
     current_user: User = Depends(get_current_user),
 ) -> PostResponse:
     # Check if post exists
-    post = await PostRepository.get_post_by_id(post_id)
+    post = await get_post_by_id(post_id)
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -32,15 +34,15 @@ async def update_post(
         )
 
     # Check if the current user is the author or an admin
-    is_author = await PostRepository.is_user_post_author(post_id, current_user.id)
+    is_author = await is_user_post_author(post_id, current_user.id)
     if not is_author and current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to update this post",
         )
 
-    # Update the post using repository
-    updated_post = await PostRepository.update_post(post_id, post_data.content)
+    # Update the post using data access function
+    updated_post = await db_update_post(post_id, post_data.content)
     if not updated_post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

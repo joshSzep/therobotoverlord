@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from fastapi import status
 
 # Project-specific imports
-from backend.repositories.post_repository import PostRepository
+from backend.db_functions.posts import get_post_by_id
 from backend.schemas.post import PostResponse
 
 router = APIRouter()
@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.get("/{post_id}/", response_model=PostResponse)
 async def get_post(post_id: UUID) -> PostResponse:
-    post = await PostRepository.get_post_by_id(post_id)
+    post = await get_post_by_id(post_id)
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

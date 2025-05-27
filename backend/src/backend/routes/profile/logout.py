@@ -4,8 +4,9 @@ from fastapi import Request
 from fastapi import status
 
 from backend.db.models.user import User  # Keep for type annotation
-from backend.repositories.user_event_repository import UserEventRepository
-from backend.repositories.user_session_repository import UserSessionRepository
+from backend.db_functions.user_events import log_logout
+from backend.db_functions.user_sessions import deactivate_session
+from backend.db_functions.user_sessions import list_user_sessions
 from backend.utils.auth import get_current_user
 from backend.utils.constants import UNKNOWN_IP_ADDRESS_MARKER
 
@@ -22,14 +23,14 @@ async def logout(
     user_agent = request.headers.get("User-Agent", "")
 
     # Find and invalidate active sessions for this user with the same IP and user agent
-    sessions, _ = await UserSessionRepository.list_user_sessions(
+    sessions, _ = await list_user_sessions(
         user_id=current_user.id,
         active_only=True,
     )
 
     for session in sessions:
         if session.ip_address == ip_address and session.user_agent == user_agent:
-            await UserSessionRepository.deactivate_session(session.session_token)
+            await deactivate_session(session.session_token)
 
     # Log logout event
-    await UserEventRepository.log_logout(current_user.id, ip_address, user_agent)
+    await log_logout(current_user.id, ip_address, user_agent)
