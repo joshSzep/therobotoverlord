@@ -96,16 +96,21 @@ This checklist tracks the implementation status of tests for all route endpoints
 - [x] `get_post.py` (Already implemented)
 - [x] `list_posts.py` (Already implemented)
 - [x] `list_post_replies.py` (Already implemented)
-- [ ] `update_post.py`
-  - [ ] Test successful update
-  - [ ] Test with non-existent post
-  - [ ] Test unauthorized access
-  - [ ] Test when user is not author
-- [ ] `delete_post.py`
-  - [ ] Test successful deletion
-  - [ ] Test with non-existent post
-  - [ ] Test unauthorized access
-  - [ ] Test when user is not author
+- [x] `update_post.py`
+  - [x] Test successful update
+  - [x] Test with non-existent post
+  - [x] Test unauthorized access
+  - [x] Test when user is not author
+  - [x] Test update as admin
+  - [x] Test update failure
+- [x] `delete_post.py`
+  - [x] Test successful deletion
+  - [x] Test with non-existent post
+  - [x] Test unauthorized access
+  - [x] Test when user is not author
+  - [x] Test delete as admin
+  - [x] Test delete post with replies
+  - [x] Test deletion failure
 
 ## Test Template Structure
 
