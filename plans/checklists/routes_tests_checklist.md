@@ -57,10 +57,11 @@ This checklist tracks the implementation status of tests for all route endpoints
   - [x] Test with pagination
 
 ### Auth Routes (Medium Priority)
-- [ ] `login.py`
-  - [ ] Test successful login
-  - [ ] Test with invalid credentials
-  - [ ] Test with inactive user
+- [x] `login.py`
+  - [x] Test successful login
+  - [x] Test with invalid credentials
+  - [x] Test with locked account
+  - [x] Test with missing client info
 - [ ] `register.py`
   - [ ] Test successful registration
   - [ ] Test with existing email
@@ -160,8 +161,8 @@ async def test_[route_name]_error_case():
 
 ## Progress Tracking
 - Total routes: 26
-- Routes with tests: 12 (46%)
-- Routes without tests: 14 (54%)
+- Routes with tests: 13 (50%)
+- Routes without tests: 13 (50%)
 
 ## Implementation Notes
 - Focus on one route category at a time to maintain context
