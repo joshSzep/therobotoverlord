@@ -139,15 +139,17 @@ Focus on testing db_functions in the following order of priority:
   - [x] Test with pagination
   - [x] Test with event type filtering
 
-- [ ] **get_recent_login_attempts.py**
-  - [ ] Test successful retrieval
-  - [ ] Test with limit parameter
-  - [ ] Test with no login attempts
+- [x] **get_recent_login_attempts.py**
+  - [x] Test successful retrieval
+  - [x] Test with limit parameter
+  - [x] Test with no login attempts
+  - [x] Test error handling
 
-- [ ] **count_recent_failed_login_attempts.py**
-  - [ ] Test with failed attempts
-  - [ ] Test with no failed attempts
-  - [ ] Test with time window parameter
+- [x] **count_recent_failed_login_attempts.py**
+  - [x] Test with failed attempts
+  - [x] Test with no failed attempts
+  - [x] Test with time window parameter
+  - [x] Test error handling
 
 - [x] **create_login_attempt.py**
   - [x] Test successful creation
@@ -192,10 +194,12 @@ Focus on testing db_functions in the following order of priority:
   - [x] Test database errors
   - [x] Test update errors
 
-- [ ] **list_user_sessions.py**
-  - [ ] Test successful listing
-  - [ ] Test pagination
-  - [ ] Test with no sessions
+- [x] **list_user_sessions.py**
+  - [x] Test successful listing
+  - [x] Test pagination
+  - [x] Test with no sessions
+  - [x] Test with active_only=True and active_only=False
+  - [x] Test error handling scenarios
 
 ### Topics Module
 
