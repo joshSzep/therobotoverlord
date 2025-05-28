@@ -167,25 +167,30 @@ Focus on testing db_functions in the following order of priority:
   - [x] Test inactive session
   - [x] Test database errors
 
-- [ ] **validate_session.py**
-  - [ ] Test with valid session
-  - [ ] Test with expired session
-  - [ ] Test with inactive session
+- [x] **validate_session.py**
+  - [x] Test with valid session
+  - [x] Test with invalid token
+  - [x] Test with expired token
+  - [x] Test error handling session
 
-- [ ] **deactivate_session.py**
-  - [ ] Test successful deactivation
-  - [ ] Test when session doesn't exist
-  - [ ] Test when session is already inactive
+- [x] **deactivate_session.py**
+  - [x] Test successful deactivation
+  - [x] Test session not found
+  - [x] Test database errors
+  - [x] Test save errors
+  - [x] Test when session is already inactive
 
-- [ ] **deactivate_all_user_sessions.py**
-  - [ ] Test successful deactivation of all sessions
-  - [ ] Test when user has no sessions
-  - [ ] Test when user doesn't exist
+- [x] **deactivate_all_user_sessions.py**
+  - [x] Test successful deactivation of all sessions
+  - [x] Test when no sessions exist
+  - [x] Test database errors
+  - [x] Test save errors
 
-- [ ] **cleanup_expired_sessions.py**
-  - [ ] Test successful cleanup
-  - [ ] Test with no expired sessions
-  - [ ] Test with mix of expired and active sessions
+- [x] **cleanup_expired_sessions.py**
+  - [x] Test successful cleanup
+  - [x] Test when no expired sessions exist
+  - [x] Test database errors
+  - [x] Test update errors
 
 - [ ] **list_user_sessions.py**
   - [ ] Test successful listing
