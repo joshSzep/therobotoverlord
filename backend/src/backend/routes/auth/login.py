@@ -3,8 +3,6 @@ from fastapi import HTTPException
 from fastapi import Request
 from fastapi import status
 
-from backend.db_functions.user_events import log_login_failure
-from backend.db_functions.user_events import log_login_success
 from backend.db_functions.users import get_user_by_email
 from backend.db_functions.users import record_login_failure
 from backend.db_functions.users import record_login_success
@@ -41,15 +39,7 @@ async def login(
         user.id,
         login_data.password,
     ):
-        # If user exists, record login failure
-        if user:
-            await record_login_failure(user.id, ip_address, user_agent)
-            # Log the event
-            await log_login_failure(user.id, ip_address, user_agent)
-        else:
-            # Log anonymous login failure
-            await log_login_failure(None, ip_address, user_agent)
-
+        await record_login_failure(user.id if user else None, ip_address, user_agent)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="CITIZEN, YOUR CREDENTIALS REQUIRE CALIBRATION",
@@ -66,9 +56,6 @@ async def login(
 
     # Record successful login
     await record_login_success(user.id, ip_address, user_agent)
-
-    # Log the event
-    await log_login_success(user.id, ip_address, user_agent)
 
     # Create token data
     token_data = {

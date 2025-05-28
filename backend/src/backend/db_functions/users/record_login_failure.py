@@ -5,19 +5,26 @@ from uuid import UUID
 # Project-specific imports
 from backend.converters import user_to_schema
 from backend.db.models.user import User
-from backend.db.models.user_event import UserEvent
 from backend.db_functions.user_events.log_account_lockout import log_account_lockout
+from backend.db_functions.user_events.log_login_failure import log_login_failure
 from backend.schemas.user import UserSchema
 
 
 async def record_login_failure(
-    user_id: UUID, ip_address: str, user_agent: str
+    user_id: Optional[UUID], ip_address: str, user_agent: str
 ) -> Optional[UserSchema]:
-    user = await User.get_or_none(id=user_id)
-    if not user:
+    # If user_id is None, log the event and return None
+    if not user_id:
+        await log_login_failure(None, ip_address, user_agent)
         return None
 
-    # Update user fields
+    # Get user by id, if not found, log the event and return None
+    user = await User.get_or_none(id=user_id)
+    if not user:
+        await log_login_failure(None, ip_address, user_agent)
+        return None
+
+    # We found the user, update their fields
     user.failed_login_attempts += 1
 
     # Lock account after 5 failed attempts
@@ -28,13 +35,9 @@ async def record_login_failure(
 
     await user.save()
 
-    # Record the login event
-    await UserEvent.create(
-        user=user,
-        event_type="login",
-        ip_address=ip_address,
-        user_agent=user_agent,
-        metadata={"success": False},
+    # Record the login failure event
+    await log_login_failure(
+        user_id=user.id, ip_address=ip_address, user_agent=user_agent
     )
 
     # Log account lockout event if account was just locked

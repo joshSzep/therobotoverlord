@@ -16,6 +16,7 @@
 - **RULE #7: ONE FUNCTION PER FILE** - Each database function must be in its own file. For example, `get_user_by_id`, `list_users`, `create_user`, etc. should each be in separate files named accordingly.
 - **RULE #8: DESCRIPTIVE FUNCTION FILENAMES** - Database function filenames must match the function name they contain (e.g., `get_user_by_id.py`, `list_users.py`, `create_user.py`) to ensure clarity and discoverability.
 - **RULE #9: NO METHODS IN MODEL FILES** - Database models should not contain methods. All database operations should be implemented in the appropriate files in the `db_functions` hierarchy.
+- **RULE #10: MODEL-SPECIFIC DB FUNCTIONS** - Each db_function should only directly operate on its own model. Any manipulations of other models should be done by calling those models' respective db_functions.
 
 ## Project Vision
 - **Concept**: AI-moderated debate platform with satirical Soviet propaganda aesthetic
