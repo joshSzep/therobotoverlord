@@ -7,6 +7,7 @@ import uuid
 # Third-party imports
 import pytest
 from tortoise.exceptions import OperationalError
+from tortoise.exceptions import ValidationError
 
 # Project-specific imports
 from backend.db.models.user_event import UserEvent
@@ -195,3 +196,94 @@ async def test_count_recent_failed_login_attempts_query_error() -> None:
         assert mock_filter.called
         assert mock_query.filter.called
         assert mock_query.count.called
+
+
+@pytest.mark.asyncio
+async def test_count_recent_failed_login_attempts_default_hours() -> None:
+    # Arrange
+    test_user_id = uuid.uuid4()
+    expected_count = 5
+
+    # Mock the database query
+    with (
+        mock.patch.object(
+            UserEvent, "filter", return_value=mock.MagicMock()
+        ) as mock_filter,
+        mock.patch(
+            "backend.db_functions.user_events.count_recent_failed_login_attempts.now_utc",
+            return_value=datetime.now(),
+        ) as mock_now_utc,
+    ):
+        # Mock the query methods
+        mock_query = mock_filter.return_value
+        mock_query.filter = mock.MagicMock(return_value=mock_query)
+        mock_query.count = mock.AsyncMock(return_value=expected_count)
+
+        # Act
+        result = await count_recent_failed_login_attempts(
+            user_id=test_user_id,
+            # Deliberately omit hours parameter to test default value
+        )
+
+        # Assert
+        assert result == expected_count
+
+        # Verify function calls with default hours value (24)
+        time_threshold = mock_now_utc.return_value - timedelta(hours=24)
+        mock_filter.assert_called_once_with(
+            user_id=test_user_id,
+            event_type="login",
+            created_at__gte=time_threshold,
+        )
+        mock_query.filter.assert_called_once_with(metadata__contains={"success": False})
+        mock_query.count.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_count_recent_failed_login_attempts_invalid_user_id() -> None:
+    # Arrange
+    invalid_user_id = "not-a-uuid"  # Invalid UUID format
+    validation_error = ValidationError("Invalid UUID format")
+
+    # Mock the UserEvent.filter to raise ValidationError when called with invalid UUID
+    with mock.patch.object(
+        UserEvent, "filter", side_effect=validation_error
+    ) as mock_filter:
+        # Act & Assert
+        with pytest.raises(ValidationError) as exc_info:
+            await count_recent_failed_login_attempts(user_id=invalid_user_id)  # type: ignore
+
+        # Verify the exception is propagated correctly
+        assert exc_info.value == validation_error
+        assert mock_filter.called
+
+
+@pytest.mark.asyncio
+async def test_count_recent_failed_login_attempts_second_filter_error() -> None:
+    # Arrange
+    test_user_id = uuid.uuid4()
+    filter_error = OperationalError("Filter error")
+
+    # Mock the database query
+    with (
+        mock.patch.object(
+            UserEvent, "filter", return_value=mock.MagicMock()
+        ) as mock_filter,
+        mock.patch(
+            "backend.db_functions.user_events.count_recent_failed_login_attempts.now_utc",
+            return_value=datetime.now(),
+        ),
+    ):
+        # Mock the query methods
+        mock_query = mock_filter.return_value
+        # Set up the second filter to raise an error
+        mock_query.filter = mock.MagicMock(side_effect=filter_error)
+
+        # Act & Assert
+        with pytest.raises(OperationalError) as exc_info:
+            await count_recent_failed_login_attempts(user_id=test_user_id)
+
+        # Verify the exception is propagated correctly
+        assert exc_info.value == filter_error
+        assert mock_filter.called
+        assert mock_query.filter.called
