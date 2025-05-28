@@ -19,27 +19,27 @@ async def test_update_tag_success():
     tag_id = uuid.uuid4()
     tag_name = "Updated Tag"
     tag_slug = slugify(tag_name)
-    
+
     # Create mock tag data
     tag_data = mock.MagicMock()
     tag_data.name = tag_name
-    
+
     # Create mock user with admin role
     mock_user = mock.MagicMock()
     mock_user.role = "admin"
-    
+
     # Create mock existing tag
     mock_existing_tag = mock.MagicMock()
     mock_existing_tag.id = tag_id
     mock_existing_tag.name = "Original Tag"
     mock_existing_tag.slug = "original-tag"
-    
+
     # Create mock updated tag
     mock_updated_tag = mock.MagicMock()
     mock_updated_tag.id = tag_id
     mock_updated_tag.name = tag_name
     mock_updated_tag.slug = tag_slug
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -53,11 +53,9 @@ async def test_update_tag_success():
     ):
         # Act
         result = await update_tag(
-            tag_id=tag_id, 
-            tag_data=tag_data, 
-            current_user=mock_user
+            tag_id=tag_id, tag_data=tag_data, current_user=mock_user
         )
-        
+
         # Assert
         assert result == mock_updated_tag
         mock_db_update_tag.assert_called_once_with(
@@ -73,19 +71,19 @@ async def test_update_tag_unauthorized():
     # Arrange
     tag_id = uuid.uuid4()
     tag_name = "Updated Tag"
-    
+
     # Create mock tag data
     tag_data = mock.MagicMock()
     tag_data.name = tag_name
-    
+
     # Create mock user with regular user role
     mock_user = mock.MagicMock()
     mock_user.role = "user"
-    
+
     # Act & Assert
     with pytest.raises(HTTPException) as excinfo:
         await update_tag(tag_id=tag_id, tag_data=tag_data, current_user=mock_user)
-    
+
     # Verify the exception details
     assert excinfo.value.status_code == 403
     assert "Only moderators and admins can update tags" in excinfo.value.detail
@@ -97,15 +95,15 @@ async def test_update_tag_not_found():
     # Arrange
     tag_id = uuid.uuid4()
     tag_name = "Updated Tag"
-    
+
     # Create mock tag data
     tag_data = mock.MagicMock()
     tag_data.name = tag_name
-    
+
     # Create mock user with admin role
     mock_user = mock.MagicMock()
     mock_user.role = "admin"
-    
+
     # Mock dependencies to return None (tag not found)
     with mock.patch(
         "backend.routes.tags.update_tag.get_tag_by_id",
@@ -114,7 +112,7 @@ async def test_update_tag_not_found():
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
             await update_tag(tag_id=tag_id, tag_data=tag_data, current_user=mock_user)
-        
+
         # Verify the exception details
         assert excinfo.value.status_code == 404
         assert "Tag not found" in excinfo.value.detail
@@ -126,21 +124,21 @@ async def test_update_tag_duplicate_name():
     # Arrange
     tag_id = uuid.uuid4()
     tag_name = "Existing Tag"
-    
+
     # Create mock tag data
     tag_data = mock.MagicMock()
     tag_data.name = tag_name
-    
+
     # Create mock user with admin role
     mock_user = mock.MagicMock()
     mock_user.role = "admin"
-    
+
     # Create mock existing tag
     mock_existing_tag = mock.MagicMock()
     mock_existing_tag.id = tag_id
     mock_existing_tag.name = "Original Tag"
     mock_existing_tag.slug = "original-tag"
-    
+
     # Mock dependencies to simulate IntegrityError
     with (
         mock.patch(
@@ -155,7 +153,7 @@ async def test_update_tag_duplicate_name():
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
             await update_tag(tag_id=tag_id, tag_data=tag_data, current_user=mock_user)
-        
+
         # Verify the exception details
         assert excinfo.value.status_code == 409
         assert "A tag with this name already exists" in excinfo.value.detail
@@ -168,27 +166,27 @@ async def test_update_tag_as_moderator():
     tag_id = uuid.uuid4()
     tag_name = "Moderator Tag"
     tag_slug = slugify(tag_name)
-    
+
     # Create mock tag data
     tag_data = mock.MagicMock()
     tag_data.name = tag_name
-    
+
     # Create mock user with moderator role
     mock_user = mock.MagicMock()
     mock_user.role = "moderator"
-    
+
     # Create mock existing tag
     mock_existing_tag = mock.MagicMock()
     mock_existing_tag.id = tag_id
     mock_existing_tag.name = "Original Tag"
     mock_existing_tag.slug = "original-tag"
-    
+
     # Create mock updated tag
     mock_updated_tag = mock.MagicMock()
     mock_updated_tag.id = tag_id
     mock_updated_tag.name = tag_name
     mock_updated_tag.slug = tag_slug
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -202,11 +200,9 @@ async def test_update_tag_as_moderator():
     ):
         # Act
         result = await update_tag(
-            tag_id=tag_id, 
-            tag_data=tag_data, 
-            current_user=mock_user
+            tag_id=tag_id, tag_data=tag_data, current_user=mock_user
         )
-        
+
         # Assert
         assert result == mock_updated_tag
         mock_db_update_tag.assert_called_once_with(

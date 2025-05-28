@@ -17,13 +17,13 @@ async def test_get_tag_success():
     tag_id = uuid.uuid4()
     tag_name = "Test Tag"
     tag_slug = "test-tag"
-    
+
     # Create mock tag response
     mock_tag = mock.MagicMock()
     mock_tag.id = tag_id
     mock_tag.name = tag_name
     mock_tag.slug = tag_slug
-    
+
     # Mock dependencies
     with mock.patch(
         "backend.routes.tags.get_tag.get_tag_by_id",
@@ -31,7 +31,7 @@ async def test_get_tag_success():
     ) as mock_get_tag_by_id:
         # Act
         result = await get_tag(tag_id=tag_id)
-        
+
         # Assert
         assert result == mock_tag
         mock_get_tag_by_id.assert_called_once_with(tag_id)
@@ -42,7 +42,7 @@ async def test_get_tag_not_found():
     """Test tag retrieval with non-existent tag."""
     # Arrange
     tag_id = uuid.uuid4()
-    
+
     # Mock dependencies to return None (tag not found)
     with mock.patch(
         "backend.routes.tags.get_tag.get_tag_by_id",
@@ -51,7 +51,7 @@ async def test_get_tag_not_found():
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
             await get_tag(tag_id=tag_id)
-        
+
         # Verify the exception details
         assert excinfo.value.status_code == 404
         assert "Tag not found" in excinfo.value.detail

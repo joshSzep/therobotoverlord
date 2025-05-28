@@ -83,10 +83,12 @@ This checklist tracks the implementation status of tests for all route endpoints
   - [x] Test unauthorized access
   - [x] Test with duplicate name
   - [x] Test as moderator role
-- [ ] `delete_tag.py`
-  - [ ] Test successful deletion
-  - [ ] Test with non-existent tag
-  - [ ] Test unauthorized access
+- [x] `delete_tag.py`
+  - [x] Test successful deletion
+  - [x] Test with non-existent tag
+  - [x] Test unauthorized access
+  - [x] Test tag used by topics
+  - [x] Test deletion failure
 - [x] `list_tags.py` (Already implemented)
 
 ### Posts Routes (Low Priority)
