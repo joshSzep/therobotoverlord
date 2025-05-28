@@ -77,10 +77,12 @@ This checklist tracks the implementation status of tests for all route endpoints
 - [x] `get_tag.py`
   - [x] Test successful tag retrieval
   - [x] Test with non-existent tag
-- [ ] `update_tag.py`
-  - [ ] Test successful update
-  - [ ] Test with non-existent tag
-  - [ ] Test unauthorized access
+- [x] `update_tag.py`
+  - [x] Test successful update
+  - [x] Test with non-existent tag
+  - [x] Test unauthorized access
+  - [x] Test with duplicate name
+  - [x] Test as moderator role
 - [ ] `delete_tag.py`
   - [ ] Test successful deletion
   - [ ] Test with non-existent tag
