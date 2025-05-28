@@ -69,11 +69,11 @@ This checklist tracks the implementation status of tests for all route endpoints
 - [x] `refresh_token.py` (Already implemented)
 
 ### Tags Routes (Medium Priority)
-- [ ] `create_tag.py`
-  - [ ] Test successful tag creation
-  - [ ] Test with invalid data
-  - [ ] Test unauthorized access
-  - [ ] Test with duplicate name
+- [x] `create_tag.py`
+  - [x] Test successful tag creation
+  - [x] Test unauthorized access
+  - [x] Test with duplicate name
+  - [x] Test as moderator role
 - [ ] `get_tag.py`
   - [ ] Test successful tag retrieval
   - [ ] Test with non-existent tag
