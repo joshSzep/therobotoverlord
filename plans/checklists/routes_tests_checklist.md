@@ -16,11 +16,11 @@ This checklist tracks the implementation status of tests for all route endpoints
 - [x] `get_me.py`
   - [x] Test successful profile retrieval
   - [x] Test unauthorized access
-- [ ] `change_password.py`
-  - [ ] Test successful password change
-  - [ ] Test with incorrect current password
-  - [ ] Test with invalid new password
-  - [ ] Test unauthorized access
+- [x] `change_password.py`
+  - [x] Test successful password change
+  - [x] Test with incorrect current password
+  - [x] Test with invalid new password
+  - [x] Test unauthorized access
 - [ ] `logout.py`
   - [ ] Test successful logout
   - [ ] Test with invalid token
