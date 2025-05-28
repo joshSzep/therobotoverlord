@@ -243,44 +243,55 @@ Focus on testing db_functions in the following order of priority:
 
 ### Posts Module
 
-- [ ] **create_post.py**
-  - [ ] Test successful creation
-  - [ ] Test with parent post (reply)
-  - [ ] Test with invalid data
+- [x] **create_post.py**
+  - [x] Test successful creation
+  - [x] Test with parent post
+  - [x] Test with invalid data
+  - [x] Test database errors
 
-- [ ] **get_post_by_id.py**
-  - [ ] Test successful retrieval
-  - [ ] Test when post doesn't exist
-  - [ ] Test with invalid UUID
+- [x] **get_post_by_id.py**
+  - [x] Test successful retrieval
+  - [x] Test when post doesn't exist
+  - [x] Test with invalid UUID
+  - [x] Test database errors
 
-- [ ] **update_post.py**
-  - [ ] Test successful update
-  - [ ] Test when post doesn't exist
-  - [ ] Test partial updates
+- [x] **update_post.py**
+  - [x] Test successful update
+  - [x] Test when post doesn't exist
+  - [x] Test database errors
+  - [x] Test save errors
 
-- [ ] **delete_post.py**
-  - [ ] Test successful deletion
-  - [ ] Test when post doesn't exist
-  - [ ] Test cascading deletion of related records
+- [x] **delete_post.py**
+  - [x] Test successful deletion
+  - [x] Test when post doesn't exist
+  - [x] Test cascading deletion of replies
+  - [x] Test database errors
+  - [x] Test delete errors
 
-- [ ] **list_posts.py**
-  - [ ] Test successful listing
-  - [ ] Test pagination
-  - [ ] Test filtering
+- [x] **list_posts.py**
+  - [x] Test successful listing
+  - [x] Test pagination
+  - [x] Test filtering
+  - [x] Test empty results
+  - [x] Test database errors
 
-- [ ] **list_post_replies.py**
-  - [ ] Test successful listing of replies
-  - [ ] Test pagination
-  - [ ] Test with post that has no replies
+- [x] **list_post_replies.py**
+  - [x] Test successful listing of replies
+  - [x] Test pagination
+  - [x] Test with post that has no replies
+  - [x] Test database errors
 
-- [ ] **get_reply_count.py**
-  - [ ] Test with post that has replies
-  - [ ] Test with post that has no replies
-  - [ ] Test when post doesn't exist
+- [x] **get_reply_count.py**
+  - [x] Test with post that has replies
+  - [x] Test with post that has no replies
+  - [x] Test database errors
 
-- [ ] **is_user_post_author.py**
-  - [ ] Test when user is author
-  - [ ] Test when user is not author
+- [x] **is_user_post_author.py**
+  - [x] Test when user is author
+  - [x] Test when user is not author
+  - [x] Test when post doesn't exist
+  - [x] Test database errors
+  - [x] Test fetch related errors
   - [ ] Test when post doesn't exist
 
 ### Tags Module
