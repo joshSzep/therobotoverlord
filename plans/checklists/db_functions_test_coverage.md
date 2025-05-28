@@ -7,11 +7,13 @@ This checklist provides a structured approach to increase test coverage for all 
 ## General Testing Guidelines
 
 1. **Follow Project Structure**: Create test files that mirror the structure of the source code
-2. **Use Mocking**: Mock database models to avoid actual database operations during tests
-3. **Test All Paths**: Include tests for success cases, error cases, and edge cases
+2. **Use Proper Mocking**: Use `mock.patch.object` instead of directly assigning to class attributes
+3. **Test All Paths**: Include tests for success cases, error cases, database errors, and edge cases
 4. **Follow AAA Pattern**: Structure tests using Arrange-Act-Assert pattern
 5. **Use Fixtures**: Create reusable fixtures for common test data
-6. **Respect RULE #10**: Verify that db_functions only directly operate on their own model
+6. **Respect RULE #10**: Explicitly verify that db_functions only directly operate on their own model
+7. **Test Transaction Handling**: For functions that perform multiple operations, test what happens if one operation fails
+8. **Avoid Datetime Comparisons**: Skip direct datetime comparisons or use appropriate comparison methods
 
 ## Test Structure
 
@@ -40,30 +42,35 @@ Focus on testing db_functions in the following order of priority:
 
 ### Users Module
 
-- [ ] **get_user_by_id.py**
-  - [ ] Test successful retrieval
-  - [ ] Test when user doesn't exist
-  - [ ] Test with invalid UUID
+- [x] **get_user_by_id.py**
+  - [x] Test successful retrieval
+  - [x] Test when user doesn't exist
+  - [x] Test with invalid UUID
+  - [x] Test database errors
 
-- [ ] **get_user_by_email.py**
-  - [ ] Test successful retrieval
-  - [ ] Test when user doesn't exist
-  - [ ] Test with invalid email format
+- [x] **get_user_by_email.py**
+  - [x] Test successful retrieval
+  - [x] Test when user doesn't exist
+  - [x] Test database errors
 
-- [ ] **create_user.py**
-  - [ ] Test successful creation
-  - [ ] Test with duplicate email
-  - [ ] Test password hashing
+- [x] **create_user.py**
+  - [x] Test successful creation
+  - [x] Test with duplicate email
+  - [x] Test password hashing
+  - [x] Test set_password failure
+
+- [x] **verify_user_password.py** ✅
+  - [x] Test with correct password
+  - [x] Test with incorrect password
+  - [x] Test when user doesn't exist
+  - [x] Test database errors
+  - [x] Test bcrypt exceptions
 
 - [ ] **update_user.py**
   - [ ] Test successful update
   - [ ] Test when user doesn't exist
   - [ ] Test partial updates
-
-- [ ] **verify_user_password.py**
-  - [ ] Test with correct password
-  - [ ] Test with incorrect password
-  - [ ] Test when user doesn't exist
+  - [ ] Test database errors
 
 - [ ] **set_user_password.py**
   - [ ] Test successful password change
@@ -333,64 +340,120 @@ Focus on testing db_functions in the following order of priority:
 
 ## Test Template
 
-Here's a template for creating tests for db_functions:
+Here's an improved template for creating tests for db_functions, based on our learnings:
 
 ```python
-import pytest
+# Standard library imports
 from unittest import mock
 import uuid
-from datetime import datetime
 
-# Import the function to test
+# Third-party imports
+import pytest
+from tortoise.exceptions import IntegrityError
+
+# Project-specific imports
 from backend.db_functions.module.function_name import function_name
-# Import models used by the function
 from backend.db.models.model_name import ModelName
+from backend.schemas.schema_name import SchemaName
 
 @pytest.fixture
 def mock_model() -> mock.MagicMock:
-    # Create a mock model instance
+    # Create a mock model instance with all required properties
     model = mock.MagicMock(spec=ModelName)
-    # Set up properties
     model.id = uuid.uuid4()
     # Add other properties as needed
     return model
 
+@pytest.fixture
+def mock_schema(mock_model) -> SchemaName:
+    # Create a schema instance that would be returned by converters
+    return SchemaName(
+        id=mock_model.id,
+        # Add other properties as needed
+    )
+
 @pytest.mark.asyncio
-async def test_function_success(mock_model) -> None:
+async def test_function_success(mock_model, mock_schema) -> None:
     # Arrange
-    # Set up any additional mocks or test data
-    ModelName.get_or_none = mock.AsyncMock(return_value=mock_model)
+    test_id = mock_model.id
 
-    # Act
-    result = await function_name(mock_model.id)
+    # Mock the database query - RULE #10 compliance: only operates on its own model
+    with (
+        mock.patch.object(
+            ModelName, "get_or_none", new=mock.AsyncMock(return_value=mock_model)
+        ) as mock_get,
+        mock.patch(
+            "backend.db_functions.module.function_name.converter_function",
+            new=mock.AsyncMock(return_value=mock_schema)
+        ) as mock_converter
+    ):
+        # Act
+        result = await function_name(test_id)
 
-    # Assert
-    assert result is not None
-    # Add specific assertions based on expected behavior
+        # Assert
+        assert result is not None
+        assert result.id == mock_model.id
+        # Add other assertions but skip datetime comparisons
+
+        # Verify function calls
+        mock_get.assert_called_once_with(id=test_id)
+        mock_converter.assert_called_once_with(mock_model)
 
 @pytest.mark.asyncio
 async def test_function_not_found() -> None:
     # Arrange
-    ModelName.get_or_none = mock.AsyncMock(return_value=None)
+    test_id = uuid.uuid4()
 
-    # Act
-    result = await function_name(uuid.uuid4())
+    # Mock the database query
+    with mock.patch.object(
+        ModelName, "get_or_none", new=mock.AsyncMock(return_value=None)
+    ) as mock_get:
+        # Act
+        result = await function_name(test_id)
 
-    # Assert
-    assert result is None
-    # Add specific assertions based on expected behavior
+        # Assert
+        assert result is None
+        mock_get.assert_called_once_with(id=test_id)
 
-# Add more test cases as needed
+@pytest.mark.asyncio
+async def test_function_database_error() -> None:
+    # Arrange
+    test_id = uuid.uuid4()
+    db_error = IntegrityError("Database connection error")
+
+    # Mock the database query to raise an exception
+    with mock.patch.object(
+        ModelName, "get_or_none", new=mock.AsyncMock(side_effect=db_error)
+    ) as mock_get:
+        # Act & Assert
+        with pytest.raises(IntegrityError) as exc_info:
+            await function_name(test_id)
+
+        # Verify the exception is propagated correctly
+        assert exc_info.value == db_error
+        mock_get.assert_called_once_with(id=test_id)
 ```
 
 ## Implementation Strategy
 
 1. **Start with Core Functions**: Begin with the most critical functions in the users module
-2. **Create Base Fixtures**: Develop reusable fixtures for common models
-3. **Test in Isolation**: Mock dependencies to test each function in isolation
-4. **Verify Rule #10**: Ensure each function only directly operates on its own model
-5. **Track Coverage**: Use pytest-cov to monitor progress on coverage improvements
-6. **Refactor as Needed**: If testing reveals issues, refactor the functions to improve testability
+2. **Create Base Fixtures**: Develop reusable fixtures for common models and schemas
+3. **Use Proper Mocking**: Use `mock.patch.object` instead of directly assigning to class attributes
+4. **Test in Isolation**: Mock all dependencies to test each function in isolation
+5. **Test Database Errors**: Always include tests for database connection errors and exceptions
+6. **Verify Rule #10**: Explicitly verify that functions only directly operate on their own model
+7. **Test Transaction Handling**: For functions that perform multiple operations, test what happens if one operation fails
+8. **Skip Datetime Comparisons**: Avoid direct datetime comparisons or use appropriate comparison methods
+9. **Track Coverage**: Use pytest-cov to monitor progress on coverage improvements
+10. **Fix Lint Issues**: Address import sorting and line length issues in test files
+
+## Next Steps
+
+Based on our progress, the next functions to test in the users module are:
+
+1. `set_user_password.py` - Referenced by `create_user.py` and critical for user management
+2. `update_user.py` - Important for user profile management
+3. `record_login_success.py` and `record_login_failure.py` - Critical for security tracking
 
 ## Commands for Testing
 
@@ -398,6 +461,7 @@ async def test_function_not_found() -> None:
 - Run tests for a specific module: `cd backend && uv run pytest tests/db_functions/users/`
 - Run a specific test: `cd backend && uv run pytest tests/db_functions/users/test_get_user_by_id.py`
 - Run with coverage: `cd backend && uv run pytest tests/db_functions/users/ --cov=backend.db_functions.users`
+- Check coverage report: `cd backend && uv run pytest tests/db_functions/users/ --cov=backend.db_functions.users --cov-report=term`
 
 ## Completion Criteria
 
