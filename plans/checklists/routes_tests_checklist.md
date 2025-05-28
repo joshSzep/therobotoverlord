@@ -62,10 +62,10 @@ This checklist tracks the implementation status of tests for all route endpoints
   - [x] Test with invalid credentials
   - [x] Test with locked account
   - [x] Test with missing client info
-- [ ] `register.py`
-  - [ ] Test successful registration
-  - [ ] Test with existing email
-  - [ ] Test with invalid data
+- [x] `register.py`
+  - [x] Test successful registration
+  - [x] Test with existing email
+  - [x] Test with invalid password
 - [x] `refresh_token.py` (Already implemented)
 
 ### Tags Routes (Medium Priority)
