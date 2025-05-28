@@ -38,10 +38,10 @@ This checklist tracks the implementation status of tests for all route endpoints
   - [x] Test successful listing
   - [x] Test with pagination
   - [x] Test with filters
-- [ ] `update_topic.py`
-  - [ ] Test successful update
-  - [ ] Test with non-existent topic
-  - [ ] Test unauthorized access
+- [x] `update_topic.py`
+  - [x] Test successful update
+  - [x] Test with non-existent topic
+  - [x] Test unauthorized access
 - [ ] `delete_topic.py`
   - [ ] Test successful deletion
   - [ ] Test with non-existent topic
@@ -160,8 +160,8 @@ async def test_[route_name]_error_case():
 
 ## Progress Tracking
 - Total routes: 26
-- Routes with tests: 8 (31%)
-- Routes without tests: 18 (69%)
+- Routes with tests: 9 (35%)
+- Routes without tests: 17 (65%)
 
 ## Implementation Notes
 - Focus on one route category at a time to maintain context
