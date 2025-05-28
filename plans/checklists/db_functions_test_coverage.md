@@ -203,35 +203,43 @@ Focus on testing db_functions in the following order of priority:
 
 ### Topics Module
 
-- [ ] **create_topic.py**
-  - [ ] Test successful creation
-  - [ ] Test with tags
-  - [ ] Test with invalid data
+- [x] **create_topic.py**
+  - [x] Test successful creation
+  - [x] Test with invalid data
+  - [x] Test database errors
 
-- [ ] **get_topic_by_id.py**
-  - [ ] Test successful retrieval
-  - [ ] Test when topic doesn't exist
-  - [ ] Test with invalid UUID
+- [x] **get_topic_by_id.py**
+  - [x] Test successful retrieval
+  - [x] Test when topic doesn't exist
+  - [x] Test with invalid UUID
+  - [x] Test database errors
 
-- [ ] **update_topic.py**
-  - [ ] Test successful update
-  - [ ] Test when topic doesn't exist
-  - [ ] Test partial updates
+- [x] **update_topic.py**
+  - [x] Test successful update
+  - [x] Test when topic doesn't exist
+  - [x] Test partial updates
+  - [x] Test database errors
+  - [x] Test save errors
 
-- [ ] **delete_topic.py**
-  - [ ] Test successful deletion
-  - [ ] Test when topic doesn't exist
-  - [ ] Test cascading deletion of related records
+- [x] **delete_topic.py**
+  - [x] Test successful deletion
+  - [x] Test when topic doesn't exist
+  - [x] Test cascading deletion of related records
+  - [x] Test database errors
+  - [x] Test delete errors
 
-- [ ] **list_topics.py**
-  - [ ] Test successful listing
-  - [ ] Test pagination
-  - [ ] Test filtering
+- [x] **list_topics.py**
+  - [x] Test successful listing
+  - [x] Test pagination
+  - [x] Test with empty results
+  - [x] Test database errors
 
-- [ ] **is_user_topic_author.py**
-  - [ ] Test when user is author
-  - [ ] Test when user is not author
-  - [ ] Test when topic doesn't exist
+- [x] **is_user_topic_author.py**
+  - [x] Test when user is author
+  - [x] Test when user is not author
+  - [x] Test when topic doesn't exist
+  - [x] Test database errors
+  - [x] Test fetch related errors
 
 ### Posts Module
 
