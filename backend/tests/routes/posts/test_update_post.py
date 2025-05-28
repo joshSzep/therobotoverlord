@@ -17,26 +17,26 @@ async def test_update_post_success():
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
     new_content = "Updated post content"
-    
+
     # Create mock post data
     post_data = mock.MagicMock()
     post_data.content = new_content
-    
+
     # Create mock user (author)
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "user"
-    
+
     # Create mock existing post
     mock_existing_post = mock.MagicMock()
     mock_existing_post.id = post_id
     mock_existing_post.content = "Original content"
-    
+
     # Create mock updated post
     mock_updated_post = mock.MagicMock()
     mock_updated_post.id = post_id
     mock_updated_post.content = new_content
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -58,7 +58,7 @@ async def test_update_post_success():
             post_data=post_data,
             current_user=mock_user,
         )
-        
+
         # Assert
         assert result == mock_updated_post
         mock_db_update_post.assert_called_once_with(post_id, new_content)
@@ -71,26 +71,26 @@ async def test_update_post_as_admin():
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
     new_content = "Admin updated content"
-    
+
     # Create mock post data
     post_data = mock.MagicMock()
     post_data.content = new_content
-    
+
     # Create mock user (admin)
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "admin"
-    
+
     # Create mock existing post
     mock_existing_post = mock.MagicMock()
     mock_existing_post.id = post_id
     mock_existing_post.content = "Original content"
-    
+
     # Create mock updated post
     mock_updated_post = mock.MagicMock()
     mock_updated_post.id = post_id
     mock_updated_post.content = new_content
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -112,7 +112,7 @@ async def test_update_post_as_admin():
             post_data=post_data,
             current_user=mock_user,
         )
-        
+
         # Assert
         assert result == mock_updated_post
         mock_db_update_post.assert_called_once_with(post_id, new_content)
@@ -125,16 +125,16 @@ async def test_update_post_not_found():
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
     new_content = "Updated post content"
-    
+
     # Create mock post data
     post_data = mock.MagicMock()
     post_data.content = new_content
-    
+
     # Create mock user
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "user"
-    
+
     # Mock dependencies to return None (post not found)
     with mock.patch(
         "backend.routes.posts.update_post.get_post_by_id",
@@ -147,7 +147,7 @@ async def test_update_post_not_found():
                 post_data=post_data,
                 current_user=mock_user,
             )
-        
+
         # Verify the exception details
         assert excinfo.value.status_code == 404
         assert "Post not found" in excinfo.value.detail
@@ -160,21 +160,21 @@ async def test_update_post_unauthorized():
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
     new_content = "Updated post content"
-    
+
     # Create mock post data
     post_data = mock.MagicMock()
     post_data.content = new_content
-    
+
     # Create mock user (not author or admin)
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "user"
-    
+
     # Create mock existing post
     mock_existing_post = mock.MagicMock()
     mock_existing_post.id = post_id
     mock_existing_post.content = "Original content"
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -193,7 +193,7 @@ async def test_update_post_unauthorized():
                 post_data=post_data,
                 current_user=mock_user,
             )
-        
+
         # Verify the exception details
         assert excinfo.value.status_code == 403
         assert "You don't have permission to update this post" in excinfo.value.detail
@@ -206,21 +206,21 @@ async def test_update_post_failure():
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
     new_content = "Updated post content"
-    
+
     # Create mock post data
     post_data = mock.MagicMock()
     post_data.content = new_content
-    
+
     # Create mock user (author)
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "user"
-    
+
     # Create mock existing post
     mock_existing_post = mock.MagicMock()
     mock_existing_post.id = post_id
     mock_existing_post.content = "Original content"
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -243,7 +243,7 @@ async def test_update_post_failure():
                 post_data=post_data,
                 current_user=mock_user,
             )
-        
+
         # Verify the exception details
         assert excinfo.value.status_code == 404
         assert "Failed to update post" in excinfo.value.detail

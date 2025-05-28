@@ -16,17 +16,17 @@ async def test_delete_post_success():
     # Arrange
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
-    
+
     # Create mock user (author)
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "user"
-    
+
     # Create mock existing post
     mock_existing_post = mock.MagicMock()
     mock_existing_post.id = post_id
     mock_existing_post.content = "Post content"
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -48,7 +48,7 @@ async def test_delete_post_success():
     ):
         # Act
         await delete_post(post_id=post_id, current_user=mock_user)
-        
+
         # Assert
         mock_db_delete_post.assert_called_once_with(post_id)
 
@@ -59,17 +59,17 @@ async def test_delete_post_as_admin():
     # Arrange
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
-    
+
     # Create mock user (admin)
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "admin"
-    
+
     # Create mock existing post
     mock_existing_post = mock.MagicMock()
     mock_existing_post.id = post_id
     mock_existing_post.content = "Post content"
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -91,7 +91,7 @@ async def test_delete_post_as_admin():
     ):
         # Act
         await delete_post(post_id=post_id, current_user=mock_user)
-        
+
         # Assert
         mock_db_delete_post.assert_called_once_with(post_id)
 
@@ -102,12 +102,12 @@ async def test_delete_post_not_found():
     # Arrange
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
-    
+
     # Create mock user
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "user"
-    
+
     # Mock dependencies to return None (post not found)
     with mock.patch(
         "backend.routes.posts.delete_post.get_post_by_id",
@@ -116,7 +116,7 @@ async def test_delete_post_not_found():
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
             await delete_post(post_id=post_id, current_user=mock_user)
-        
+
         # Verify the exception details
         assert excinfo.value.status_code == 404
         assert "Post not found" in excinfo.value.detail
@@ -128,17 +128,17 @@ async def test_delete_post_unauthorized():
     # Arrange
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
-    
+
     # Create mock user (not author or admin)
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "user"
-    
+
     # Create mock existing post
     mock_existing_post = mock.MagicMock()
     mock_existing_post.id = post_id
     mock_existing_post.content = "Post content"
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -153,7 +153,7 @@ async def test_delete_post_unauthorized():
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
             await delete_post(post_id=post_id, current_user=mock_user)
-        
+
         # Verify the exception details
         assert excinfo.value.status_code == 403
         assert "You don't have permission to delete this post" in excinfo.value.detail
@@ -166,17 +166,17 @@ async def test_delete_post_with_replies():
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
     reply_count = 5
-    
+
     # Create mock user (author)
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "user"
-    
+
     # Create mock existing post
     mock_existing_post = mock.MagicMock()
     mock_existing_post.id = post_id
     mock_existing_post.content = "Post content"
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -195,7 +195,7 @@ async def test_delete_post_with_replies():
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
             await delete_post(post_id=post_id, current_user=mock_user)
-        
+
         # Verify the exception details
         assert excinfo.value.status_code == 400
         error_msg = f"Cannot delete post as it has {reply_count} replies"
@@ -208,17 +208,17 @@ async def test_delete_post_failure():
     # Arrange
     post_id = uuid.uuid4()
     user_id = uuid.uuid4()
-    
+
     # Create mock user (author)
     mock_user = mock.MagicMock()
     mock_user.id = user_id
     mock_user.role = "user"
-    
+
     # Create mock existing post
     mock_existing_post = mock.MagicMock()
     mock_existing_post.id = post_id
     mock_existing_post.content = "Post content"
-    
+
     # Mock dependencies
     with (
         mock.patch(
@@ -241,7 +241,7 @@ async def test_delete_post_failure():
         # Act & Assert
         with pytest.raises(HTTPException) as excinfo:
             await delete_post(post_id=post_id, current_user=mock_user)
-        
+
         # Verify the exception details
         assert excinfo.value.status_code == 500
         assert "Failed to delete post" in excinfo.value.detail
