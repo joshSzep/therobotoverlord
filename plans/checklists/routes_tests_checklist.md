@@ -34,10 +34,10 @@ This checklist tracks the implementation status of tests for all route endpoints
 - [x] `get_topic.py`
   - [x] Test successful topic retrieval
   - [x] Test with non-existent topic
-- [ ] `list_topics.py`
-  - [ ] Test successful listing
-  - [ ] Test with pagination
-  - [ ] Test with filters
+- [x] `list_topics.py`
+  - [x] Test successful listing
+  - [x] Test with pagination
+  - [x] Test with filters
 - [ ] `update_topic.py`
   - [ ] Test successful update
   - [ ] Test with non-existent topic
