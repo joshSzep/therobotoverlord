@@ -108,36 +108,36 @@ Focus on testing db_functions in the following order of priority:
 
 ### User Events Module
 
-- [ ] **create_event.py**
-  - [ ] Test successful event creation
-  - [ ] Test with various event types
-  - [ ] Test with and without user_id
+- [x] **create_event.py**
+  - [x] Test successful event creation
+  - [x] Test with various event types
+  - [x] Test with and without user_id
 
-- [ ] **log_login_success.py**
-  - [ ] Test successful event logging
-  - [ ] Verify correct metadata
+- [x] **log_login_success.py**
+  - [x] Test successful event logging
+  - [x] Verify correct metadata
 
-- [ ] **log_login_failure.py**
-  - [ ] Test successful event logging
-  - [ ] Test with and without user_id
-  - [ ] Verify correct metadata
+- [x] **log_login_failure.py**
+  - [x] Test successful event logging
+  - [x] Test with and without user_id
+  - [x] Verify correct metadata
 
-- [ ] **log_account_lockout.py**
-  - [ ] Test successful event logging
-  - [ ] Verify correct metadata
+- [x] **log_account_lockout.py**
+  - [x] Test successful event logging
+  - [x] Verify correct metadata
 
-- [ ] **log_logout.py**
-  - [ ] Test successful event logging
-  - [ ] Verify correct metadata
+- [x] **log_logout.py**
+  - [x] Test successful event logging
+  - [x] Verify correct metadata
 
-- [ ] **log_password_change.py**
-  - [ ] Test successful event logging
-  - [ ] Verify correct metadata
+- [x] **log_password_change.py**
+  - [x] Test successful event logging
+  - [x] Verify correct metadata
 
-- [ ] **get_user_events.py**
-  - [ ] Test successful retrieval
-  - [ ] Test pagination
-  - [ ] Test filtering by event type
+- [x] **get_user_events.py**
+  - [x] Test successful retrieval
+  - [x] Test with pagination
+  - [x] Test with event type filtering
 
 - [ ] **get_recent_login_attempts.py**
   - [ ] Test successful retrieval
@@ -149,17 +149,23 @@ Focus on testing db_functions in the following order of priority:
   - [ ] Test with no failed attempts
   - [ ] Test with time window parameter
 
+- [x] **create_login_attempt.py**
+  - [x] Test successful creation
+  - [x] Test with and without user_id
+  - [x] Test success and failure cases
+
 ### User Sessions Module
 
-- [ ] **create_session.py**
-  - [ ] Test successful session creation
-  - [ ] Test with various parameters
-  - [ ] Verify expiration time calculation
+- [x] **create_session.py**
+  - [x] Test successful session creation
+  - [x] Test with various parameters
+  - [x] Verify expiration time calculation
 
-- [ ] **get_session_by_token.py**
-  - [ ] Test successful retrieval
-  - [ ] Test with invalid token
-  - [ ] Test with expired token
+- [x] **get_session_by_token.py**
+  - [x] Test successful retrieval
+  - [x] Test token not found
+  - [x] Test inactive session
+  - [x] Test database errors
 
 - [ ] **validate_session.py**
   - [ ] Test with valid session
