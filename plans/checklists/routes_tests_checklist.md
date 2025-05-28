@@ -27,11 +27,10 @@ This checklist tracks the implementation status of tests for all route endpoints
   - [x] Test with no matching sessions
 
 ### Topics Routes (High Priority)
-- [ ] `create_topic.py`
-  - [ ] Test successful topic creation
-  - [ ] Test with invalid data
-  - [ ] Test unauthorized access
-  - [ ] Test with duplicate name
+- [x] `create_topic.py`
+  - [x] Test successful topic creation
+  - [x] Test with existing tag
+  - [x] Test with tag error
 - [ ] `get_topic.py`
   - [ ] Test successful topic retrieval
   - [ ] Test with non-existent topic
