@@ -21,10 +21,10 @@ This checklist tracks the implementation status of tests for all route endpoints
   - [x] Test with incorrect current password
   - [x] Test with invalid new password
   - [x] Test unauthorized access
-- [ ] `logout.py`
-  - [ ] Test successful logout
-  - [ ] Test with invalid token
-  - [ ] Test with expired token
+- [x] `logout.py`
+  - [x] Test successful logout
+  - [x] Test with multiple sessions
+  - [x] Test with no matching sessions
 
 ### Topics Routes (High Priority)
 - [ ] `create_topic.py`
