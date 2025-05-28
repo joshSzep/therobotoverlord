@@ -66,44 +66,45 @@ Focus on testing db_functions in the following order of priority:
   - [x] Test database errors
   - [x] Test bcrypt exceptions
 
-- [ ] **update_user.py**
-  - [ ] Test successful update
-  - [ ] Test when user doesn't exist
-  - [ ] Test partial updates
-  - [ ] Test database errors
+- [x] **update_user.py**
+  - [x] Test successful update
+  - [x] Test when user doesn't exist
+  - [x] Test partial updates
+  - [x] Test database errors
 
-- [ ] **set_user_password.py**
-  - [ ] Test successful password change
-  - [ ] Test when user doesn't exist
-  - [ ] Test password hashing
+- [x] **set_user_password.py**
+  - [x] Test successful password change
+  - [x] Test when user doesn't exist
+  - [x] Test password hashing
 
-- [ ] **record_login_success.py**
-  - [ ] Test successful login recording
-  - [ ] Test when user doesn't exist
-  - [ ] Verify user fields are updated correctly
-  - [ ] Verify proper delegation to log_login_success
+- [x] **record_login_success.py**
+  - [x] Test successful login recording
+  - [x] Test when user doesn't exist
+  - [x] Verify user fields are updated correctly
+  - [x] Verify proper delegation to log_login_success
 
-- [ ] **record_login_failure.py**
-  - [ ] Test failed login recording
-  - [ ] Test when user doesn't exist
-  - [ ] Test account lockout after 5 failures
-  - [ ] Verify proper delegation to log_login_failure
-  - [ ] Verify proper delegation to log_account_lockout
+- [x] **record_login_failure.py**
+  - [x] Test failed login recording
+  - [x] Test when user doesn't exist
+  - [x] Test account lockout after 5 failures
+  - [x] Verify proper delegation to log_login_failure
+  - [x] Verify proper delegation to log_account_lockout
 
-- [ ] **lock_user_account.py**
-  - [ ] Test successful account locking
-  - [ ] Test when user doesn't exist
-  - [ ] Test when account is already locked
+- [x] **lock_user_account.py**
+  - [x] Test successful account locking
+  - [x] Test when user doesn't exist
+  - [x] Test when account is already locked
 
-- [ ] **unlock_user_account.py**
-  - [ ] Test successful account unlocking
-  - [ ] Test when user doesn't exist
-  - [ ] Test when account is already unlocked
+- [x] **unlock_user_account.py**
+  - [x] Test successful account unlocking
+  - [x] Test when user doesn't exist
+  - [x] Test when account is already unlocked
 
-- [ ] **list_users.py**
-  - [ ] Test successful listing
-  - [ ] Test pagination
-  - [ ] Test filtering
+- [x] **list_users.py**
+  - [x] Test successful listing
+  - [x] Test pagination
+  - [x] Test with empty results
+  - [x] Test database errors
 
 ### User Events Module
 
@@ -449,11 +450,10 @@ async def test_function_database_error() -> None:
 
 ## Next Steps
 
-Based on our progress, the next functions to test in the users module are:
+Based on our progress, we have completed testing for all core user functions. The next functions to test in the users module are:
 
-1. `set_user_password.py` - Referenced by `create_user.py` and critical for user management
-2. `update_user.py` - Important for user profile management
-3. `record_login_success.py` and `record_login_failure.py` - Critical for security tracking
+1. User Events Module functions - Starting with `create_event.py`, `log_login_success.py`, etc.
+2. Session Management functions - Starting with `create_session.py`, `get_session_by_id.py`, etc.
 
 ## Commands for Testing
 
