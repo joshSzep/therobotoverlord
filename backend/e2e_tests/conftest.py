@@ -80,15 +80,23 @@ def pytest_runtest_makereport(item, call):
 
     # Only check for errors after the test has run (not during setup/teardown)
     if result.when == "call":
+        has_server_error = False
+        error_message = ""
+
         # Get the server_logs fixture if it's available
         server_logs_fixture = item.funcargs.get("server_logs")
         if server_logs_fixture:
             logs = server_logs_fixture()
             if "ERROR" in logs:
-                print(f"\n\n=== UNEXPECTED SERVER ERROR IN TEST {item.name} ===\n")
-                print("\n=== SERVER LOGS ===\n")
-                print(logs)
-                print("\n=== END SERVER LOGS ===\n")
+                has_server_error = True
+                test_name = item.name
+                error_message = (
+                    f"\n\n=== UNEXPECTED SERVER ERROR IN TEST {test_name} ===\n"
+                )
+                error_message += "\n=== SERVER LOGS ===\n"
+                error_message += logs
+                error_message += "\n=== END SERVER LOGS ===\n"
+                print(error_message)
 
         # Check for 500 status codes in the test result
         if (
@@ -98,14 +106,31 @@ def pytest_runtest_makereport(item, call):
         ):
             for section_name, section_content in result.sections:
                 if "response" in section_name.lower() and "500" in section_content:
+                    has_server_error = True
                     test_name = item.name
-                    print(f"\n\n=== 500 STATUS CODE DETECTED IN TEST {test_name} ===\n")
-                    print(f"Response: {section_content}")
+                    status_error = (
+                        f"\n\n=== 500 STATUS CODE DETECTED IN TEST {test_name} ===\n"
+                    )
+                    status_error += f"Response: {section_content}"
+
                     if server_logs_fixture:
                         logs = server_logs_fixture()
-                        print("\n=== SERVER LOGS ===\n")
-                        print(logs)
-                        print("\n=== END SERVER LOGS ===\n")
+                        status_error += "\n=== SERVER LOGS ===\n"
+                        status_error += logs
+                        status_error += "\n=== END SERVER LOGS ===\n"
+
+                    # Add to or set the error message
+                    if error_message:
+                        error_message += "\n" + status_error
+                    else:
+                        error_message = status_error
+
+                    print(status_error)
+
+        # Fail the test if server errors were detected
+        if has_server_error:
+            # Use pytest's internal mechanism to fail the test
+            pytest.fail(f"Server error detected:\n{error_message}")
 
 
 @pytest.fixture(scope="session")
