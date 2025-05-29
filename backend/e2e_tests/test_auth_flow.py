@@ -9,7 +9,7 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_register_user(api_client: httpx.AsyncClient):
+async def test_register_user(api_client: httpx.AsyncClient, server_logs):
     """Test user registration."""
     # Generate unique user data
     unique_id = uuid4().hex[:8]
@@ -40,7 +40,9 @@ async def test_register_user(api_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_login_with_valid_credentials(api_client: httpx.AsyncClient, test_user):
+async def test_login_with_valid_credentials(
+    api_client: httpx.AsyncClient, test_user, server_logs
+):
     """Test login with valid credentials."""
     # Login data
     login_data = {
@@ -86,7 +88,9 @@ async def test_login_with_invalid_credentials(
 
 
 @pytest.mark.asyncio
-async def test_get_profile(authenticated_client: httpx.AsyncClient, test_user):
+async def test_get_profile(
+    authenticated_client: httpx.AsyncClient, test_user, server_logs
+):
     """Test getting user profile."""
     # Get profile
     response = await authenticated_client.get("/profile/me/")
@@ -100,7 +104,7 @@ async def test_get_profile(authenticated_client: httpx.AsyncClient, test_user):
 
 
 @pytest.mark.asyncio
-async def test_logout(authenticated_client: httpx.AsyncClient):
+async def test_logout(authenticated_client: httpx.AsyncClient, server_logs):
     """Test user logout."""
     # Logout
     response = await authenticated_client.post("/profile/logout/")

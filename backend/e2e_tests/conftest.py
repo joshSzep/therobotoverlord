@@ -82,6 +82,29 @@ def check_server_error(response) -> None:
         print("\n=== END SERVER LOGS ===\n")
 
 
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Pytest hook to check for server errors after each test.
+
+    This will run after each test and check if there were any ERROR level
+    logs in the server logs. If there were, it will print a warning with the logs.
+    """
+    outcome = yield
+    result = outcome.get_result()
+
+    # Only check for errors after the test has run (not during setup/teardown)
+    if result.when == "call":
+        # Get the server_logs fixture if it's available
+        server_logs_fixture = item.funcargs.get("server_logs")
+        if server_logs_fixture:
+            logs = server_logs_fixture()
+            if "ERROR" in logs:
+                print(f"\n\n=== UNEXPECTED SERVER ERROR IN TEST {item.name} ===\n")
+                print("\n=== SERVER LOGS ===\n")
+                print(logs)
+                print("\n=== END SERVER LOGS ===\n")
+
+
 @pytest.fixture(scope="session")
 def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     """Create an instance of the default event loop for the session."""

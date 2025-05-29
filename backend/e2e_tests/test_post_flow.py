@@ -10,7 +10,7 @@ import pytest
 
 # We need to create a topic first before creating posts
 @pytest.mark.asyncio
-async def test_create_topic(authenticated_client: httpx.AsyncClient):
+async def test_create_topic(authenticated_client: httpx.AsyncClient, server_logs):
     """Test creating a new topic."""
     # Topic data
     topic_data = {
@@ -32,10 +32,10 @@ async def test_create_topic(authenticated_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_post(authenticated_client: httpx.AsyncClient):
+async def test_create_post(authenticated_client: httpx.AsyncClient, server_logs):
     """Test creating a new post."""
     # First create a topic
-    topic = await test_create_topic(authenticated_client)
+    topic = await test_create_topic(authenticated_client, server_logs)
 
     # Post data
     post_data = {
@@ -60,10 +60,10 @@ async def test_create_post(authenticated_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_post(authenticated_client: httpx.AsyncClient):
+async def test_get_post(authenticated_client: httpx.AsyncClient, server_logs):
     """Test getting a post by ID."""
     # First create a post
-    created_post = await test_create_post(authenticated_client)
+    created_post = await test_create_post(authenticated_client, server_logs)
 
     # Get the post
     response = await authenticated_client.get(f"/posts/{created_post['id']}/")
@@ -77,10 +77,10 @@ async def test_get_post(authenticated_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_update_post(authenticated_client: httpx.AsyncClient):
+async def test_update_post(authenticated_client: httpx.AsyncClient, server_logs):
     """Test updating a post."""
     # First create a post
-    created_post = await test_create_post(authenticated_client)
+    created_post = await test_create_post(authenticated_client, server_logs)
 
     # Update data
     update_data = {"content": "This post content has been updated during E2E testing."}
@@ -101,10 +101,10 @@ async def test_update_post(authenticated_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_delete_post(authenticated_client: httpx.AsyncClient):
+async def test_delete_post(authenticated_client: httpx.AsyncClient, server_logs):
     """Test deleting a post."""
     # First create a post
-    created_post = await test_create_post(authenticated_client)
+    created_post = await test_create_post(authenticated_client, server_logs)
 
     # Delete the post
     response = await authenticated_client.delete(f"/posts/{created_post['id']}/")
@@ -118,10 +118,10 @@ async def test_delete_post(authenticated_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_list_posts(authenticated_client: httpx.AsyncClient):
+async def test_list_posts(authenticated_client: httpx.AsyncClient, server_logs):
     """Test listing posts."""
     # Create a topic
-    topic = await test_create_topic(authenticated_client)
+    topic = await test_create_topic(authenticated_client, server_logs)
 
     # Create a few posts in the topic
     for _ in range(3):
