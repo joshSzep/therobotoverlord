@@ -8,6 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 
 from backend.db.models.user import User
+from backend.db.models.user_session import UserSession
 from backend.utils.datetime import now_utc
 from backend.utils.settings import settings
 
@@ -90,6 +91,19 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
         raise HTTPException(
             status_code=status.HTTP_410_GONE,
             detail="CITIZEN, YOUR ACCOUNT HAS BEEN LOCKED FOR RECALIBRATION",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Check if the user has an active session
+    active_session = await UserSession.filter(
+        user_id=user_id,
+        is_active=True,
+    ).exists()
+
+    if not active_session:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="CITIZEN, YOUR SESSION HAS EXPIRED OR BEEN TERMINATED",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

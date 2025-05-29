@@ -10,6 +10,7 @@ import jwt
 import pytest
 
 from backend.db.models.user import User
+from backend.db.models.user_session import UserSession
 from backend.utils.auth import create_access_token
 from backend.utils.auth import create_refresh_token
 from backend.utils.auth import decode_token
@@ -138,9 +139,24 @@ async def test_get_current_user() -> None:
     mock_user.id = user_id
     mock_user.is_locked = False
 
-    # Mock User.get_or_none to return our mock user
-    with mock.patch.object(
-        User, "get_or_none", new=mock.AsyncMock(return_value=mock_user)
+    # Mock the User.get_or_none method
+    get_or_none_mock = mock.AsyncMock(return_value=mock_user)
+
+    # Mock the exists method to return True when awaited
+    exists_mock = mock.AsyncMock()
+    exists_mock.__await__ = mock.MagicMock(return_value=iter([True]))
+
+    # Mock the filter result with the exists method
+    filter_mock = mock.MagicMock()
+    filter_mock.exists = exists_mock
+
+    # Mock the UserSession.filter method
+    filter_method_mock = mock.MagicMock(return_value=filter_mock)
+
+    # Apply the mocks
+    with (
+        mock.patch.object(User, "get_or_none", get_or_none_mock),
+        mock.patch.object(UserSession, "filter", filter_method_mock),
     ):
         # Act
         user = await get_current_user(token)
@@ -189,8 +205,25 @@ async def test_get_optional_user_valid_token() -> None:
     mock_user.id = user_id
     mock_user.is_locked = False
 
-    # Mock get_current_user to return our mock user
-    with mock.patch("backend.utils.auth.get_current_user", return_value=mock_user):
+    # Mock the User.get_or_none method
+    get_or_none_mock = mock.AsyncMock(return_value=mock_user)
+
+    # Mock the exists method to return True when awaited
+    exists_mock = mock.AsyncMock()
+    exists_mock.__await__ = mock.MagicMock(return_value=iter([True]))
+
+    # Mock the filter result with the exists method
+    filter_mock = mock.MagicMock()
+    filter_mock.exists = exists_mock
+
+    # Mock the UserSession.filter method
+    filter_method_mock = mock.MagicMock(return_value=filter_mock)
+
+    # Apply the mocks
+    with (
+        mock.patch.object(User, "get_or_none", get_or_none_mock),
+        mock.patch.object(UserSession, "filter", filter_method_mock),
+    ):
         # Act
         user = await get_optional_user(token)
 

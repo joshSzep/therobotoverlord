@@ -16,6 +16,13 @@ cd /Users/joshszep/code/therobotoverlord
 ./scripts/uvicorn-test.sh
 ```
 
+In another terminal, run the tests:
+
+```bash
+cd /Users/joshszep/code/therobotoverlord/backend/e2e_tests
+pytest -v
+```
+
 ## Testing User Flows
 
 ### 1. Register a New User

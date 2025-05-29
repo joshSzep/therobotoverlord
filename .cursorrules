@@ -188,6 +188,12 @@ async def example(
 - **Test Coverage**: Aim for high test coverage, especially for repositories and routes
 - **Test Organization**: Tests should mirror the structure of the source code
 - **Test Naming**: Test functions should be named descriptively, e.g., `test_list_tags_with_search`
+- **Checklist Workflow**: When implementing tests using checklists, follow this pattern:
+  1. Focus on one test file at a time
+  2. Perfect the implementation before moving to the next item
+  3. Update the checklist to mark the completed item
+  4. Commit the changes with a descriptive message
+  5. Repeat for each checklist item
 - **Mock Objects**: When testing routes, use proper schema objects for mocks, not raw ORM models
 - **Async Testing**: Use `pytest.mark.asyncio` for testing async functions
 - **Test Isolation**: Each test should be independent and not rely on the state of other tests

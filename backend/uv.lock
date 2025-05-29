@@ -108,6 +108,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "httpie" },
+    { name = "httpx" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pyright" },
@@ -140,6 +141,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "httpie", specifier = ">=3.2.4" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "pyright", specifier = ">=1.1.401" },
