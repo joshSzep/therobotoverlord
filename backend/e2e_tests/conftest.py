@@ -5,11 +5,14 @@ Pytest configuration for E2E tests.
 import asyncio
 import io
 import os
+import re
 import time
 from typing import AsyncGenerator
 from typing import Callable
 from typing import Dict
 from typing import Generator
+from typing import List
+from typing import Pattern
 import uuid
 
 import httpx
@@ -17,10 +20,26 @@ import pytest
 import pytest_asyncio
 from tortoise import Tortoise
 
+
+# Define a marker to disable server error detection for specific tests
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "ignore_server_errors: mark test to ignore server errors"
+    )
+
+
 # Constants
 API_HOST = "localhost"
 API_PORT = 8000
 API_URL = f"http://{API_HOST}:{API_PORT}"
+
+# Error whitelist patterns - these errors will not cause tests to fail
+# Each pattern is a regular expression that will be matched against log messages
+WHITELISTED_ERROR_PATTERNS: List[Pattern] = [
+    # Example: re.compile(r"Expected error from third-party library"),
+    # Add specific patterns here as needed
+    re.compile(r"Example whitelisted error pattern"),  # This is just an example
+]
 
 # Configure database settings for tests
 # Use an in-memory SQLite database for E2E tests for faster execution
@@ -80,6 +99,10 @@ def pytest_runtest_makereport(item, call):
 
     # Only check for errors after the test has run (not during setup/teardown)
     if result.when == "call":
+        # Skip error detection if the test is marked to ignore server errors
+        if item.get_closest_marker("ignore_server_errors") is not None:
+            return
+
         has_server_error = False
         error_message = ""
 
@@ -88,15 +111,23 @@ def pytest_runtest_makereport(item, call):
         if server_logs_fixture:
             logs = server_logs_fixture()
             if "ERROR" in logs:
-                has_server_error = True
-                test_name = item.name
-                error_message = (
-                    f"\n\n=== UNEXPECTED SERVER ERROR IN TEST {test_name} ===\n"
-                )
-                error_message += "\n=== SERVER LOGS ===\n"
-                error_message += logs
-                error_message += "\n=== END SERVER LOGS ===\n"
-                print(error_message)
+                # Check if the error is whitelisted
+                is_whitelisted = False
+                for pattern in WHITELISTED_ERROR_PATTERNS:
+                    if pattern.search(logs):
+                        is_whitelisted = True
+                        break
+
+                if not is_whitelisted:
+                    has_server_error = True
+                    test_name = item.name
+                    error_message = (
+                        f"\n\n=== UNEXPECTED SERVER ERROR IN TEST {test_name} ===\n"
+                    )
+                    error_message += "\n=== SERVER LOGS ===\n"
+                    error_message += logs
+                    error_message += "\n=== END SERVER LOGS ===\n"
+                    print(error_message)
 
         # Check for 500 status codes in the test result
         if (
