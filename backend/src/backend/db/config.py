@@ -10,9 +10,28 @@ from tortoise.contrib.fastapi import (
 )
 
 
-# Detect if we're in a testing environment
+# Helper functions
 def _is_testing() -> bool:
+    """Detect if we're in a testing environment."""
     return os.environ.get("TESTING") == "True" or "pytest" in sys.modules
+
+
+def _get_sqlite_config(db_url: str) -> dict[str, Any]:
+    """Convert a SQLite URL to a Tortoise ORM SQLite config."""
+    if db_url == "sqlite://:memory:":
+        # In-memory database
+        return {
+            "engine": "tortoise.backends.sqlite",
+            "credentials": {"file_path": ":memory:"},
+        }
+    else:
+        # File-based database
+        # Remove sqlite:// prefix to get the file path
+        file_path = db_url.replace("sqlite://", "")
+        return {
+            "engine": "tortoise.backends.sqlite",
+            "credentials": {"file_path": file_path},
+        }
 
 
 class DatabaseSettings(BaseSettings):
@@ -40,11 +59,15 @@ db_settings = DatabaseSettings()
 # Tortoise ORM configuration
 def get_tortoise_config() -> dict[str, Any]:
     """Get Tortoise ORM configuration based on the database engine."""
+    # Define the base configuration
     config = {
-        "connections": {"default": db_settings.DATABASE_URL},
         "apps": {
             "models": {
-                "models": ["backend.db.models", "aerich.models"],
+                "models": (
+                    ["backend.db.models"]
+                    if db_settings.DB_ENGINE.lower() == "sqlite"
+                    else ["backend.db.models", "aerich.models"]
+                ),
                 "default_connection": "default",
             },
         },
@@ -52,51 +75,18 @@ def get_tortoise_config() -> dict[str, Any]:
         "timezone": "UTC",
     }
 
-    # For SQLite, we need to add some special configuration
+    # Configure connections based on database engine
+    connections: dict[str, Any] = {}
+
     if db_settings.DB_ENGINE.lower() == "sqlite":
-        # Remove aerich from models for SQLite (not needed for tests)
-        apps = config.get("apps", {})
-        if isinstance(apps, dict):
-            models_config = apps.get("models", {})
-            if isinstance(models_config, dict) and "models" in models_config:
-                models_config["models"] = ["backend.db.models"]
+        # For SQLite, use our helper function to create the proper configuration
+        sqlite_config = _get_sqlite_config(db_settings.DATABASE_URL)
+        connections["default"] = sqlite_config
+    else:
+        # For other databases, use the connection string directly
+        connections["default"] = db_settings.DATABASE_URL
 
-        # Add SQLite-specific configuration
-        connections = config.get("connections", {})
-        if isinstance(connections, dict):
-            # Create the SQLite connection config
-            # Handle SQLite URL format
-            db_url = db_settings.DATABASE_URL
-
-            # Extract the file path from the SQLite URL
-            # Handle different URL formats:
-            # - sqlite://:memory: -> :memory:
-            # - sqlite://./path/to/file.db -> ./path/to/file.db
-            # - sqlite:///absolute/path/to/file.db -> /absolute/path/to/file.db
-            sqlite_config: dict[str, Any]
-
-            if db_url == "sqlite://:memory:":
-                # In-memory database
-                sqlite_config = {
-                    "engine": "tortoise.backends.sqlite",
-                    "credentials": {"file_path": ":memory:"},
-                }
-            else:
-                # File-based database
-                # Remove sqlite:// prefix to get the file path
-                file_path = db_url.replace("sqlite://", "")
-
-                # Ensure the file path is valid
-                sqlite_config = {
-                    "engine": "tortoise.backends.sqlite",
-                    "credentials": {"file_path": file_path},
-                }
-            # Assign it to the connections dictionary
-            # We need to replace the string connection with our SQLite config
-            # First, create a new connections dict with our SQLite config
-            new_connections = {"default": sqlite_config}
-            # Then update the config with the new connections
-            config["connections"] = new_connections
+    config["connections"] = connections
 
     return config
 
@@ -112,28 +102,13 @@ async def init_db(db_url: str | None = None) -> None:
     # Override connection URL if provided
     if db_url:
         if db_settings.DB_ENGINE.lower() == "sqlite":
-            # Handle SQLite URL format
-            if db_url == "sqlite://:memory:":
-                # In-memory database
-                # Type check to ensure we're not assigning to a string
-                connections = config.get("connections", {})
-                if isinstance(connections, dict):
-                    connections["default"] = {
-                        "engine": "tortoise.backends.sqlite",
-                        "credentials": {"file_path": ":memory:"},
-                    }
-            else:
-                # File-based database
-                # Remove sqlite:// prefix to get the file path
-                file_path = db_url.replace("sqlite://", "")
+            # Use our helper function to create the SQLite config
+            sqlite_config = _get_sqlite_config(db_url)
 
-                # Type check to ensure we're not assigning to a string
-                connections = config.get("connections", {})
-                if isinstance(connections, dict):
-                    connections["default"] = {
-                        "engine": "tortoise.backends.sqlite",
-                        "credentials": {"file_path": file_path},
-                    }
+            # Type check to ensure we're not assigning to a string
+            connections = config.get("connections", {})
+            if isinstance(connections, dict):
+                connections["default"] = sqlite_config
         else:
             config["connections"]["default"] = db_url
 
