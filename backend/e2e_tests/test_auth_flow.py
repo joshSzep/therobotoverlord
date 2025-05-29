@@ -22,6 +22,11 @@ async def test_register_user(api_client: httpx.AsyncClient):
     # Register the user
     response = await api_client.post("/auth/register/", json=user_data)
 
+    # Check for server errors if status code is 500
+    from conftest import check_server_error
+
+    check_server_error(response)
+
     # Assert response
     assert response.status_code == 201
     user = response.json()

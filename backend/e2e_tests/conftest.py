@@ -3,6 +3,7 @@ Pytest configuration for E2E tests.
 """
 
 import asyncio
+import io
 import os
 import time
 from typing import AsyncGenerator
@@ -30,6 +31,36 @@ os.environ["TESTING"] = "True"
 os.environ["DB_ENGINE"] = "sqlite"
 os.environ["DATABASE_URL"] = TEST_DB_URL
 
+# Global variable to store server logs
+server_log_stream = io.StringIO()
+
+
+def get_server_logs() -> str:
+    """Get the current server logs.
+
+    This is useful for debugging server errors in tests.
+    """
+    return server_log_stream.getvalue()
+
+
+def check_server_error(response) -> None:
+    """Check if a response indicates a server error and print debug information.
+
+    This is useful in tests when you get an unexpected 500 error.
+    It will print the server logs to help diagnose the issue.
+
+    Args:
+        response: An httpx response object
+    """
+    if response.status_code == 500:
+        logs = get_server_logs()
+        print("\n\n=== SERVER ERROR DETECTED ===\n")
+        print(f"Response status: {response.status_code}")
+        print(f"Response body: {response.text}")
+        print("\n=== SERVER LOGS ===\n")
+        print(logs)
+        print("\n=== END SERVER LOGS ===\n")
+
 
 @pytest.fixture(scope="session")
 def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
@@ -45,6 +76,7 @@ def server() -> Generator[None, None, None]:
 
     # Import the app here to ensure environment variables are set before import
     import importlib.util
+    import logging
     import sys
     import threading
 
@@ -65,7 +97,14 @@ def server() -> Generator[None, None, None]:
     spec.loader.exec_module(app_module)
     app = app_module.app
 
-    # Configure Uvicorn
+    # Set up logging to capture server errors
+    log_handler = logging.StreamHandler(server_log_stream)
+    log_handler.setLevel(logging.ERROR)  # Capture ERROR and above
+    logging.getLogger("uvicorn").addHandler(log_handler)
+    logging.getLogger("uvicorn.error").addHandler(log_handler)
+    logging.getLogger("fastapi").addHandler(log_handler)
+
+    # Configure Uvicorn with access to logs
     config = Config(app=app, host=API_HOST, port=API_PORT, log_level="debug")
     server = uvicorn.Server(config=config)
 
