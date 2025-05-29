@@ -20,13 +20,15 @@ async def test_error_handling_example(api_client: httpx.AsyncClient):
     the server error detection mechanism, even though we're testing error handling.
     """
     # This would normally cause the test to fail due to server error detection
-    response = await api_client.get("/non-existent-endpoint/")
+    response = await api_client.get("/health/trigger-500-error/")
 
     # We can still assert on the response status code
-    assert response.status_code == 404, "Expected a 404 Not Found response"
+    assert response.status_code == 500, "Expected a 500 Internal Server Error response"
 
     # We can also check the response body
-    assert "Not Found" in response.text, "Response should contain 'Not Found'"
+    assert "Internal Server Error" in response.text, (
+        "Response should contain 'Internal Server Error'"
+    )
 
     # The test will pass even if the server logs contain ERROR messages
     # because we've marked it with @pytest.mark.ignore_server_errors
