@@ -1,5 +1,4 @@
 import os
-import sys
 from typing import Any
 
 from pydantic_settings import BaseSettings
@@ -11,11 +10,6 @@ from tortoise.contrib.fastapi import (
 
 
 # Helper functions
-def _is_testing() -> bool:
-    """Detect if we're in a testing environment."""
-    return os.environ.get("TESTING") == "True" or "pytest" in sys.modules
-
-
 def _get_sqlite_config(db_url: str) -> dict[str, Any]:
     """Convert a SQLite URL to a Tortoise ORM SQLite config."""
     if db_url == "sqlite://:memory:":
@@ -35,18 +29,14 @@ def _get_sqlite_config(db_url: str) -> dict[str, Any]:
 
 
 class DatabaseSettings(BaseSettings):
-    # Default to in-memory SQLite for tests, otherwise use postgres
-    DATABASE_URL: str = (
-        "sqlite://:memory:"
-        if _is_testing()
-        else "postgres://localhost:5432/robot_overlord"
-    )
-    DB_ENGINE: str = "sqlite" if _is_testing() else "postgres"
-    TESTING: bool = _is_testing()
+    # Default database settings that can be overridden by environment variables
+    DATABASE_URL: str = "postgres://localhost:5432/robot_overlord"
+    DB_ENGINE: str = "postgres"
+    TESTING: bool = False
 
     # Configure settings based on environment
     model_config = SettingsConfigDict(
-        env_file=".env" if not _is_testing() else None,
+        env_file=".env" if os.environ.get("TESTING") != "True" else None,
         env_file_encoding="utf-8",
         case_sensitive=True,
     )

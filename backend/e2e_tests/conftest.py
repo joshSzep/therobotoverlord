@@ -19,10 +19,13 @@ from tortoise import Tortoise
 API_HOST = "localhost"
 API_PORT = 8000
 API_URL = f"http://{API_HOST}:{API_PORT}"
+
+# Configure database settings for tests
 # Use an in-memory SQLite database for E2E tests for faster execution
 TEST_DB_URL = "sqlite://:memory:"
 
 # Set environment variables for testing
+# These will be used by the database configuration in config.py
 os.environ["TESTING"] = "True"
 os.environ["DB_ENGINE"] = "sqlite"
 os.environ["DATABASE_URL"] = TEST_DB_URL
