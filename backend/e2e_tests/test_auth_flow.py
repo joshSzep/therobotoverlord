@@ -9,7 +9,6 @@ import pytest
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_register_user(api_client: httpx.AsyncClient):
     """Test user registration."""
     # Generate unique user data
@@ -36,7 +35,6 @@ async def test_register_user(api_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_login_with_valid_credentials(api_client: httpx.AsyncClient, test_user):
     """Test login with valid credentials."""
     # Login data
@@ -57,7 +55,6 @@ async def test_login_with_valid_credentials(api_client: httpx.AsyncClient, test_
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_login_with_invalid_credentials(api_client: httpx.AsyncClient, test_user):
     """Test login with invalid credentials."""
     # Login data with wrong password
@@ -75,7 +72,6 @@ async def test_login_with_invalid_credentials(api_client: httpx.AsyncClient, tes
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_get_profile(authenticated_client: httpx.AsyncClient, test_user):
     """Test getting user profile."""
     # Get profile
@@ -90,7 +86,6 @@ async def test_get_profile(authenticated_client: httpx.AsyncClient, test_user):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_logout(authenticated_client: httpx.AsyncClient):
     """Test user logout."""
     # Logout

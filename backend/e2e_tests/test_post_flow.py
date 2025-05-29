@@ -10,7 +10,6 @@ import pytest
 
 # We need to create a topic first before creating posts
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_create_topic(authenticated_client: httpx.AsyncClient):
     """Test creating a new topic."""
     # Topic data
@@ -33,7 +32,6 @@ async def test_create_topic(authenticated_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_create_post(authenticated_client: httpx.AsyncClient):
     """Test creating a new post."""
     # First create a topic
@@ -62,7 +60,6 @@ async def test_create_post(authenticated_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_get_post(authenticated_client: httpx.AsyncClient):
     """Test getting a post by ID."""
     # First create a post
@@ -80,7 +77,6 @@ async def test_get_post(authenticated_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_update_post(authenticated_client: httpx.AsyncClient):
     """Test updating a post."""
     # First create a post
@@ -105,7 +101,6 @@ async def test_update_post(authenticated_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_delete_post(authenticated_client: httpx.AsyncClient):
     """Test deleting a post."""
     # First create a post
@@ -123,7 +118,6 @@ async def test_delete_post(authenticated_client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="SQLite configuration needs to be fixed")
 async def test_list_posts(authenticated_client: httpx.AsyncClient):
     """Test listing posts."""
     # Create a topic

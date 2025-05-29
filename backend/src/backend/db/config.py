@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import Any
 
 from pydantic_settings import BaseSettings
@@ -9,14 +10,24 @@ from tortoise.contrib.fastapi import (
 )
 
 
+# Detect if we're in a testing environment
+def _is_testing() -> bool:
+    return os.environ.get("TESTING") == "True" or "pytest" in sys.modules
+
+
 class DatabaseSettings(BaseSettings):
-    DATABASE_URL: str = "postgres://localhost:5432/robot_overlord"
-    DB_ENGINE: str = "postgres"  # Default to postgres, can be overridden to 'sqlite'
-    TESTING: bool = False
+    # Default to in-memory SQLite for tests, otherwise use postgres
+    DATABASE_URL: str = (
+        "sqlite://:memory:"
+        if _is_testing()
+        else "postgres://localhost:5432/robot_overlord"
+    )
+    DB_ENGINE: str = "sqlite" if _is_testing() else "postgres"
+    TESTING: bool = _is_testing()
 
     # Configure settings based on environment
     model_config = SettingsConfigDict(
-        env_file=".env" if os.environ.get("TESTING") != "True" else None,
+        env_file=".env" if not _is_testing() else None,
         env_file_encoding="utf-8",
         case_sensitive=True,
     )
@@ -68,7 +79,7 @@ def get_tortoise_config() -> dict[str, Any]:
                 # In-memory database
                 sqlite_config = {
                     "engine": "tortoise.backends.sqlite",
-                    "credentials": {"file": ":memory:"},
+                    "credentials": {"file_path": ":memory:"},
                 }
             else:
                 # File-based database
@@ -78,7 +89,7 @@ def get_tortoise_config() -> dict[str, Any]:
                 # Ensure the file path is valid
                 sqlite_config = {
                     "engine": "tortoise.backends.sqlite",
-                    "credentials": {"file": file_path},
+                    "credentials": {"file_path": file_path},
                 }
             # Assign it to the connections dictionary
             # We need to replace the string connection with our SQLite config
@@ -109,7 +120,7 @@ async def init_db(db_url: str | None = None) -> None:
                 if isinstance(connections, dict):
                     connections["default"] = {
                         "engine": "tortoise.backends.sqlite",
-                        "credentials": {"file": ":memory:"},
+                        "credentials": {"file_path": ":memory:"},
                     }
             else:
                 # File-based database
@@ -121,7 +132,7 @@ async def init_db(db_url: str | None = None) -> None:
                 if isinstance(connections, dict):
                     connections["default"] = {
                         "engine": "tortoise.backends.sqlite",
-                        "credentials": {"file": file_path},
+                        "credentials": {"file_path": file_path},
                     }
         else:
             config["connections"]["default"] = db_url
