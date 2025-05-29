@@ -7,6 +7,7 @@ import io
 import os
 import time
 from typing import AsyncGenerator
+from typing import Callable
 from typing import Dict
 from typing import Generator
 import uuid
@@ -41,6 +42,25 @@ def get_server_logs() -> str:
     This is useful for debugging server errors in tests.
     """
     return server_log_stream.getvalue()
+
+
+@pytest.fixture
+def server_logs() -> Generator[Callable[[], str], None, None]:
+    """Fixture that provides access to server logs.
+
+    This allows tests to programmatically inspect server logs.
+
+    Returns:
+        callable: A function that returns the current server logs
+    """
+    # Clear the log stream at the start of each test
+    server_log_stream.truncate(0)
+    server_log_stream.seek(0)
+
+    # Let the test run
+    yield get_server_logs
+
+    # No cleanup needed, logs will be cleared at the start of the next test
 
 
 def check_server_error(response) -> None:

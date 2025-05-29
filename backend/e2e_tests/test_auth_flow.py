@@ -60,7 +60,9 @@ async def test_login_with_valid_credentials(api_client: httpx.AsyncClient, test_
 
 
 @pytest.mark.asyncio
-async def test_login_with_invalid_credentials(api_client: httpx.AsyncClient, test_user):
+async def test_login_with_invalid_credentials(
+    api_client: httpx.AsyncClient, test_user, server_logs
+):
     """Test login with invalid credentials."""
     # Login data with wrong password
     login_data = {
@@ -70,6 +72,13 @@ async def test_login_with_invalid_credentials(api_client: httpx.AsyncClient, tes
 
     # Login
     response = await api_client.post("/auth/login/", json=login_data)
+
+    # Get server logs programmatically
+    logs = server_logs()
+
+    # You can inspect logs programmatically
+    # For example, check if there's any unexpected error
+    assert "ERROR" not in logs, f"Unexpected server error: {logs}"
 
     # Assert response
     assert response.status_code == 401
