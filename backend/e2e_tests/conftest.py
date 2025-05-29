@@ -65,31 +65,15 @@ def server_logs() -> Generator[Callable[[], str], None, None]:
     # No cleanup needed, logs will be cleared at the start of the next test
 
 
-def check_server_error(response) -> None:
-    """Check if a response indicates a server error and print debug information.
-
-    This is useful in tests when you get an unexpected 500 error.
-    It will print the server logs to help diagnose the issue.
-
-    Args:
-        response: An httpx response object
-    """
-    if response.status_code == 500:
-        logs = get_server_logs()
-        print("\n\n=== SERVER ERROR DETECTED ===\n")
-        print(f"Response status: {response.status_code}")
-        print(f"Response body: {response.text}")
-        print("\n=== SERVER LOGS ===\n")
-        print(logs)
-        print("\n=== END SERVER LOGS ===\n")
-
-
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     """Pytest hook to check for server errors after each test.
 
-    This will run after each test and check if there were any ERROR level
-    logs in the server logs. If there were, it will print a warning with the logs.
+    This will run after each test and check for:
+    1. Any ERROR level logs in the server logs
+    2. Any 500 status codes in responses
+
+    If errors are found, it will print detailed information to help diagnose the issue.
     """
     outcome = yield
     result = outcome.get_result()
@@ -105,6 +89,23 @@ def pytest_runtest_makereport(item, call):
                 print("\n=== SERVER LOGS ===\n")
                 print(logs)
                 print("\n=== END SERVER LOGS ===\n")
+
+        # Check for 500 status codes in the test result
+        if (
+            hasattr(call, "excinfo")
+            and call.excinfo is None
+            and hasattr(result, "sections")
+        ):
+            for section_name, section_content in result.sections:
+                if "response" in section_name.lower() and "500" in section_content:
+                    test_name = item.name
+                    print(f"\n\n=== 500 STATUS CODE DETECTED IN TEST {test_name} ===\n")
+                    print(f"Response: {section_content}")
+                    if server_logs_fixture:
+                        logs = server_logs_fixture()
+                        print("\n=== SERVER LOGS ===\n")
+                        print(logs)
+                        print("\n=== END SERVER LOGS ===\n")
 
 
 @pytest.fixture(scope="session")
