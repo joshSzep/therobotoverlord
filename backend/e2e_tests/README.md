@@ -27,6 +27,8 @@ WHITELISTED_ERROR_PATTERNS: List[Pattern] = [
 ]
 ```
 
+See [whitelist_example.py](examples/whitelist_example.py) for more examples of how to use whitelist patterns.
+
 #### Ignoring Server Errors for Specific Tests
 
 If you have a test that intentionally triggers server errors (e.g., testing error handling), you can mark it to ignore server errors:
@@ -37,6 +39,8 @@ async def test_that_triggers_errors():
     # This test will not fail due to server errors
     ...
 ```
+
+See [test_error_handling_example.py](examples/test_error_handling_example.py) for a complete example of how to use the ignore_server_errors marker.
 
 ### Benefits
 
