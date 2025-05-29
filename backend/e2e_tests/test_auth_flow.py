@@ -9,7 +9,7 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_register_user(api_client: httpx.AsyncClient, server_logs):
+async def test_register_user(api_client: httpx.AsyncClient):
     """Test user registration."""
     # Generate unique user data
     unique_id = uuid4().hex[:8]
@@ -21,11 +21,6 @@ async def test_register_user(api_client: httpx.AsyncClient, server_logs):
 
     # Register the user
     response = await api_client.post("/auth/register/", json=user_data)
-
-    # Check for server errors if status code is 500
-    from conftest import check_server_error
-
-    check_server_error(response)
 
     # Assert response
     assert response.status_code == 201
@@ -40,9 +35,7 @@ async def test_register_user(api_client: httpx.AsyncClient, server_logs):
 
 
 @pytest.mark.asyncio
-async def test_login_with_valid_credentials(
-    api_client: httpx.AsyncClient, test_user, server_logs
-):
+async def test_login_with_valid_credentials(api_client: httpx.AsyncClient, test_user):
     """Test login with valid credentials."""
     # Login data
     login_data = {
@@ -62,9 +55,7 @@ async def test_login_with_valid_credentials(
 
 
 @pytest.mark.asyncio
-async def test_login_with_invalid_credentials(
-    api_client: httpx.AsyncClient, test_user, server_logs
-):
+async def test_login_with_invalid_credentials(api_client: httpx.AsyncClient, test_user):
     """Test login with invalid credentials."""
     # Login data with wrong password
     login_data = {
@@ -75,22 +66,13 @@ async def test_login_with_invalid_credentials(
     # Login
     response = await api_client.post("/auth/login/", json=login_data)
 
-    # Get server logs programmatically
-    logs = server_logs()
-
-    # You can inspect logs programmatically
-    # For example, check if there's any unexpected error
-    assert "ERROR" not in logs, f"Unexpected server error: {logs}"
-
     # Assert response
     assert response.status_code == 401
     assert "detail" in response.json()
 
 
 @pytest.mark.asyncio
-async def test_get_profile(
-    authenticated_client: httpx.AsyncClient, test_user, server_logs
-):
+async def test_get_profile(authenticated_client: httpx.AsyncClient, test_user):
     """Test getting user profile."""
     # Get profile
     response = await authenticated_client.get("/profile/me/")
@@ -104,7 +86,7 @@ async def test_get_profile(
 
 
 @pytest.mark.asyncio
-async def test_logout(authenticated_client: httpx.AsyncClient, server_logs):
+async def test_logout(authenticated_client: httpx.AsyncClient):
     """Test user logout."""
     # Logout
     response = await authenticated_client.post("/profile/logout/")

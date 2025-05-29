@@ -44,11 +44,13 @@ def get_server_logs() -> str:
     return server_log_stream.getvalue()
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def server_logs() -> Generator[Callable[[], str], None, None]:
     """Fixture that provides access to server logs.
 
-    This allows tests to programmatically inspect server logs.
+    This fixture is automatically applied to all tests (autouse=True).
+    It clears the log stream at the start of each test and provides
+    a function that returns the current server logs.
 
     Returns:
         callable: A function that returns the current server logs
