@@ -198,6 +198,26 @@ async def example(
 - **Async Testing**: Use `pytest.mark.asyncio` for testing async functions
 - **Test Isolation**: Each test should be independent and not rely on the state of other tests
 
+### End-to-End (E2E) Testing
+
+- **Location**: All E2E tests are in the `backend/e2e_tests` directory
+- **Purpose**: Verify that the entire application works correctly from the user's perspective
+- **Server Error Detection**: E2E tests automatically fail if server errors are detected
+  - Captures ERROR level logs during test execution
+  - Detects 500 status codes in responses
+  - Provides detailed error information for debugging
+  - Supports whitelisting expected error patterns
+  - Allows ignoring server errors for specific tests with `@pytest.mark.ignore_server_errors`
+- **Test Database**: Uses in-memory SQLite database for faster test execution and isolation
+- **Key Fixtures**:
+  - `server`: Starts the API server for testing
+  - `setup_test_db`: Sets up a fresh test database for each test
+  - `api_client`: Creates an HTTP client for making API requests
+  - `test_user`: Creates a test user and returns user data
+  - `authenticated_client`: Creates a client with valid authentication token
+- **Test Flow Pattern**: Tests should build complete workflows (e.g., auth flow, post creation/management)
+- **Running E2E Tests**: From project root: `cd backend && uv run pytest e2e_tests/`
+
 ### Error Handling
 - Prefer using exceptions for error handling
 - NEVER overload return types (e.g., don't use `Optional[<type>]` with `None` to signal errors)
