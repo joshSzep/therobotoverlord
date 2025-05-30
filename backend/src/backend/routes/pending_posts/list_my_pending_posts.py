@@ -1,11 +1,13 @@
+from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import Query
 
 from backend.db.models.user import User
 from backend.db_functions.pending_posts.list_pending_posts import list_pending_posts
-from backend.routes.pending_posts import router
 from backend.schemas.pending_post import PendingPostList
 from backend.utils.auth import get_current_user
+
+router = APIRouter()
 
 
 @router.get("/my/", response_model=PendingPostList)

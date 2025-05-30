@@ -4,6 +4,7 @@ from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
+from pydantic import Field
 
 from backend.schemas.user import UserSchema
 
@@ -25,3 +26,12 @@ class RejectedPostResponse(RejectedPostBase):
 class RejectedPostList(BaseModel):
     rejected_posts: List[RejectedPostResponse]
     count: int
+
+
+class RejectionRequest(BaseModel):
+    reason: str = Field(
+        ...,
+        min_length=3,
+        max_length=1024,
+        description="Reason for rejecting the post",
+    )

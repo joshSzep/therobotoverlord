@@ -1,3 +1,4 @@
+from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
@@ -9,10 +10,11 @@ from backend.db_functions.pending_posts.create_pending_post import (
 )
 from backend.db_functions.posts import get_post_by_id
 from backend.db_functions.topics import get_topic_by_id
-from backend.routes.pending_posts import router
 from backend.schemas.pending_post import PendingPostCreate
 from backend.schemas.pending_post import PendingPostResponse
 from backend.utils.auth import get_current_user
+
+router = APIRouter()
 
 
 @router.post(
