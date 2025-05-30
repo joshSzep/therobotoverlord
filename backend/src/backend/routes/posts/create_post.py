@@ -14,14 +14,14 @@ from backend.db_functions.posts import get_post_by_id
 from backend.db_functions.topics import get_topic_by_id
 from backend.schemas.post import PostCreate
 from backend.schemas.post import PostResponse
-from backend.utils.auth import get_current_user
+from backend.utils.role_check import get_moderator_user
 
 router = APIRouter()
 
 
 @router.post("/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
 async def create_post(
-    post_data: PostCreate, current_user: User = Depends(get_current_user)
+    post_data: PostCreate, current_user: User = Depends(get_moderator_user)
 ) -> PostResponse:
     # Verify that the topic exists
     topic = await get_topic_by_id(post_data.topic_id)

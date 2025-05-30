@@ -12,8 +12,7 @@ from backend.db.models.user import User
 from backend.db_functions.posts import delete_post as db_delete_post
 from backend.db_functions.posts import get_post_by_id
 from backend.db_functions.posts import get_reply_count
-from backend.db_functions.posts import is_user_post_author
-from backend.utils.auth import get_current_user
+from backend.utils.role_check import get_moderator_user
 
 router = APIRouter()
 
@@ -21,7 +20,7 @@ router = APIRouter()
 @router.delete("/{post_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(
     post_id: UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_moderator_user),
 ) -> None:
     # Check if post exists
     post = await get_post_by_id(post_id)
@@ -31,13 +30,7 @@ async def delete_post(
             detail="Post not found",
         )
 
-    # Check if the current user is the author or an admin
-    is_author = await is_user_post_author(post_id, current_user.id)
-    if not is_author and current_user.role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to delete this post",
-        )
+    # No need to check authorship since we're already restricting to moderators/admins
 
     # Check if the post has replies
     reply_count = await get_reply_count(post_id)

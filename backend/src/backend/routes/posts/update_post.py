@@ -10,11 +10,10 @@ from fastapi import status
 # Project-specific imports
 from backend.db.models.user import User
 from backend.db_functions.posts import get_post_by_id
-from backend.db_functions.posts import is_user_post_author
 from backend.db_functions.posts import update_post as db_update_post
 from backend.schemas.post import PostResponse
 from backend.schemas.post import PostUpdate
-from backend.utils.auth import get_current_user
+from backend.utils.role_check import get_moderator_user
 
 router = APIRouter()
 
@@ -23,7 +22,7 @@ router = APIRouter()
 async def update_post(
     post_id: UUID,
     post_data: PostUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_moderator_user),
 ) -> PostResponse:
     # Check if post exists
     post = await get_post_by_id(post_id)
@@ -33,13 +32,7 @@ async def update_post(
             detail="Post not found",
         )
 
-    # Check if the current user is the author or an admin
-    is_author = await is_user_post_author(post_id, current_user.id)
-    if not is_author and current_user.role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to update this post",
-        )
+    # No need to check authorship since we're already restricting to moderators/admins
 
     # Update the post using data access function
     updated_post = await db_update_post(post_id, post_data.content)
