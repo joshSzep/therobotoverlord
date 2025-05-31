@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
@@ -12,6 +13,7 @@ from backend.db_functions.posts import get_post_by_id
 from backend.db_functions.topics import get_topic_by_id
 from backend.schemas.pending_post import PendingPostCreate
 from backend.schemas.pending_post import PendingPostResponse
+from backend.tasks.ai_moderation_task import schedule_post_moderation
 from backend.utils.auth import get_current_user
 
 router = APIRouter()
@@ -23,7 +25,9 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
 )
 async def create_pending_post(
-    post_data: PendingPostCreate, current_user: User = Depends(get_current_user)
+    post_data: PendingPostCreate,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
 ) -> PendingPostResponse:
     """
     Create a new post pending moderation.
@@ -54,10 +58,15 @@ async def create_pending_post(
 
     try:
         # Create the pending post
-        return await db_create_pending_post(
+        pending_post = await db_create_pending_post(
             user_id=current_user.id,
             pending_post_data=post_data,
         )
+
+        # Schedule AI moderation in the background
+        background_tasks.add_task(schedule_post_moderation, pending_post.id)
+
+        return pending_post
     except ValidationError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

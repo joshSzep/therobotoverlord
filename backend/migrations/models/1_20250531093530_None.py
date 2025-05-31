@@ -33,6 +33,26 @@ CREATE TABLE IF NOT EXISTS "topic" (
     "description" TEXT,
     "author_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS "pendingpost" (
+    "id" UUID NOT NULL PRIMARY KEY,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "content" TEXT NOT NULL,
+    "parent_post_id" UUID,
+    "author_id" UUID NOT NULL REFERENCES "user" ("id") ON DELETE CASCADE,
+    "topic_id" UUID NOT NULL REFERENCES "topic" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "aianalysis" (
+    "id" UUID NOT NULL PRIMARY KEY,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "decision" VARCHAR(20) NOT NULL,
+    "confidence_score" DOUBLE PRECISION NOT NULL,
+    "analysis_text" TEXT NOT NULL,
+    "feedback_text" TEXT NOT NULL,
+    "processing_time_ms" INT NOT NULL,
+    "pending_post_id" UUID NOT NULL REFERENCES "pendingpost" ("id") ON DELETE CASCADE
+);
 CREATE TABLE IF NOT EXISTS "post" (
     "id" UUID NOT NULL PRIMARY KEY,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
