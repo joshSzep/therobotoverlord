@@ -76,7 +76,10 @@ async def test_user() -> AsyncGenerator[User, None]:
         "display_name": "Test User",
     }
     user = await User.create(**user_data)
-    await user.set_password("Password123!")
+    # Use the db_function instead of a model method
+    from backend.db_functions.users.set_user_password import set_user_password
+
+    await set_user_password(user.id, "Password123!")
     yield user
     await user.delete()
 
@@ -90,7 +93,10 @@ async def admin_user() -> AsyncGenerator[User, None]:
         "is_admin": True,
     }
     user = await User.create(**user_data)
-    await user.set_password("AdminPass123!")
+    # Use the db_function instead of a model method
+    from backend.db_functions.users.set_user_password import set_user_password
+
+    await set_user_password(user.id, "AdminPass123!")
     yield user
     await user.delete()
 

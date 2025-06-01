@@ -39,6 +39,7 @@ class DatabaseSettings(BaseSettings):
         env_file=".env" if os.environ.get("TESTING") != "True" else None,
         env_file_encoding="utf-8",
         case_sensitive=True,
+        extra="ignore",  # Ignore extra environment variables like OPENAI_API_KEY
     )
 
 

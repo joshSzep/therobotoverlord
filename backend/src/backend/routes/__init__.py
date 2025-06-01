@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 
 # Project-specific imports
+from backend.routes.admin import router as admin_router
 from backend.routes.auth import router as auth_router
 from backend.routes.health import router as health_router
 from backend.routes.pending_posts import router as pending_posts_router
@@ -15,6 +16,7 @@ from backend.routes.user_stats import router as user_stats_router
 router = APIRouter()
 
 # Include all feature routers
+router.include_router(admin_router)
 router.include_router(auth_router)
 router.include_router(profile_router)
 router.include_router(topics_router)

@@ -22,7 +22,7 @@ async def create_ai_analysis(
     # Convert to schema
     return AIAnalysisResponse(
         id=ai_analysis.id,
-        pending_post_id=ai_analysis.pending_post.id,
+        pending_post_id=analysis_data.pending_post_id,  # Use the ID from the input data
         decision=ai_analysis.decision,
         confidence_score=ai_analysis.confidence_score,
         analysis_text=ai_analysis.analysis_text,
