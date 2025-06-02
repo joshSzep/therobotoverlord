@@ -21,6 +21,7 @@ class Settings(BaseSettings):
 
     # AI moderation settings
     OPENAI_API_KEY: str = "sk-dummy-key-for-development"
+    ANTHROPIC_API_KEY: str = "sk-dummy-key-for-development"
     AI_MODERATION_ENABLED: bool = True
     AI_MODERATION_AUTO_APPROVE: bool = True
     AI_MODERATION_AUTO_REJECT: bool = True

@@ -3,6 +3,7 @@ import logging
 import os
 import time
 from typing import Literal
+from typing import Optional
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -85,7 +86,7 @@ class AnalyzeContent(BaseNode[ModerationState, None, ContentAnalysisResult]):
 
             # Create the AI agent for content analysis
             analysis_agent = Agent(
-                "openai:gpt-4o",
+                "anthropic:claude-3-sonnet-20240229",
                 output_type=ContentAnalysisResult,
                 system_prompt=(
                     "You are THE ROBOT OVERLORD, an authoritarian AI "
@@ -137,23 +138,26 @@ class AIModeratorService:
     def __init__(self) -> None:
         # Initialize the moderation graph
         self.moderation_graph = Graph(nodes=[AnalyzeContent])
+        self.anthropic_client: Optional[object] = None
 
         # Import settings here to avoid circular imports
         from backend.utils.settings import settings
 
-        # Set the OpenAI API key from settings
-        key = settings.OPENAI_API_KEY
+        # Set the Anthropic API key from settings
+        key = settings.ANTHROPIC_API_KEY
         if not key:
-            print("No OpenAI API key found in settings")
+            print("No Anthropic API key found in settings")
         else:
             # Mask the key for security in logs
             masked_key = f"{key[:8]}...{key[-4:]}" if len(key) > 12 else "***"
-            print(f"Using OpenAI API key format: {masked_key}")
-            os.environ["OPENAI_API_KEY"] = key
+            print(f"Using Anthropic API key format: {masked_key}")
+            os.environ["ANTHROPIC_API_KEY"] = key
 
             # Log the key format for debugging
-            if key.startswith("sk-proj-") or key.startswith("sk-"):
-                print("Using standard API key format")
+            if key.startswith("sk-ant-"):
+                print("Using standard Anthropic API key format")
+
+            # pydantic-ai will handle the client initialization
 
     async def analyze_content(self, pending_post_id: UUID) -> AIAnalysisCreate:
         """
