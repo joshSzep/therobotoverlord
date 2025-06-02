@@ -8,3 +8,4 @@ class HealthCheckResponseSchema(BaseModel):
 
 class HealthResponseSchema(HealthCheckResponseSchema):
     message: str
+    database_status: str
