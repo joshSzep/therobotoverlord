@@ -67,3 +67,7 @@ coverage/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+
+# Render
+admin_creds.json
