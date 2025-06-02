@@ -2,10 +2,10 @@ services:
   - type: web
     name: robot-overlord
     runtime: python
-    pythonVersion: 3.12.1
-    rootDir: /backend/
-    buildCommand: pip install --system --no-deps
+    pythonVersion: 3.12.10
+    rootDir: backend
+    buildCommand: pip install -e .
     startCommand: uvicorn backend.app:app --host 0.0.0.0 --port 10000
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.1
+        value: 3.12.10
