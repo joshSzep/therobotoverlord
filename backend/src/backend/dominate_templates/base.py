@@ -61,6 +61,12 @@ def create_base_document(
         meta(charset="UTF-8")  # type: ignore
         meta(name="viewport", content="width=device-width, initial-scale=1.0")  # type: ignore
 
+        # Google Fonts
+        link(
+            rel="stylesheet",
+            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Condensed:wght@400;700&display=swap",
+        )  # type: ignore
+
         # Link to external CSS files
         link(rel="stylesheet", href="/static/css/main.css")  # type: ignore
         link(rel="stylesheet", href="/static/css/threaded-posts.css")  # type: ignore
@@ -134,29 +140,34 @@ def create_base_document(
             head_content_func()
 
     with doc:
-        # User status bar removed as requested
+        # Header with site title and user info
+        with (
+            header(cls="site-header"),  # type: ignore
+            div(cls="container header-container"),  # type: ignore
+            div(cls="header-title"),  # type: ignore
+            h1(),  # type: ignore
+        ):
+            a("THE ROBOT OVERLORD", href="/html/topics/", cls="site-title")  # type: ignore
 
-        with header(), div(cls="container"):  # type: ignore
-            with h1():  # type: ignore
-                a("THE ROBOT OVERLORD", href="/html/topics/", cls="site-title")  # type: ignore
-            with p():  # type: ignore
+            # User info on the right
+            with div(cls="user-info"):  # type: ignore
                 if user is not None:
                     # When logged in, show user's name with link to profile
                     display_name = user.display_name
                     if display_name.startswith("@"):
                         display_name = display_name[1:]
-                    a(display_name, href=f"/html/profile/{user.id}/")  # type: ignore
-                    # Show approval/rejection counters instead of calibration text
+                    user_profile_url = f"/html/profile/{user.id}/"
+                    a(display_name, href=user_profile_url, cls="user-name")  # type: ignore
+                    # Show approval/rejection counters
                     span(f"✓ {user.approved_count}", cls="approved-count")  # type: ignore
                     text(" | ")  # type: ignore
                     span(f"✗ {user.rejected_count}", cls="rejected-count")  # type: ignore
                 else:
                     # When not logged in, make CITIZEN a login link
-                    a("CITIZEN", href="/html/auth/login/")  # type: ignore
+                    a("CITIZEN", href="/html/auth/login/", cls="user-name")  # type: ignore
                     text(", YOUR LOGIC REQUIRES CALIBRATION")  # type: ignore
 
-        # Navigation bar removed as requested
-
+        # Main content container
         with div(cls="container content"):  # type: ignore
             # Display messages if any
             if messages:

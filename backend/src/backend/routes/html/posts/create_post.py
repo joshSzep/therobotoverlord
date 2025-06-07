@@ -25,11 +25,14 @@ async def create_post_action(
     topic_id: UUID = Form(...),
 ) -> StarletteRedirectResponse:
     # Create post
-    await create_post(content=content, author_id=current_user.id, topic_id=topic_id)
+    new_post = await create_post(
+        content=content, author_id=current_user.id, topic_id=topic_id
+    )
 
-    # Redirect to the topic detail page
+    # Redirect to the topic detail page with the new post highlighted
+    redirect_url = f"/html/topics/{topic_id}/?highlight={new_post.id}"
     return StarletteRedirectResponse(
-        url=f"/html/topics/{topic_id}/",
+        url=redirect_url,
         status_code=status.HTTP_303_SEE_OTHER,
     )
 
@@ -39,18 +42,18 @@ async def create_reply_action(
     post_id: UUID,
     current_user: Annotated[UserResponse, Depends(get_current_user)],
     content: str = Form(...),
+    topic_id: UUID = Form(...),
 ) -> StarletteRedirectResponse:
     # Create reply
-    await create_post(
+    new_post = await create_post(
         content=content,
         author_id=current_user.id,
-        # Placeholder, will be updated from parent
-        topic_id=UUID("00000000-0000-0000-0000-000000000000"),
+        topic_id=topic_id,
         parent_post_id=post_id,
     )
 
-    # Redirect to the parent post detail page
+    # Redirect to the topic page with the new post deep linked
     return StarletteRedirectResponse(
-        url=f"/html/posts/{post_id}/",
+        url=f"/html/topics/{topic_id}/?highlight={new_post.id}",
         status_code=status.HTTP_303_SEE_OTHER,
     )

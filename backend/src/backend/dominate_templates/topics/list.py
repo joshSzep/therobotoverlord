@@ -29,6 +29,7 @@ def create_topics_list_page(
     pagination: Dict[str, Any],
     user: Optional[UserResponse] = None,
     messages: Optional[List[Dict[str, str]]] = None,
+    tag_filter: Optional[str] = None,
 ) -> Any:
     """
     Create the topics list page using Dominate.
@@ -46,7 +47,11 @@ def create_topics_list_page(
 
     # Define the content function to be passed to the base document
     def content_func() -> None:
-        h1("APPROVED TOPICS FOR DISCUSSION")  # type: ignore
+        # Display page title, with tag filter if applicable
+        if tag_filter:
+            h1(f"TOPICS TAGGED: {tag_filter.upper()}")  # type: ignore
+        else:
+            h1("APPROVED TOPICS FOR DISCUSSION")  # type: ignore
 
         if topics:
             with div(cls="topics-list"):  # type: ignore
@@ -73,7 +78,11 @@ def create_topics_list_page(
                                 with div(cls="topic-tags"):  # type: ignore
                                     if topic.tags:
                                         for tag in topic.tags:
-                                            span(tag.name, cls="tag")  # type: ignore
+                                            a(
+                                                tag.name,
+                                                href=f"/html/tags/{tag.slug}/",
+                                                cls="tag",
+                                            )  # type: ignore
                                     else:
                                         span("No tags", cls="no-tags")  # type: ignore
 
@@ -102,10 +111,15 @@ def create_topics_list_page(
             # Pagination controls
             if pagination:
                 with div(cls="pagination"):  # type: ignore
+                    # Build the base URL for pagination links
+                    base_url = (
+                        f"/html/tags/{tag_filter}/" if tag_filter else "/html/topics/"
+                    )
+
                     if pagination["has_previous"]:
                         a(
                             "Previous",
-                            href=f"/html/topics/?page={pagination['previous_page']}",
+                            href=f"{base_url}?page={pagination['previous_page']}",
                         )  # type: ignore
 
                     span(
@@ -113,7 +127,7 @@ def create_topics_list_page(
                     )  # type: ignore
 
                     if pagination.get("has_next"):
-                        a("Next", href=f"/html/topics/?page={pagination['next_page']}")  # type: ignore
+                        a("Next", href=f"{base_url}?page={pagination['next_page']}")  # type: ignore
         else:
             p("NO TOPICS HAVE BEEN APPROVED BY THE CENTRAL COMMITTEE")  # type: ignore
 

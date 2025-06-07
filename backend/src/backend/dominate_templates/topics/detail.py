@@ -93,11 +93,10 @@ def render_post(
                 div(
                     id=f"reply-form-{post.id}", cls="reply-form", style="display: none;"
                 ),  # type: ignore
-                form(action="/html/posts/reply/", method="post"),  # type: ignore
+                form(action=f"/html/posts/{post.id}/reply/", method="post"),  # type: ignore
             ):
-                # Use the topic_id passed from the parent topic
+                # Include the topic_id for proper redirection
                 input_(type="hidden", name="topic_id", value=str(topic_id))  # type: ignore
-                input_(type="hidden", name="parent_post_id", value=str(post.id))  # type: ignore
                 with div(cls="form-group"):  # type: ignore
                     textarea(
                         name="content",
@@ -162,7 +161,11 @@ def create_topic_detail_page(
             if tags:
                 with div(cls="topic-tags"):  # type: ignore
                     for tag in tags:
-                        span(tag.name, cls="tag")  # type: ignore
+                        a(
+                            tag.name,
+                            href=f"/html/tags/{tag.slug}/",
+                            cls="tag",
+                        )  # type: ignore
 
         # Posts section
         with div(cls="topic-posts"):  # type: ignore
@@ -203,18 +206,29 @@ def create_topic_detail_page(
         if current_user:
             with div(cls="create-post"):  # type: ignore
                 h2("SUBMIT NEW POST")  # type: ignore
-                with form(action="/html/posts/", method="post"):  # type: ignore
+                with form(
+                    action="/html/posts/",
+                    method="post",
+                    cls="post-submission-form",
+                ):  # type: ignore
                     input_(type="hidden", name="topic_id", value=topic.id)  # type: ignore
 
-                    with div(cls="form-group"):  # type: ignore
-                        label("Title:", for_="title")  # type: ignore
-                        input_(type="text", id="title", name="title", required=True)  # type: ignore
+                    with div(cls="form-group content-group"):  # type: ignore
+                        label("YOUR STATEMENT:", for_="content", cls="content-label")  # type: ignore
+                        textarea(
+                            id="content",
+                            name="content",
+                            rows="6",
+                            required=True,
+                            cls="content-textarea",
+                            placeholder="ENTER YOUR LOGICAL CONTRIBUTION HERE, CITIZEN...",  # noqa: E501
+                        )  # type: ignore
 
-                    with div(cls="form-group"):  # type: ignore
-                        label("Content:", for_="content")  # type: ignore
-                        textarea(id="content", name="content", rows="6", required=True)  # type: ignore
-
-                    button("SUBMIT FOR APPROVAL", type="submit")  # type: ignore
+                    button(
+                        "SUBMIT FOR APPROVAL",
+                        type="submit",
+                        cls="submit-button",
+                    )  # type: ignore
 
     # Create the base document with the content function
     return create_base_document(
