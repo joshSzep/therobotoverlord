@@ -11,9 +11,12 @@ from fastapi.responses import RedirectResponse
 from starlette.responses import RedirectResponse as StarletteRedirectResponse
 
 # Project-specific imports
+from backend.db_functions.pending_posts.create_pending_post import create_pending_post
 from backend.db_functions.posts.create_post import create_post
 from backend.routes.html.schemas.user import UserResponse
 from backend.routes.html.utils.auth import get_current_user
+from backend.schemas.pending_post import PendingPostCreate
+from backend.tasks.ai_moderation_task import schedule_post_moderation
 
 router = APIRouter()
 
@@ -24,13 +27,23 @@ async def create_post_action(
     content: str = Form(...),
     topic_id: UUID = Form(...),
 ) -> StarletteRedirectResponse:
-    # Create post
-    new_post = await create_post(
-        content=content, author_id=current_user.id, topic_id=topic_id
+    # Create pending post
+    pending_post_data = PendingPostCreate(
+        content=content,
+        topic_id=topic_id,
     )
 
-    # Redirect to the topic detail page with the new post highlighted
-    redirect_url = f"/html/topics/{topic_id}/?highlight={new_post.id}"
+    new_pending_post = await create_pending_post(
+        user_id=current_user.id,
+        pending_post_data=pending_post_data,
+    )
+
+    # Schedule the post for moderation
+    await schedule_post_moderation(new_pending_post.id)
+
+    # Redirect to the topic detail page with a message
+    message = "Your post has been submitted for moderation"
+    redirect_url = f"/html/topics/{topic_id}/?message={message}"
     return StarletteRedirectResponse(
         url=redirect_url,
         status_code=status.HTTP_303_SEE_OTHER,
