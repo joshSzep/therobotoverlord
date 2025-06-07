@@ -10,8 +10,8 @@ async def topic_to_schema(topic: Topic) -> TopicResponse:
     # Fetch related data
     await topic.fetch_related("author", "topic_tags__tag")
 
-    # Calculate post count for this topic
-    post_count = await Post.filter(topic_id=topic.id, parent_post_id=None).count()
+    # Calculate post count for this topic (including all posts, not just top-level)
+    post_count = await Post.filter(topic_id=topic.id).count()
 
     # Convert tags to schema objects
     tag_responses: list[TagResponse] = []

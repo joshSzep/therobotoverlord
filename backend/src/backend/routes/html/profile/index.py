@@ -1,5 +1,6 @@
 # Standard library imports
 from typing import Annotated
+from typing import List
 
 # Third-party imports
 from fastapi import APIRouter
@@ -8,15 +9,18 @@ from fastapi import Query
 from fastapi import Request
 from fastapi.responses import HTMLResponse
 
+# Project-specific imports
+from backend.db_functions.posts.enhance_posts_with_topics_for_profile import (
+    enhance_posts_with_topics_for_profile,
+)
 from backend.db_functions.posts.list_pending_posts_by_user import (
     list_pending_posts_by_user,
 )
-
-# Project-specific imports
 from backend.db_functions.posts.list_posts_by_user import list_posts_by_user
 from backend.dominate_templates.profile.index import create_profile_page
 from backend.routes.html.schemas.user import UserResponse
 from backend.routes.html.utils.auth import get_current_user
+from backend.schemas.post import PostResponse
 
 router = APIRouter()
 
@@ -57,12 +61,21 @@ async def profile_page(
     # Get user's pending posts
     pending_posts = await list_pending_posts_by_user(current_user.id, limit=5)
 
+    # Fetch topic information for all posts
+    all_posts: List[PostResponse] = []
+    if user_posts:
+        all_posts.extend(user_posts)
+    if pending_posts:
+        all_posts.extend(pending_posts)
+    topic_map = await enhance_posts_with_topics_for_profile(all_posts)
+
     # Create the profile page using Dominate
     doc = create_profile_page(
         user=current_user,
         user_posts=user_posts,
         pending_posts=pending_posts,
         post_pagination=post_pagination,
+        topic_map=topic_map,
     )
 
     # Return the rendered HTML

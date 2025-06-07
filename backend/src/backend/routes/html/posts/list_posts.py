@@ -10,6 +10,9 @@ from fastapi.responses import HTMLResponse
 
 # Project-specific imports
 from backend.db_functions.posts import list_posts
+from backend.db_functions.posts.enhance_posts_with_topics import (
+    enhance_posts_with_topics,
+)
 from backend.dominate_templates.posts.list import create_posts_list_page
 from backend.routes.html.schemas.user import UserResponse
 from backend.routes.html.utils.auth import get_current_user_optional
@@ -35,6 +38,9 @@ async def list_posts_page(
     total_count = posts_data.count
     total_pages = (total_count + limit - 1) // limit
 
+    # Fetch topic information for all posts
+    topic_map = await enhance_posts_with_topics(posts)
+
     # Create pagination data
     pagination = {
         "current_page": page,
@@ -50,6 +56,7 @@ async def list_posts_page(
         posts=posts,
         pagination=pagination,
         user=current_user,
+        topic_map=topic_map,
     )
 
     # Return the rendered HTML

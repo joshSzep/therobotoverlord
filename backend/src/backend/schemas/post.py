@@ -29,6 +29,7 @@ class PostResponse(PostBase):
     created_at: datetime
     updated_at: datetime
     reply_count: int = 0
+    replies: List["PostResponse"] = []
 
 
 class PostList(BaseModel):

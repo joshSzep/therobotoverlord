@@ -1,0 +1,101 @@
+/* Threaded posts styling */
+.threaded-posts {
+  margin-top: 20px;
+}
+
+.post-container {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #444;
+  background-color: #222;
+  border-radius: 5px;
+}
+
+/* Indentation for threaded replies */
+.indent-level-0 {
+  margin-left: 0;
+}
+
+.indent-level-1 {
+  margin-left: 30px;
+  border-left: 3px solid #cc0000;
+}
+
+.indent-level-2 {
+  margin-left: 60px;
+  border-left: 3px solid #cc3300;
+}
+
+.indent-level-3 {
+  margin-left: 90px;
+  border-left: 3px solid #cc6600;
+}
+
+.indent-level-4 {
+  margin-left: 120px;
+  border-left: 3px solid #cc9900;
+}
+
+.indent-level-5 {
+  margin-left: 150px;
+  border-left: 3px solid #cccc00;
+}
+
+/* Post header styling */
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+.author-link {
+  font-weight: bold;
+  color: #cc0000;
+  text-decoration: none;
+}
+
+.author-link:hover {
+  text-decoration: underline;
+}
+
+/* Post content styling */
+.post-preview {
+  margin-bottom: 10px;
+}
+
+.post-preview a {
+  font-weight: bold;
+  color: #fff;
+  text-decoration: none;
+}
+
+.post-preview a:hover {
+  text-decoration: underline;
+}
+
+.post-content {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+/* Reply section styling */
+.replies {
+  margin-top: 15px;
+}
+
+/* Stats styling */
+.approved {
+  color: #00cc00;
+}
+
+.rejected {
+  color: #cc0000;
+}

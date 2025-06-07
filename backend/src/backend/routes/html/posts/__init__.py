@@ -3,6 +3,7 @@ from fastapi import APIRouter
 
 # Project-specific imports
 from backend.routes.html.posts.create_post import router as create_post_router
+from backend.routes.html.posts.create_reply_router import router as create_reply_router
 from backend.routes.html.posts.get_post import router as get_post_router
 from backend.routes.html.posts.list_posts import router as list_posts_router
 
@@ -13,3 +14,4 @@ router = APIRouter(prefix="/posts")
 router.include_router(list_posts_router)
 router.include_router(get_post_router)
 router.include_router(create_post_router)
+router.include_router(create_reply_router)

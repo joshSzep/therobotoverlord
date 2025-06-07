@@ -1,8 +1,8 @@
 # Standard library imports
 from typing import Any
-from typing import Dict
 from typing import List
 from typing import Optional
+from uuid import UUID
 
 # Third-party imports
 from dominate.tags import a
@@ -15,21 +15,113 @@ from dominate.tags import input_
 from dominate.tags import label
 from dominate.tags import p
 from dominate.tags import span
-from dominate.tags import strong
 from dominate.tags import textarea
 
 # Local imports
 from backend.dominate_templates.base import create_base_document
 from backend.routes.html.schemas.user import UserResponse
+
+# Project-specific imports
 from backend.schemas.post import PostResponse
 from backend.schemas.topic import TopicResponse
 
 
+def render_post(
+    post: PostResponse,
+    topic_id: UUID,
+    indent_level: int = 0,
+    current_user: Optional[Any] = None,
+) -> None:
+    """Recursively render a post and its replies."""
+    with div(cls=f"post-container indent-level-{indent_level}"):  # type: ignore
+        # Post header with author info
+        with div(cls="post-header"), div(cls="post-meta"):  # type: ignore
+            # Author info
+            a(
+                f"@{post.author.display_name}",
+                href=f"/html/users/{post.author.id}/profile/",
+                cls="author-link",
+            )  # type: ignore
+
+            # Approval counts
+            approved_count = getattr(post.author, "approved_count", 0)
+            rejected_count = getattr(post.author, "rejected_count", 0)
+
+            span(
+                f"✓ {approved_count}",
+                cls="approved",
+            )  # type: ignore
+            span(
+                f"✗ {rejected_count}",
+                cls="rejected",
+            )  # type: ignore
+
+        # Post content preview
+        with div(cls="post-preview"):  # type: ignore
+            # Get first 50 chars of content as preview
+            preview = post.content[:50]
+            if len(post.content) > 50:
+                preview += "..."
+
+            a(preview, href=f"/html/posts/{post.id}/")  # type: ignore
+
+        # Post content
+        content = post.content
+        if len(content) > 150:
+            content = content[:150] + "..."
+        p(content, cls="post-content")  # type: ignore
+
+        # Post metadata
+        with div(cls="post-meta"):  # type: ignore
+            # Format the datetime to string to avoid TypeError
+            formatted_date = (
+                post.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                if post.created_at
+                else "Unknown"
+            )
+            span(f"Posted: {formatted_date}")  # type: ignore
+
+        # Reply button and form
+        if current_user:
+            with div(cls="reply-actions"):  # type: ignore
+                button(
+                    "Reply",
+                    cls="reply-toggle-btn",
+                    onclick=f"toggleReplyForm('reply-form-{post.id}')",
+                )  # type: ignore
+
+            # Create reply form container
+            with (
+                div(
+                    id=f"reply-form-{post.id}", cls="reply-form", style="display: none;"
+                ),  # type: ignore
+                form(action="/html/posts/reply/", method="post"),  # type: ignore
+            ):
+                # Use the topic_id passed from the parent topic
+                input_(type="hidden", name="topic_id", value=str(topic_id))  # type: ignore
+                input_(type="hidden", name="parent_post_id", value=str(post.id))  # type: ignore
+                with div(cls="form-group"):  # type: ignore
+                    textarea(
+                        name="content",
+                        placeholder="Write your reply...",
+                        cls="form-control",
+                    )  # type: ignore
+                button("Submit Reply", type="submit", cls="btn btn-primary")  # type: ignore
+
+        # Render replies if any exist
+        if hasattr(post, "replies") and post.replies:
+            with div(cls="replies"):  # type: ignore
+                for reply in post.replies:
+                    render_post(reply, topic_id, indent_level + 1, current_user)
+
+
 def create_topic_detail_page(
     topic: TopicResponse,
-    posts: Optional[List[PostResponse]] = None,
-    pagination: Optional[Dict[str, Any]] = None,
-    user: Optional[UserResponse] = None,
+    posts: List[PostResponse],
+    total_posts: int,
+    current_page: int,
+    total_pages: int,
+    current_user: Optional[UserResponse] = None,
 ) -> Any:
     """
     Create the topic detail page using Dominate.
@@ -37,6 +129,10 @@ def create_topic_detail_page(
     Args:
         topic: Topic schema object
         posts: List of post schema objects
+        total_posts: Total number of posts
+        current_page: Current page number
+        total_pages: Total number of pages
+        current_user: Optional user schema object
         pagination: Pagination information
         user: Optional user schema object
 
@@ -66,74 +162,37 @@ def create_topic_detail_page(
             h2("APPROVED POSTS")  # type: ignore
 
             if posts:
-                with div(cls="posts-list"):  # type: ignore
+                # Add CSS for threaded posts
+                with div(cls="threaded-posts"):  # type: ignore
+                    # Render each post recursively
                     for post in posts:
-                        with div(cls="post"):  # type: ignore
-                            with div(cls="user-info"):  # type: ignore
-                                # Get author info
-                                author = post.author
-                                username = author.display_name
-                                approved_count = getattr(author, "approved_count", 0)
-                                rejected_count = getattr(author, "rejected_count", 0)
-
-                                strong(username)  # type: ignore
-                                with div(cls="stats"):  # type: ignore
-                                    span(
-                                        f"✓ {approved_count}",
-                                        cls="approved",
-                                    )  # type: ignore
-                                    span(
-                                        f"✗ {rejected_count}",
-                                        cls="rejected",
-                                    )  # type: ignore
-
-                            # Display a preview of the content instead of a title
-                            with div(cls="post-preview"):  # type: ignore
-                                # Get first 50 chars of content as preview
-                                preview = post.content[:50]
-                                if len(post.content) > 50:
-                                    preview += "..."
-
-                                a(preview, href=f"/html/posts/{post.id}/")  # type: ignore
-
-                            # Truncate content to 150 characters
-                            content = post.content
-                            if len(content) > 150:
-                                content = content[:147] + "..."
-                            p(content)  # type: ignore
-
-                            with div(cls="post-meta"):  # type: ignore
-                                # Format the datetime to string to avoid TypeError
-                                formatted_date = (
-                                    post.created_at.strftime("%Y-%m-%d %H:%M:%S")
-                                    if post.created_at
-                                    else "Unknown"
-                                )
-                                span(f"Posted: {formatted_date}")  # type: ignore
+                        render_post(
+                            post,
+                            topic_id=topic.id,
+                            indent_level=0,
+                            current_user=current_user,
+                        )
 
                 # Pagination controls
-                if pagination:
-                    with div(cls="pagination"):  # type: ignore
-                        if pagination.get("has_previous"):
-                            a(
-                                "Previous",
-                                href=f"/html/topics/{topic.id}/?page={pagination['previous_page']}",
-                            )  # type: ignore
-
-                        span(
-                            f"Page {pagination['current_page']} of {pagination['total_pages']}"  # noqa: E501
+                with div(cls="pagination"):  # type: ignore
+                    if current_page > 1:
+                        a(
+                            "Previous",
+                            href=f"/html/topics/{topic.id}/?page={current_page - 1}",
                         )  # type: ignore
 
-                        if pagination.get("has_next"):
-                            a(
-                                "Next",
-                                href=f"/html/topics/{topic.id}/?page={pagination['next_page']}",
-                            )  # type: ignore
+                    span(f"Page {current_page} of {total_pages}")  # type: ignore
+
+                    if current_page < total_pages:
+                        a(
+                            "Next",
+                            href=f"/html/topics/{topic.id}/?page={current_page + 1}",
+                        )  # type: ignore
             else:
                 p("NO POSTS HAVE BEEN APPROVED FOR THIS TOPIC")  # type: ignore
 
         # Create post form section (only if user is logged in)
-        if user:
+        if current_user:
             with div(cls="create-post"):  # type: ignore
                 h2("SUBMIT NEW POST")  # type: ignore
                 with form(action="/html/posts/", method="post"):  # type: ignore
@@ -152,6 +211,6 @@ def create_topic_detail_page(
     # Create the base document with the content function
     return create_base_document(
         title_text=f"{topic.title} - The Robot Overlord",
-        user=user,
+        user=current_user,
         content_func=content_func,
     )

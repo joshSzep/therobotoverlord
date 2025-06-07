@@ -19,6 +19,7 @@ from dominate.tags import link
 from dominate.tags import meta
 from dominate.tags import nav
 from dominate.tags import p
+from dominate.tags import script
 from dominate.tags import span
 from dominate.tags import ul
 from dominate.util import text
@@ -63,8 +64,12 @@ def create_base_document(
         meta(charset="UTF-8")  # type: ignore
         meta(name="viewport", content="width=device-width, initial-scale=1.0")  # type: ignore
 
-        # Link to external CSS file instead of inline styles
+        # Link to external CSS files
         link(rel="stylesheet", href="/static/css/main.css")  # type: ignore
+        link(rel="stylesheet", href="/static/css/threaded-posts.css")  # type: ignore
+
+        # JavaScript files
+        script(src="/static/js/threaded-posts.js")  # type: ignore
 
         # Additional head content if provided
         if head_content_func:

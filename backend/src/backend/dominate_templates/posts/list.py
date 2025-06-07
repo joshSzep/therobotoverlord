@@ -3,12 +3,12 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from uuid import UUID
 
 # Third-party imports
 from dominate.tags import a
 from dominate.tags import div
 from dominate.tags import h1
-from dominate.tags import h2
 from dominate.tags import p
 from dominate.tags import span
 from dominate.tags import time_
@@ -17,6 +17,7 @@ from dominate.tags import time_
 from backend.dominate_templates.base import create_base_document
 from backend.routes.html.schemas.user import UserResponse
 from backend.schemas.post import PostResponse
+from backend.schemas.topic import TopicResponse
 
 
 def create_posts_list_page(
@@ -24,6 +25,7 @@ def create_posts_list_page(
     pagination: Dict[str, Any],
     user: Optional[UserResponse] = None,
     messages: Optional[List[Dict[str, str]]] = None,
+    topic_map: Optional[Dict[UUID, TopicResponse]] = None,
 ) -> Any:
     """
     Create the posts list page using Dominate.
@@ -46,10 +48,6 @@ def create_posts_list_page(
             with div(cls="posts-list"):  # type: ignore
                 for post in posts:
                     with div(cls="post"):  # type: ignore
-                        with h2():  # type: ignore
-                            # Use schema object attributes directly
-                            a(post.title, href=f"/html/posts/{post.id}/")  # type: ignore
-
                         # Use schema object content
                         if post.content:
                             content_preview = post.content[:150]
@@ -67,11 +65,13 @@ def create_posts_list_page(
                                         href=f"/html/profile/{post.author.id}/",
                                     )  # type: ignore
 
-                            # Display topic ID as we don't have topic object
+                            # Display topic name if available, otherwise ID
                             with span(cls="topic"):  # type: ignore
-                                span(" in topic ")  # type: ignore
                                 topic_url = f"/html/topics/{post.topic_id}/"
-                                a(f"Topic {post.topic_id}", href=topic_url)  # type: ignore
+                                topic_name = "Unknown Topic"
+                                if topic_map and post.topic_id in topic_map:
+                                    topic_name = topic_map[post.topic_id].title
+                                a(topic_name, href=topic_url)  # type: ignore
 
                             # Display created_at
                             with span(cls="date"):  # type: ignore

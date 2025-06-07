@@ -3,6 +3,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from uuid import UUID
 
 # Third-party imports
 from dominate.tags import a
@@ -19,6 +20,7 @@ from dominate.util import text
 from backend.dominate_templates.base import create_base_document
 from backend.routes.html.schemas.user import UserResponse
 from backend.schemas.post import PostResponse
+from backend.schemas.topic import TopicResponse
 
 
 def create_profile_page(
@@ -26,6 +28,7 @@ def create_profile_page(
     user_posts: Optional[List[PostResponse]] = None,
     pending_posts: Optional[List[PostResponse]] = None,
     post_pagination: Optional[Dict[str, Any]] = None,
+    topic_map: Optional[Dict[UUID, TopicResponse]] = None,
 ) -> Any:
     """
     Create the profile page using Dominate.
@@ -39,9 +42,7 @@ def create_profile_page(
     Returns:
         A dominate document object
     """
-    # Define the content function to be passed to the base document
 
-    # Define the content function to be passed to the base document
     def content_func() -> None:
         with div(cls="profile-container"):  # type: ignore
             h1("CITIZEN PROFILE")  # type: ignore
@@ -97,23 +98,15 @@ def create_profile_page(
                         with div(cls="posts-list"):  # type: ignore
                             for post in user_posts:
                                 with div(cls="post"):  # type: ignore
-                                    with h3():  # type: ignore
-                                        # Get post attributes from schema
-                                        post_title = getattr(
-                                            post, "title", "Untitled Post"
-                                        )
-                                        post_id = post.id
-                                        a(
-                                            post_title,
-                                            href=f"/html/posts/{post_id}/",
-                                        )  # type: ignore
-
-                                    # Truncate content to 100 characters
+                                    # Display the full post content as a link
                                     post_content = getattr(post, "content", "")
-                                    content = post_content
-                                    if len(content) > 100:
-                                        content = content[:97] + "..."
-                                    p(content)  # type: ignore
+
+                                    with div(cls="post-content"):  # type: ignore
+                                        a(
+                                            post_content,
+                                            href=f"/html/posts/{post.id}/",
+                                            cls="post-link",
+                                        )  # type: ignore
 
                                     with div(cls="post-meta"):  # type: ignore
                                         with span():  # type: ignore
@@ -173,16 +166,15 @@ def create_profile_page(
                         with div(cls="posts-list"):  # type: ignore
                             for post in pending_posts:
                                 with div(cls="post pending"):  # type: ignore
-                                    # Get post title
-                                    post_title = getattr(post, "title", "Untitled Post")
-                                    h3(post_title)  # type: ignore
-
-                                    # Truncate content to 100 characters
+                                    # Display the full post content as a link
                                     post_content = getattr(post, "content", "")
-                                    content = post_content
-                                    if len(content) > 100:
-                                        content = content[:97] + "..."
-                                    p(content)  # type: ignore
+
+                                    with div(cls="post-content"):  # type: ignore
+                                        a(
+                                            post_content,
+                                            href=f"/html/posts/{post.id}/",
+                                            cls="post-link",
+                                        )  # type: ignore
 
                                     with div(cls="post-meta"):  # type: ignore
                                         with span():  # type: ignore

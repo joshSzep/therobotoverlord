@@ -13,7 +13,9 @@ from fastapi import status
 from fastapi.responses import HTMLResponse
 
 # Project-specific imports
-from backend.db_functions.posts import list_posts_by_topic
+from backend.db_functions.posts.list_threaded_posts_by_topic import (
+    list_threaded_posts_by_topic,
+)
 from backend.db_functions.topics import get_topic_by_id
 from backend.dominate_templates.topics.detail import create_topic_detail_page
 from backend.routes.html.schemas.user import UserResponse
@@ -43,7 +45,7 @@ async def get_topic_page(
 
     # Get posts for this topic with pagination
     skip = (page - 1) * limit
-    posts_data = await list_posts_by_topic(topic_id, skip=skip, limit=limit)
+    posts_data = await list_threaded_posts_by_topic(topic_id, skip=skip, limit=limit)
 
     # Extract posts and total count
     posts = posts_data.posts
@@ -53,22 +55,14 @@ async def get_topic_page(
     # Debug logging for posts
     logger.debug(f"Retrieved {len(posts)} posts for topic {topic_id}")
 
-    # Create pagination data
-    pagination = {
-        "current_page": page,
-        "total_pages": total_pages,
-        "has_previous": page > 1,
-        "has_next": page < total_pages,
-        "previous_page": page - 1,
-        "next_page": page + 1,
-    }
-
     # Create the topic detail page using Dominate
     doc = create_topic_detail_page(
-        topic=topic,  # Pass schema object directly
-        posts=posts,  # Pass schema objects directly
-        pagination=pagination,
-        user=current_user,  # Pass schema object directly
+        topic=topic,
+        posts=posts,
+        total_posts=total_count,
+        current_page=page,
+        total_pages=total_pages,
+        current_user=current_user,
     )
 
     # Return the rendered HTML
