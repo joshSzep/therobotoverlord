@@ -79,7 +79,13 @@ def create_profile_page(
                     with p():  # type: ignore
                         strong("Joined: ")  # type: ignore
                         created_at = user.created_at
-                        text(created_at)  # type: ignore
+                        # Format the datetime to string to avoid TypeError
+                        formatted_date = (
+                            created_at.strftime("%Y-%m-%d %H:%M:%S")
+                            if created_at
+                            else "Unknown"
+                        )
+                        text(formatted_date)  # type: ignore
 
             # Profile content section
             with div(cls="profile-content"):  # type: ignore

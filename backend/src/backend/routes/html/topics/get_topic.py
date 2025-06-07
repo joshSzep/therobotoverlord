@@ -1,4 +1,5 @@
 # Standard library imports
+import logging
 from typing import Annotated
 from uuid import UUID
 
@@ -17,6 +18,9 @@ from backend.db_functions.topics import get_topic_by_id
 from backend.dominate_templates.topics.detail import create_topic_detail_page
 from backend.routes.html.schemas.user import UserResponse
 from backend.routes.html.utils.auth import get_current_user_optional
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -45,6 +49,9 @@ async def get_topic_page(
     posts = posts_data.posts
     total_count = posts_data.count
     total_pages = (total_count + limit - 1) // limit
+
+    # Debug logging for posts
+    logger.debug(f"Retrieved {len(posts)} posts for topic {topic_id}")
 
     # Create pagination data
     pagination = {

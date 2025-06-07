@@ -29,7 +29,7 @@ async def list_posts_by_user(
         Either a list of PostResponse objects or the count of posts
     """
     # Base query for posts by this user
-    base_query = Post.filter(user_id=user_id, is_approved=True)
+    base_query = Post.filter(author_id=user_id)
 
     # If we only need the count, return it
     if count_only:

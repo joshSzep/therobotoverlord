@@ -11,7 +11,6 @@ from dominate.tags import div
 from dominate.tags import form
 from dominate.tags import h1
 from dominate.tags import h2
-from dominate.tags import h3
 from dominate.tags import input_
 from dominate.tags import label
 from dominate.tags import p
@@ -88,8 +87,14 @@ def create_topic_detail_page(
                                         cls="rejected",
                                     )  # type: ignore
 
-                            with h3():  # type: ignore
-                                a(post.title, href=f"/html/posts/{post.id}/")  # type: ignore
+                            # Display a preview of the content instead of a title
+                            with div(cls="post-preview"):  # type: ignore
+                                # Get first 50 chars of content as preview
+                                preview = post.content[:50]
+                                if len(post.content) > 50:
+                                    preview += "..."
+
+                                a(preview, href=f"/html/posts/{post.id}/")  # type: ignore
 
                             # Truncate content to 150 characters
                             content = post.content
@@ -98,7 +103,13 @@ def create_topic_detail_page(
                             p(content)  # type: ignore
 
                             with div(cls="post-meta"):  # type: ignore
-                                span(f"Posted: {post.created_at}")  # type: ignore
+                                # Format the datetime to string to avoid TypeError
+                                formatted_date = (
+                                    post.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                                    if post.created_at
+                                    else "Unknown"
+                                )
+                                span(f"Posted: {formatted_date}")  # type: ignore
 
                 # Pagination controls
                 if pagination:
