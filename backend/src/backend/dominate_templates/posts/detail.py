@@ -44,13 +44,9 @@ def create_post_detail_page(
         A dominate document object
     """
     # Get post title for document title
-    post_title = "Post Detail"
+    post_title = getattr(post, "title", "Post Detail")
 
-    # Create the base document with the post title
-    doc = create_base_document(
-        title_text=post_title,
-        user=user,
-    )
+    # Define the content function to be passed to the base document
 
     # Define the content function to be passed to the base document
     def content_func() -> None:
@@ -174,7 +170,7 @@ def create_post_detail_page(
                     with div(cls="form-group"):  # type: ignore
                         input_(type="submit", value="Submit Reply", cls="btn")  # type: ignore
 
-    # Set the content function in the base document
-    doc.get_or_create_body().add(content_func)
-
-    return doc
+    # Create the base document with the content function
+    return create_base_document(
+        title_text=post_title, user=user, content_func=content_func
+    )

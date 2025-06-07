@@ -9,6 +9,11 @@ from backend.schemas.user import UserSessionSchema
 
 
 async def user_session_to_schema(session: UserSession) -> UserSessionSchema:
+    # Ensure the user relationship is loaded
+    if not hasattr(session, "user") or session.user is None:
+        # If the session is from the database and user isn't prefetched
+        await session.fetch_related("user")
+
     return UserSessionSchema(
         id=session.id,
         ip_address=session.ip_address,

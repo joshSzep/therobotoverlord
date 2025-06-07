@@ -35,12 +35,7 @@ def create_register_page(
     Returns:
         A dominate document object
     """
-    # Create the base document with the registration page title
-    doc = create_base_document(
-        title_text="Register - The Robot Overlord",
-        user=user,
-        messages=messages,
-    )
+    # Define the content function to be passed to the base document
 
     # Define the content function to be passed to the base document
     def content_func() -> None:
@@ -77,7 +72,10 @@ def create_register_page(
                 text("Already registered? ")  # type: ignore
                 a("Login here", href="/html/auth/login/")  # type: ignore
 
-    # Set the content function in the base document
-    doc.get_or_create_body().add(content_func)
-
-    return doc
+    # Create the base document with the content function
+    return create_base_document(
+        title_text="Register - The Robot Overlord",
+        user=user,
+        messages=messages,
+        content_func=content_func,
+    )

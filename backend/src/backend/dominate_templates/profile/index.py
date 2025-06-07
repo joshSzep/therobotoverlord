@@ -39,11 +39,7 @@ def create_profile_page(
     Returns:
         A dominate document object
     """
-    # Create the base document with the profile page title
-    doc = create_base_document(
-        title_text="Profile - The Robot Overlord",
-        user=user,
-    )
+    # Define the content function to be passed to the base document
 
     # Define the content function to be passed to the base document
     def content_func() -> None:
@@ -202,7 +198,7 @@ def create_profile_page(
                     else:
                         p("NO PENDING SUBMISSIONS")  # type: ignore
 
-    # Set the content function in the base document
-    doc.get_or_create_body().add(content_func)
-
-    return doc
+    # Create the base document with the content function
+    return create_base_document(
+        title_text="Profile - The Robot Overlord", user=user, content_func=content_func
+    )
