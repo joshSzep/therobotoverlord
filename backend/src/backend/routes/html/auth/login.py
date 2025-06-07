@@ -10,32 +10,23 @@ from fastapi import Response
 from fastapi import status
 from fastapi.responses import HTMLResponse
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse as StarletteRedirectResponse
 
 # Project-specific imports
 from backend.db_functions.user_sessions.create_session import create_session
 from backend.db_functions.users.authenticate_user import authenticate_user
+from backend.dominate_templates.auth.login import create_login_page
 from backend.routes.html.utils.auth import redirect_if_authenticated
 
 router = APIRouter()
 
-# Initialize Jinja2 templates
-templates = Jinja2Templates(directory="src/backend/templates")
-
 
 @router.get("/login/", response_class=HTMLResponse)
 async def login_page(
-    request: Request,
     _: Annotated[None, Depends(redirect_if_authenticated)],
 ) -> HTMLResponse:
-    return templates.TemplateResponse(
-        "pages/auth/login.html",
-        {
-            "request": request,
-            "user": None,
-        },
-    )
+    doc = create_login_page(user=None)
+    return HTMLResponse(content=str(doc))
 
 
 @router.post("/login/", response_class=RedirectResponse)

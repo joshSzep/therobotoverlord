@@ -7,7 +7,6 @@ from fastapi import Depends
 from fastapi import Query
 from fastapi import Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 
 from backend.db_functions.posts.list_pending_posts_by_user import (
     list_pending_posts_by_user,
@@ -15,14 +14,11 @@ from backend.db_functions.posts.list_pending_posts_by_user import (
 
 # Project-specific imports
 from backend.db_functions.posts.list_posts_by_user import list_posts_by_user
+from backend.dominate_templates.profile.index import create_profile_page
 from backend.routes.html.schemas.user import UserResponse
 from backend.routes.html.utils.auth import get_current_user
-from backend.routes.html.utils.template_config import render_template
 
 router = APIRouter()
-
-# Initialize Jinja2 templates
-templates = Jinja2Templates(directory="src/backend/templates")
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -34,9 +30,13 @@ async def profile_page(
 ) -> HTMLResponse:
     # Get user's posts with pagination
     post_offset = (post_page - 1) * post_limit
-    user_posts = await list_posts_by_user(
-        current_user.id, limit=post_limit, offset=post_offset
+    user_posts_result = await list_posts_by_user(
+        current_user.id,
+        limit=post_limit,
+        offset=post_offset,
+        count_only=False,
     )
+    user_posts = user_posts_result if isinstance(user_posts_result, list) else []
 
     # Get total count for pagination
     total_post_count = await list_posts_by_user(current_user.id, count_only=True)
@@ -57,13 +57,13 @@ async def profile_page(
     # Get user's pending posts
     pending_posts = await list_pending_posts_by_user(current_user.id, limit=5)
 
-    return render_template(
-        request,
-        "pages/profile/index.html",
-        {
-            "user": current_user,
-            "user_posts": user_posts,
-            "post_pagination": post_pagination,
-            "pending_posts": pending_posts,
-        },
+    # Create the profile page using Dominate
+    doc = create_profile_page(
+        user=current_user,
+        user_posts=user_posts,
+        pending_posts=pending_posts,
+        post_pagination=post_pagination,
     )
+
+    # Return the rendered HTML
+    return HTMLResponse(str(doc))

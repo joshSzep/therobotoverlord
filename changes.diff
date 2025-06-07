@@ -1,0 +1,2579 @@
+diff --git a/backend/pyproject.toml b/backend/pyproject.toml
+index 164266b..209c689 100644
+--- a/backend/pyproject.toml
++++ b/backend/pyproject.toml
+@@ -14,6 +14,7 @@ dependencies = [
+     "fastapi>=0.115.12",
+     "gunicorn>=23.0.0",
+     "httpx>=0.28.1",
++    "jinja2>=3.1.6",
+     "pydantic-ai-slim[logfire,openai,anthropic]>=0.2.6",
+     "pydantic-graph>=0.2.6",
+     "pydantic-settings>=2.9.1",
+diff --git a/backend/src/backend/app.py b/backend/src/backend/app.py
+index 3e90b79..bfabe43 100644
+--- a/backend/src/backend/app.py
++++ b/backend/src/backend/app.py
+@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
+
+ # Third-party imports
+ from fastapi import FastAPI
++from fastapi.staticfiles import StaticFiles
++from starlette.responses import RedirectResponse as StarletteRedirectResponse
+
+ # Project-specific imports
+ from backend.db import init_tortoise
+@@ -36,5 +38,15 @@ app = FastAPI(
+ # Initialize database
+ init_tortoise(app)
+
++# Set up static files
++app.mount("/static", StaticFiles(directory="src/backend/static"), name="static")
++
++
++# Root route redirect to HTML frontend
++@app.get("/")
++async def redirect_to_html() -> StarletteRedirectResponse:
++    return StarletteRedirectResponse(url="/html/")
++
++
+ # Include main router
+ app.include_router(router)
+diff --git a/backend/src/backend/converters/user_schema_to_response.py b/backend/src/backend/converters/user_schema_to_response.py
+new file mode 100644
+index 0000000..4c73f8f
+--- /dev/null
++++ b/backend/src/backend/converters/user_schema_to_response.py
+@@ -0,0 +1,27 @@
++# Standard library imports
++from typing import Optional
++
++# Project-specific imports
++from backend.routes.html.schemas.user import UserResponse
++from backend.schemas.user import UserSchema
++
++
++async def user_schema_to_response(
++    user_schema: Optional[UserSchema],
++) -> Optional[UserResponse]:
++    if not user_schema:
++        return None
++
++    return UserResponse(
++        id=user_schema.id,
++        email=user_schema.email,
++        display_name=user_schema.display_name,
++        is_verified=user_schema.is_verified,
++        last_login=user_schema.last_login,
++        role=user_schema.role,
++        is_locked=user_schema.is_locked,
++        created_at=user_schema.created_at,
++        updated_at=user_schema.updated_at,
++        approved_count=0,  # These would need to be populated from elsewhere
++        rejected_count=0,
++    )
+diff --git a/backend/src/backend/converters/user_session_to_schema.py b/backend/src/backend/converters/user_session_to_schema.py
+index 5edcf7f..528f083 100644
+--- a/backend/src/backend/converters/user_session_to_schema.py
++++ b/backend/src/backend/converters/user_session_to_schema.py
+@@ -1,3 +1,9 @@
++# Standard library imports
++from typing import cast
++from uuid import UUID
++
++# Third-party imports
++# Project-specific imports
+ from backend.db.models.user_session import UserSession
+ from backend.schemas.user import UserSessionSchema
+
+@@ -11,4 +17,5 @@ async def user_session_to_schema(session: UserSession) -> UserSessionSchema:
+         expires_at=session.expires_at,
+         is_active=session.is_active,
+         created_at=session.created_at,
++        user_id=cast(UUID, session.user.id),
+     )
+diff --git a/backend/src/backend/db_functions/posts/__init__.py b/backend/src/backend/db_functions/posts/__init__.py
+index 4670a14..cca57e2 100644
+--- a/backend/src/backend/db_functions/posts/__init__.py
++++ b/backend/src/backend/db_functions/posts/__init__.py
+@@ -5,6 +5,7 @@ from backend.db_functions.posts.get_reply_count import get_reply_count
+ from backend.db_functions.posts.is_user_post_author import is_user_post_author
+ from backend.db_functions.posts.list_post_replies import list_post_replies
+ from backend.db_functions.posts.list_posts import list_posts
++from backend.db_functions.posts.list_posts_by_topic import list_posts_by_topic
+ from backend.db_functions.posts.update_post import update_post
+
+ __all__ = [
+@@ -15,5 +16,6 @@ __all__ = [
+     "is_user_post_author",
+     "list_post_replies",
+     "list_posts",
++    "list_posts_by_topic",
+     "update_post",
+ ]
+diff --git a/backend/src/backend/db_functions/posts/list_pending_posts_by_user.py b/backend/src/backend/db_functions/posts/list_pending_posts_by_user.py
+new file mode 100644
+index 0000000..37a43d5
+--- /dev/null
++++ b/backend/src/backend/db_functions/posts/list_pending_posts_by_user.py
+@@ -0,0 +1,38 @@
++# Standard library imports
++from typing import List
++import uuid
++
++from backend.converters.post_to_schema import post_to_schema
++
++# Project-specific imports
++from backend.db.models.post import Post
++from backend.schemas.post import PostResponse
++
++
++async def list_pending_posts_by_user(
++    user_id: uuid.UUID,
++    limit: int = 10,
++    offset: int = 0,
++) -> List[PostResponse]:
++    """
++    List pending posts created by a specific user with pagination.
++
++    Args:
++        user_id: The ID of the user whose pending posts to retrieve
++        limit: Maximum number of posts to return
++        offset: Number of posts to skip for pagination
++
++    Returns:
++        A list of PostResponse objects for pending posts
++    """
++    # Query for pending posts by this user
++    posts = (
++        await Post.filter(user_id=user_id, is_approved=False, is_rejected=False)
++        .order_by("-created_at")
++        .offset(offset)
++        .limit(limit)
++        .all()
++    )
++
++    # Convert to schema objects
++    return [await post_to_schema(post) for post in posts]
+diff --git a/backend/src/backend/db_functions/posts/list_posts_by_topic.py b/backend/src/backend/db_functions/posts/list_posts_by_topic.py
+new file mode 100644
+index 0000000..5fc4230
+--- /dev/null
++++ b/backend/src/backend/db_functions/posts/list_posts_by_topic.py
+@@ -0,0 +1,28 @@
++# Standard library imports
++from uuid import UUID
++
++# Project-specific imports
++from backend.converters import post_to_schema
++from backend.db.models.post import Post
++from backend.schemas.post import PostList
++from backend.schemas.post import PostResponse
++
++
++async def list_posts_by_topic(
++    topic_id: UUID, skip: int = 0, limit: int = 20
++) -> PostList:
++    # Query posts that belong to the specified topic and are not replies
++    query = Post.filter(topic_id=topic_id, parent_post_id=None)
++
++    # Get total count for pagination
++    count = await query.count()
++
++    # Apply pagination
++    posts = await query.offset(skip).limit(limit).order_by("-created_at")
++
++    # Convert ORM models to schema objects
++    post_responses: list[PostResponse] = []
++    for post in posts:
++        post_responses.append(await post_to_schema(post))
++
++    return PostList(posts=post_responses, count=count)
+diff --git a/backend/src/backend/db_functions/posts/list_posts_by_user.py b/backend/src/backend/db_functions/posts/list_posts_by_user.py
+new file mode 100644
+index 0000000..598257c
+--- /dev/null
++++ b/backend/src/backend/db_functions/posts/list_posts_by_user.py
+@@ -0,0 +1,42 @@
++# Standard library imports
++from typing import List
++from typing import Union
++import uuid
++
++from backend.converters.post_to_schema import post_to_schema
++
++# Project-specific imports
++from backend.db.models.post import Post
++from backend.schemas.post import PostResponse
++
++
++async def list_posts_by_user(
++    user_id: uuid.UUID,
++    limit: int = 10,
++    offset: int = 0,
++    count_only: bool = False,
++) -> Union[List[PostResponse], int]:
++    """
++    List posts created by a specific user with pagination.
++
++    Args:
++        user_id: The ID of the user whose posts to retrieve
++        limit: Maximum number of posts to return
++        offset: Number of posts to skip for pagination
++        count_only: If True, only return the count of posts
++
++    Returns:
++        Either a list of PostResponse objects or the count of posts
++    """
++    # Base query for posts by this user
++    base_query = Post.filter(user_id=user_id, is_approved=True)
++
++    # If we only need the count, return it
++    if count_only:
++        return await base_query.count()
++
++    # Get posts with pagination
++    posts = await base_query.order_by("-created_at").offset(offset).limit(limit).all()
++
++    # Convert to schema objects
++    return [await post_to_schema(post) for post in posts]
+diff --git a/backend/src/backend/db_functions/user_sessions/__init__.py b/backend/src/backend/db_functions/user_sessions/__init__.py
+index 15b14fe..9170295 100644
+--- a/backend/src/backend/db_functions/user_sessions/__init__.py
++++ b/backend/src/backend/db_functions/user_sessions/__init__.py
+@@ -12,6 +12,7 @@ from backend.db_functions.user_sessions.deactivate_all_user_sessions import (
+     deactivate_all_user_sessions,
+ )
+ from backend.db_functions.user_sessions.deactivate_session import deactivate_session
++from backend.db_functions.user_sessions.delete_user_session import delete_user_session
+ from backend.db_functions.user_sessions.get_session_by_token import get_session_by_token
+ from backend.db_functions.user_sessions.list_user_sessions import list_user_sessions
+ from backend.db_functions.user_sessions.validate_session import validate_session
+@@ -21,6 +22,7 @@ __all__ = [
+     "create_session",
+     "deactivate_all_user_sessions",
+     "deactivate_session",
++    "delete_user_session",
+     "get_session_by_token",
+     "list_user_sessions",
+     "validate_session",
+diff --git a/backend/src/backend/db_functions/user_sessions/create_user_session.py b/backend/src/backend/db_functions/user_sessions/create_user_session.py
+new file mode 100644
+index 0000000..b1a60ec
+--- /dev/null
++++ b/backend/src/backend/db_functions/user_sessions/create_user_session.py
+@@ -0,0 +1,51 @@
++# Standard library imports
++from datetime import timedelta
++import secrets
++from uuid import UUID
++
++# Third-party imports
++from tortoise.exceptions import DoesNotExist
++
++# Project-specific imports
++from backend.converters.user_session_to_schema import user_session_to_schema
++from backend.db.models.user import User
++from backend.db.models.user_session import UserSession
++from backend.schemas.user import UserSessionSchema
++from backend.utils.datetime import now_utc
++
++
++async def create_user_session(
++    user_id: UUID,
++    ip_address: str = "0.0.0.0",
++    user_agent: str = "Unknown",
++    expires_days: int = 7,
++) -> UserSessionSchema:
++    # Generate a secure token
++    token = secrets.token_urlsafe(32)
++
++    # Calculate expiration date
++    expires_at = now_utc() + timedelta(days=expires_days)
++
++    try:
++        # Get the user
++        user = await User.get(id=user_id)
++
++        # Create a new session
++        session = await UserSession.create(
++            user=user,
++            ip_address=ip_address,
++            user_agent=user_agent,
++            token=token,
++            expires_at=expires_at,
++            is_active=True,
++        )
++
++        # Update user's last login time
++        user.last_login = now_utc()
++        await user.save()
++
++        # Return the session schema
++        return await user_session_to_schema(session)
++
++    except DoesNotExist:
++        raise ValueError(f"User with ID {user_id} not found")
+diff --git a/backend/src/backend/db_functions/user_sessions/delete_user_session.py b/backend/src/backend/db_functions/user_sessions/delete_user_session.py
+new file mode 100644
+index 0000000..990a26e
+--- /dev/null
++++ b/backend/src/backend/db_functions/user_sessions/delete_user_session.py
+@@ -0,0 +1,15 @@
++from backend.db.models.user_session import UserSession
++
++
++async def delete_user_session(token: str) -> bool:
++    # Find the session by token
++    session = await UserSession.filter(session_token=token).first()
++
++    if not session:
++        return False
++
++    # Deactivate the session
++    session.is_active = False
++    await session.save()
++
++    return True
+diff --git a/backend/src/backend/db_functions/user_sessions/get_user_session_by_token.py b/backend/src/backend/db_functions/user_sessions/get_user_session_by_token.py
+new file mode 100644
+index 0000000..bef58f7
+--- /dev/null
++++ b/backend/src/backend/db_functions/user_sessions/get_user_session_by_token.py
+@@ -0,0 +1,19 @@
++# Standard library imports
++from typing import Optional
++
++# Project-specific imports
++from backend.converters.user_session_to_schema import user_session_to_schema
++from backend.db.models.user_session import UserSession
++from backend.schemas.user import UserSessionSchema
++
++
++async def get_user_session_by_token(token: str) -> Optional[UserSessionSchema]:
++    # Find the session by token
++    query = UserSession.filter(token=token, is_active=True)
++    session = await query.first().prefetch_related("user")
++
++    if not session:
++        return None
++
++    # Convert to schema and return
++    return await user_session_to_schema(session)
+diff --git a/backend/src/backend/db_functions/users/authenticate_user.py b/backend/src/backend/db_functions/users/authenticate_user.py
+new file mode 100644
+index 0000000..4bf4db9
+--- /dev/null
++++ b/backend/src/backend/db_functions/users/authenticate_user.py
+@@ -0,0 +1,27 @@
++# Standard library imports
++from typing import Optional
++
++# Third-party imports
++import bcrypt
++
++from backend.converters.user_schema_to_response import user_schema_to_response
++from backend.converters.user_to_schema import user_to_schema
++
++# Project-specific imports
++from backend.db.models.user import User
++from backend.routes.html.schemas.user import UserResponse
++
++
++async def authenticate_user(email: str, password: str) -> Optional[UserResponse]:
++    # Find user by email
++    user = await User.filter(email=email).first()
++    if not user:
++        return None
++
++    # Check password
++    if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
++        return None
++
++    # Convert user model to schema then to response
++    user_schema = await user_to_schema(user)
++    return await user_schema_to_response(user_schema)
+diff --git a/backend/src/backend/routes/__init__.py b/backend/src/backend/routes/__init__.py
+index c5b6f21..8e21e23 100644
+--- a/backend/src/backend/routes/__init__.py
++++ b/backend/src/backend/routes/__init__.py
+@@ -5,6 +5,7 @@ from fastapi import APIRouter
+ from backend.routes.admin import router as admin_router
+ from backend.routes.auth import router as auth_router
+ from backend.routes.health import router as health_router
++from backend.routes.html import router as html_router
+ from backend.routes.pending_posts import router as pending_posts_router
+ from backend.routes.posts import router as posts_router
+ from backend.routes.profile import router as profile_router
+@@ -25,3 +26,6 @@ router.include_router(posts_router)
+ router.include_router(pending_posts_router)
+ router.include_router(user_stats_router)
+ router.include_router(health_router)
++
++# Include HTML template-driven frontend router
++router.include_router(html_router)
+diff --git a/backend/src/backend/routes/html/__init__.py b/backend/src/backend/routes/html/__init__.py
+new file mode 100644
+index 0000000..974d3c5
+--- /dev/null
++++ b/backend/src/backend/routes/html/__init__.py
+@@ -0,0 +1,19 @@
++# Third-party imports
++from fastapi import APIRouter
++
++# Project-specific imports
++from backend.routes.html.auth import router as auth_router
++from backend.routes.html.home import router as home_router
++from backend.routes.html.posts import router as posts_router
++from backend.routes.html.profile import router as profile_router
++from backend.routes.html.topics import router as topics_router
++
++# Create HTML router
++router = APIRouter(prefix="/html")
++
++# Include all HTML feature routers
++router.include_router(home_router)
++router.include_router(topics_router)
++router.include_router(posts_router)
++router.include_router(profile_router)
++router.include_router(auth_router)
+diff --git a/backend/src/backend/routes/html/auth/__init__.py b/backend/src/backend/routes/html/auth/__init__.py
+new file mode 100644
+index 0000000..286b0a1
+--- /dev/null
++++ b/backend/src/backend/routes/html/auth/__init__.py
+@@ -0,0 +1,15 @@
++# Third-party imports
++from fastapi import APIRouter
++
++# Project-specific imports
++from backend.routes.html.auth.login import router as login_router
++from backend.routes.html.auth.logout import router as logout_router
++from backend.routes.html.auth.register import router as register_router
++
++# Create router
++router = APIRouter(prefix="/auth")
++
++# Include route handlers
++router.include_router(login_router)
++router.include_router(logout_router)
++router.include_router(register_router)
+diff --git a/backend/src/backend/routes/html/auth/login.py b/backend/src/backend/routes/html/auth/login.py
+new file mode 100644
+index 0000000..3e06b3a
+--- /dev/null
++++ b/backend/src/backend/routes/html/auth/login.py
+@@ -0,0 +1,79 @@
++# Standard library imports
++from typing import Annotated
++
++# Third-party imports
++from fastapi import APIRouter
++from fastapi import Depends
++from fastapi import Form
++from fastapi import Request
++from fastapi import Response
++from fastapi import status
++from fastapi.responses import HTMLResponse
++from fastapi.responses import RedirectResponse
++from fastapi.templating import Jinja2Templates
++from starlette.responses import RedirectResponse as StarletteRedirectResponse
++
++# Project-specific imports
++from backend.db_functions.user_sessions.create_session import create_session
++from backend.db_functions.users.authenticate_user import authenticate_user
++from backend.routes.html.utils.auth import redirect_if_authenticated
++
++router = APIRouter()
++
++# Initialize Jinja2 templates
++templates = Jinja2Templates(directory="src/backend/templates")
++
++
++@router.get("/login/", response_class=HTMLResponse)
++async def login_page(
++    request: Request,
++    _: Annotated[None, Depends(redirect_if_authenticated)],
++) -> HTMLResponse:
++    return templates.TemplateResponse(
++        "pages/auth/login.html",
++        {
++            "request": request,
++            "user": None,
++        },
++    )
++
++
++@router.post("/login/", response_class=RedirectResponse)
++async def login_action(
++    request: Request,
++    response: Response,
++    _: Annotated[None, Depends(redirect_if_authenticated)],
++    email: str = Form(...),
++    password: str = Form(...),
++) -> StarletteRedirectResponse:
++    # Authenticate user
++    user = await authenticate_user(email, password)
++    if not user:
++        # In a real application, you'd want to show an error message
++        return StarletteRedirectResponse(
++            url="/html/auth/login/",
++            status_code=status.HTTP_303_SEE_OTHER,
++        )
++
++    # Create session
++    session = await create_session(
++        user_id=user.id,
++        ip_address=request.client.host if request.client else "127.0.0.1",
++        user_agent=request.headers.get("user-agent", ""),
++    )
++
++    # Set session cookie
++    response.set_cookie(
++        key="session_token",
++        value=session.session_token,
++        httponly=True,
++        max_age=7 * 24 * 60 * 60,  # 7 days
++        secure=True,
++        samesite="lax",
++    )
++
++    # Redirect to home page
++    return StarletteRedirectResponse(
++        url="/html/",
++        status_code=status.HTTP_303_SEE_OTHER,
++    )
+diff --git a/backend/src/backend/routes/html/auth/logout.py b/backend/src/backend/routes/html/auth/logout.py
+new file mode 100644
+index 0000000..4ccc4d8
+--- /dev/null
++++ b/backend/src/backend/routes/html/auth/logout.py
+@@ -0,0 +1,37 @@
++# Standard library imports
++from typing import Annotated
++
++# Third-party imports
++from fastapi import APIRouter
++from fastapi import Cookie
++from fastapi import Depends
++from fastapi import Response
++from fastapi import status
++from fastapi.responses import RedirectResponse
++from starlette.responses import RedirectResponse as StarletteRedirectResponse
++
++# Project-specific imports
++from backend.db_functions.user_sessions import delete_user_session
++from backend.routes.html.schemas.user import UserResponse
++from backend.routes.html.utils.auth import get_current_user
++
++router = APIRouter()
++
++
++@router.get("/logout/", response_class=RedirectResponse)
++async def logout_action(
++    response: Response,
++    current_user: Annotated[UserResponse, Depends(get_current_user)],
++    session_token: Annotated[str, Cookie()],
++) -> StarletteRedirectResponse:
++    # Delete session
++    await delete_user_session(session_token)
++
++    # Clear session cookie
++    response.delete_cookie(key="session_token")
++
++    # Redirect to home page
++    return StarletteRedirectResponse(
++        url="/html/",
++        status_code=status.HTTP_303_SEE_OTHER,
++    )
+diff --git a/backend/src/backend/routes/html/auth/register.py b/backend/src/backend/routes/html/auth/register.py
+new file mode 100644
+index 0000000..c59f3a7
+--- /dev/null
++++ b/backend/src/backend/routes/html/auth/register.py
+@@ -0,0 +1,90 @@
++# Standard library imports
++from typing import Annotated
++
++# Third-party imports
++from fastapi import APIRouter
++from fastapi import Depends
++from fastapi import Form
++from fastapi import Request
++from fastapi import Response
++from fastapi import status
++from fastapi.responses import HTMLResponse
++from fastapi.responses import RedirectResponse
++from fastapi.templating import Jinja2Templates
++from starlette.responses import RedirectResponse as StarletteRedirectResponse
++
++# Project-specific imports
++from backend.db_functions.user_sessions.create_session import create_session
++from backend.db_functions.users.create_user import create_user
++from backend.routes.html.utils.auth import redirect_if_authenticated
++
++router = APIRouter()
++
++# Initialize Jinja2 templates
++templates = Jinja2Templates(directory="src/backend/templates")
++
++
++@router.get("/register/", response_class=HTMLResponse)
++async def register_page(
++    request: Request,
++    _: Annotated[None, Depends(redirect_if_authenticated)],
++) -> HTMLResponse:
++    return templates.TemplateResponse(
++        "pages/auth/register.html",
++        {
++            "request": request,
++            "user": None,
++        },
++    )
++
++
++@router.post("/register/", response_class=RedirectResponse)
++async def register_action(
++    request: Request,
++    response: Response,
++    _: Annotated[None, Depends(redirect_if_authenticated)],
++    username: str = Form(...),
++    email: str = Form(...),
++    password: str = Form(...),
++    confirm_password: str = Form(...),
++) -> StarletteRedirectResponse:
++    # Validate passwords match
++    if password != confirm_password:
++        # In a real application, you'd want to show an error message
++        return StarletteRedirectResponse(
++            url="/html/auth/register/",
++            status_code=status.HTTP_303_SEE_OTHER,
++        )
++
++    # Create user
++    try:
++        user = await create_user(email=email, display_name=username, password=password)
++    except Exception:
++        # In a real application, you'd want to show an error message
++        return StarletteRedirectResponse(
++            url="/html/auth/register/",
++            status_code=status.HTTP_303_SEE_OTHER,
++        )
++
++    # Create session
++    session = await create_session(
++        user_id=user.id,
++        ip_address=request.client.host if request.client else "127.0.0.1",
++        user_agent=request.headers.get("user-agent", ""),
++    )
++
++    # Set session cookie
++    response.set_cookie(
++        key="session_token",
++        value=session.session_token,
++        httponly=True,
++        max_age=7 * 24 * 60 * 60,  # 7 days
++        secure=True,
++        samesite="lax",
++    )
++
++    # Redirect to home page
++    return StarletteRedirectResponse(
++        url="/html/",
++        status_code=status.HTTP_303_SEE_OTHER,
++    )
+diff --git a/backend/src/backend/routes/html/home/__init__.py b/backend/src/backend/routes/html/home/__init__.py
+new file mode 100644
+index 0000000..fb987c3
+--- /dev/null
++++ b/backend/src/backend/routes/html/home/__init__.py
+@@ -0,0 +1,11 @@
++# Third-party imports
++from fastapi import APIRouter
++
++# Project-specific imports
++from backend.routes.html.home.index import router as index_router
++
++# Create router
++router = APIRouter()
++
++# Include routes
++router.include_router(index_router)
+diff --git a/backend/src/backend/routes/html/home/index.py b/backend/src/backend/routes/html/home/index.py
+new file mode 100644
+index 0000000..21b6b61
+--- /dev/null
++++ b/backend/src/backend/routes/html/home/index.py
+@@ -0,0 +1,41 @@
++# Standard library imports
++from typing import Annotated
++
++# Third-party imports
++from fastapi import APIRouter
++from fastapi import Depends
++from fastapi import Request
++from fastapi.responses import HTMLResponse
++
++# Project-specific imports
++from backend.db_functions.posts import list_posts
++from backend.db_functions.topics import list_topics
++from backend.routes.html.schemas.user import UserResponse
++from backend.routes.html.utils.auth import get_current_user_optional
++from backend.utils.templates import templates
++
++router = APIRouter()
++
++
++@router.get("/", response_class=HTMLResponse)
++async def home(
++    request: Request,
++    current_user: Annotated[UserResponse | None, Depends(get_current_user_optional)],
++) -> HTMLResponse:
++    # Get featured topics
++    topics_data = await list_topics(skip=0, limit=5)
++    topics = topics_data.topics
++
++    # Get recent posts
++    posts_data = await list_posts(skip=0, limit=10)
++    posts = posts_data.posts
++
++    return templates.TemplateResponse(
++        "pages/home.html",
++        {
++            "request": request,
++            "user": current_user,
++            "topics": topics,
++            "posts": posts,
++        },
++    )
+diff --git a/backend/src/backend/routes/html/posts/__init__.py b/backend/src/backend/routes/html/posts/__init__.py
+new file mode 100644
+index 0000000..2897b25
+--- /dev/null
++++ b/backend/src/backend/routes/html/posts/__init__.py
+@@ -0,0 +1,14 @@
++# Third-party imports
++from fastapi import APIRouter
++
++from backend.routes.html.posts.create_post import router as create_post_router
++
++# Project-specific imports
++from backend.routes.html.posts.get_post import router as get_post_router
++
++# Create router
++router = APIRouter(prefix="/posts")
++
++# Include route handlers
++router.include_router(get_post_router)
++router.include_router(create_post_router)
+diff --git a/backend/src/backend/routes/html/posts/create_post.py b/backend/src/backend/routes/html/posts/create_post.py
+new file mode 100644
+index 0000000..ec72b04
+--- /dev/null
++++ b/backend/src/backend/routes/html/posts/create_post.py
+@@ -0,0 +1,56 @@
++# Standard library imports
++from typing import Annotated
++from uuid import UUID
++
++# Third-party imports
++from fastapi import APIRouter
++from fastapi import Depends
++from fastapi import Form
++from fastapi import status
++from fastapi.responses import RedirectResponse
++from starlette.responses import RedirectResponse as StarletteRedirectResponse
++
++# Project-specific imports
++from backend.db_functions.posts.create_post import create_post
++from backend.routes.html.schemas.user import UserResponse
++from backend.routes.html.utils.auth import get_current_user
++
++router = APIRouter()
++
++
++@router.post("/", response_class=RedirectResponse)
++async def create_post_action(
++    current_user: Annotated[UserResponse, Depends(get_current_user)],
++    content: str = Form(...),
++    topic_id: UUID = Form(...),
++) -> StarletteRedirectResponse:
++    # Create post
++    await create_post(content=content, author_id=current_user.id, topic_id=topic_id)
++
++    # Redirect to the topic detail page
++    return StarletteRedirectResponse(
++        url=f"/html/topics/{topic_id}/",
++        status_code=status.HTTP_303_SEE_OTHER,
++    )
++
++
++@router.post("/{post_id}/reply/", response_class=RedirectResponse)
++async def create_reply_action(
++    post_id: UUID,
++    current_user: Annotated[UserResponse, Depends(get_current_user)],
++    content: str = Form(...),
++) -> StarletteRedirectResponse:
++    # Create reply
++    await create_post(
++        content=content,
++        author_id=current_user.id,
++        # Placeholder, will be updated from parent
++        topic_id=UUID("00000000-0000-0000-0000-000000000000"),
++        parent_post_id=post_id,
++    )
++
++    # Redirect to the parent post detail page
++    return StarletteRedirectResponse(
++        url=f"/html/posts/{post_id}/",
++        status_code=status.HTTP_303_SEE_OTHER,
++    )
+diff --git a/backend/src/backend/routes/html/posts/get_post.py b/backend/src/backend/routes/html/posts/get_post.py
+new file mode 100644
+index 0000000..a0ea151
+--- /dev/null
++++ b/backend/src/backend/routes/html/posts/get_post.py
+@@ -0,0 +1,71 @@
++# Standard library imports
++from typing import Annotated
++from uuid import UUID
++
++# Third-party imports
++from fastapi import APIRouter
++from fastapi import Depends
++from fastapi import HTTPException
++from fastapi import Query
++from fastapi import Request
++from fastapi import status
++from fastapi.responses import HTMLResponse
++from fastapi.templating import Jinja2Templates
++
++# Project-specific imports
++from backend.db_functions.posts import get_post_by_id
++from backend.db_functions.posts import list_post_replies
++from backend.routes.html.schemas.user import UserResponse
++from backend.routes.html.utils.auth import get_current_user_optional
++
++router = APIRouter()
++
++# Initialize Jinja2 templates
++templates = Jinja2Templates(directory="src/backend/templates")
++
++
++@router.get("/{post_id}/", response_class=HTMLResponse)
++async def get_post_page(
++    request: Request,
++    post_id: UUID,
++    current_user: Annotated[UserResponse | None, Depends(get_current_user_optional)],
++    page: int = Query(1, ge=1),
++    limit: int = Query(10, ge=1, le=100),
++) -> HTMLResponse:
++    # Get post
++    post = await get_post_by_id(post_id)
++    if not post:
++        raise HTTPException(
++            status_code=status.HTTP_404_NOT_FOUND,
++            detail="Post not found",
++        )
++
++    # Get replies for this post with pagination
++    skip = (page - 1) * limit
++    replies_data = await list_post_replies(post_id, skip=skip, limit=limit)
++
++    # Extract replies and total count
++    replies = replies_data.posts
++    total_count = replies_data.count
++    total_pages = (total_count + limit - 1) // limit
++
++    # Create pagination data
++    pagination = {
++        "current_page": page,
++        "total_pages": total_pages,
++        "has_previous": page > 1,
++        "has_next": page < total_pages,
++        "previous_page": page - 1,
++        "next_page": page + 1,
++    }
++
++    return templates.TemplateResponse(
++        "pages/posts/detail.html",
++        {
++            "request": request,
++            "user": current_user,
++            "post": post,
++            "replies": replies,
++            "pagination": pagination,
++        },
++    )
+diff --git a/backend/src/backend/routes/html/profile/__init__.py b/backend/src/backend/routes/html/profile/__init__.py
+new file mode 100644
+index 0000000..4159563
+--- /dev/null
++++ b/backend/src/backend/routes/html/profile/__init__.py
+@@ -0,0 +1,11 @@
++# Third-party imports
++from fastapi import APIRouter
++
++# Project-specific imports
++from backend.routes.html.profile.index import router as profile_index_router
++
++# Create router
++router = APIRouter(prefix="/profile")
++
++# Include route handlers
++router.include_router(profile_index_router)
+diff --git a/backend/src/backend/routes/html/profile/index.py b/backend/src/backend/routes/html/profile/index.py
+new file mode 100644
+index 0000000..3be3438
+--- /dev/null
++++ b/backend/src/backend/routes/html/profile/index.py
+@@ -0,0 +1,69 @@
++# Standard library imports
++from typing import Annotated
++
++# Third-party imports
++from fastapi import APIRouter
++from fastapi import Depends
++from fastapi import Query
++from fastapi import Request
++from fastapi.responses import HTMLResponse
++from fastapi.templating import Jinja2Templates
++
++from backend.db_functions.posts.list_pending_posts_by_user import (
++    list_pending_posts_by_user,
++)
++
++# Project-specific imports
++from backend.db_functions.posts.list_posts_by_user import list_posts_by_user
++from backend.routes.html.schemas.user import UserResponse
++from backend.routes.html.utils.auth import get_current_user
++from backend.routes.html.utils.template_config import render_template
++
++router = APIRouter()
++
++# Initialize Jinja2 templates
++templates = Jinja2Templates(directory="src/backend/templates")
++
++
++@router.get("/", response_class=HTMLResponse)
++async def profile_page(
++    request: Request,
++    current_user: Annotated[UserResponse, Depends(get_current_user)],
++    post_page: int = Query(1, ge=1),
++    post_limit: int = Query(5, ge=1, le=20),
++) -> HTMLResponse:
++    # Get user's posts with pagination
++    post_offset = (post_page - 1) * post_limit
++    user_posts = await list_posts_by_user(
++        current_user.id, limit=post_limit, offset=post_offset
++    )
++
++    # Get total count for pagination
++    total_post_count = await list_posts_by_user(current_user.id, count_only=True)
++    # Use ternary operator to handle type checking
++    post_count = total_post_count if isinstance(total_post_count, int) else 0
++    total_post_pages = (post_count + post_limit - 1) // post_limit
++
++    # Create pagination data for posts
++    post_pagination = {
++        "current_page": post_page,
++        "total_pages": total_post_pages,
++        "has_previous": post_page > 1,
++        "has_next": post_page < total_post_pages,
++        "previous_page": post_page - 1,
++        "next_page": post_page + 1,
++    }
++
++    # Get user's pending posts
++    pending_posts = await list_pending_posts_by_user(current_user.id, limit=5)
++
++    return render_template(
++        request,
++        "pages/profile/index.html",
++        {
++            "user": current_user,
++            "user_posts": user_posts,
++            "post_pagination": post_pagination,
++            "pending_posts": pending_posts,
++        },
++    )
+diff --git a/backend/src/backend/routes/html/schemas/user.py b/backend/src/backend/routes/html/schemas/user.py
+new file mode 100644
+index 0000000..e6c3825
+--- /dev/null
++++ b/backend/src/backend/routes/html/schemas/user.py
+@@ -0,0 +1,28 @@
++# Standard library imports
++from datetime import datetime
++from typing import Optional
++import uuid
++
++# Third-party imports
++from pydantic import BaseModel
++from pydantic import EmailStr
++
++
++class UserResponse(BaseModel):
++    id: uuid.UUID
++    email: EmailStr
++    display_name: str
++    is_verified: bool
++    last_login: Optional[datetime] = None
++    role: str
++    is_locked: bool = False
++    created_at: datetime
++    updated_at: datetime
++
++    # Additional fields for templates
++    approved_count: int = 0
++    rejected_count: int = 0
++
++    @property
++    def is_admin(self) -> bool:
++        return self.role == "admin"
+diff --git a/backend/src/backend/routes/html/topics/__init__.py b/backend/src/backend/routes/html/topics/__init__.py
+new file mode 100644
+index 0000000..1ddd465
+--- /dev/null
++++ b/backend/src/backend/routes/html/topics/__init__.py
+@@ -0,0 +1,13 @@
++# Third-party imports
++from fastapi import APIRouter
++
++# Project-specific imports
++from backend.routes.html.topics.get_topic import router as get_topic_router
++from backend.routes.html.topics.list_topics import router as list_topics_router
++
++# Create router
++router = APIRouter(prefix="/topics")
++
++# Include route handlers
++router.include_router(list_topics_router)
++router.include_router(get_topic_router)
+diff --git a/backend/src/backend/routes/html/topics/get_topic.py b/backend/src/backend/routes/html/topics/get_topic.py
+new file mode 100644
+index 0000000..82852f6
+--- /dev/null
++++ b/backend/src/backend/routes/html/topics/get_topic.py
+@@ -0,0 +1,71 @@
++# Standard library imports
++from typing import Annotated
++from uuid import UUID
++
++# Third-party imports
++from fastapi import APIRouter
++from fastapi import Depends
++from fastapi import HTTPException
++from fastapi import Query
++from fastapi import Request
++from fastapi import status
++from fastapi.responses import HTMLResponse
++from fastapi.templating import Jinja2Templates
++
++# Project-specific imports
++from backend.db_functions.posts import list_posts_by_topic
++from backend.db_functions.topics import get_topic_by_id
++from backend.routes.html.schemas.user import UserResponse
++from backend.routes.html.utils.auth import get_current_user_optional
++
++router = APIRouter()
++
++# Initialize Jinja2 templates
++templates = Jinja2Templates(directory="src/backend/templates")
++
++
++@router.get("/{topic_id}/", response_class=HTMLResponse)
++async def get_topic_page(
++    request: Request,
++    topic_id: UUID,
++    current_user: Annotated[UserResponse | None, Depends(get_current_user_optional)],
++    page: int = Query(1, ge=1),
++    limit: int = Query(10, ge=1, le=100),
++) -> HTMLResponse:
++    # Get topic
++    topic = await get_topic_by_id(topic_id)
++    if not topic:
++        raise HTTPException(
++            status_code=status.HTTP_404_NOT_FOUND,
++            detail="Topic not found",
++        )
++
++    # Get posts for this topic with pagination
++    skip = (page - 1) * limit
++    posts_data = await list_posts_by_topic(topic_id, skip=skip, limit=limit)
++
++    # Extract posts and total count
++    posts = posts_data.posts
++    total_count = posts_data.count
++    total_pages = (total_count + limit - 1) // limit
++
++    # Create pagination data
++    pagination = {
++        "current_page": page,
++        "total_pages": total_pages,
++        "has_previous": page > 1,
++        "has_next": page < total_pages,
++        "previous_page": page - 1,
++        "next_page": page + 1,
++    }
++
++    return templates.TemplateResponse(
++        "pages/topics/detail.html",
++        {
++            "request": request,
++            "user": current_user,
++            "topic": topic,
++            "posts": posts,
++            "pagination": pagination,
++        },
++    )
+diff --git a/backend/src/backend/routes/html/topics/list_topics.py b/backend/src/backend/routes/html/topics/list_topics.py
+new file mode 100644
+index 0000000..8f47aa6
+--- /dev/null
++++ b/backend/src/backend/routes/html/topics/list_topics.py
+@@ -0,0 +1,91 @@
++# Standard library imports
++from typing import Annotated
++
++# Third-party imports
++from fastapi import APIRouter
++from fastapi import Depends
++from fastapi import Form
++from fastapi import Query
++from fastapi import Request
++from fastapi import status
++from fastapi.responses import HTMLResponse
++from fastapi.responses import RedirectResponse
++from fastapi.templating import Jinja2Templates
++from starlette.responses import RedirectResponse as StarletteRedirectResponse
++
++# Project-specific imports
++from backend.db_functions.topics import create_topic
++from backend.db_functions.topics import list_topics
++from backend.routes.html.schemas.user import UserResponse
++from backend.routes.html.utils.auth import get_current_user
++from backend.routes.html.utils.auth import get_current_user_optional
++
++router = APIRouter()
++
++# Initialize Jinja2 templates
++templates = Jinja2Templates(directory="src/backend/templates")
++
++
++@router.get("/", response_class=HTMLResponse)
++async def list_topics_page(
++    request: Request,
++    current_user: Annotated[UserResponse | None, Depends(get_current_user_optional)],
++    page: int = Query(1, ge=1),
++    limit: int = Query(10, ge=1, le=100),
++) -> HTMLResponse:
++    # Get topics with pagination
++    skip = (page - 1) * limit
++    topics_data = await list_topics(skip=skip, limit=limit)
++
++    # Extract topics and total count
++    topics = topics_data.topics
++    total_count = topics_data.count
++    total_pages = (total_count + limit - 1) // limit
++
++    # Create pagination data
++    pagination = {
++        "current_page": page,
++        "total_pages": total_pages,
++        "has_previous": page > 1,
++        "has_next": page < total_pages,
++        "previous_page": page - 1,
++        "next_page": page + 1,
++    }
++
++    return templates.TemplateResponse(
++        "pages/topics/list.html",
++        {
++            "request": request,
++            "user": current_user,
++            "topics": topics,
++            "pagination": pagination,
++        },
++    )
++
++
++@router.post("/", response_class=RedirectResponse)
++async def create_topic_action(
++    current_user: Annotated[UserResponse, Depends(get_current_user)],
++    title: str = Form(...),
++    description: str = Form(...),
++    tags: str = Form(None),
++) -> StarletteRedirectResponse:
++    # Create topic
++    topic = await create_topic(
++        title=title,
++        description="",  # Empty description for now
++        created_by_id=current_user.id,
++    )
++
++    # Process tags if provided
++    if tags:
++        tag_names = [tag.strip() for tag in tags.split(",") if tag.strip()]
++        if tag_names:
++            # We would handle tag creation here
++            pass
++
++    # Redirect to the topic detail page
++    return StarletteRedirectResponse(
++        url=f"/html/topics/{topic.id}/",
++        status_code=status.HTTP_303_SEE_OTHER,
++    )
+diff --git a/backend/src/backend/routes/html/utils/auth.py b/backend/src/backend/routes/html/utils/auth.py
+new file mode 100644
+index 0000000..9a95425
+--- /dev/null
++++ b/backend/src/backend/routes/html/utils/auth.py
+@@ -0,0 +1,63 @@
++# Standard library imports
++from typing import Annotated
++
++# Third-party imports
++from fastapi import Cookie
++from fastapi import Depends
++from fastapi import HTTPException
++from fastapi import Request
++from fastapi import status
++
++# Project-specific imports
++from backend.converters.user_schema_to_response import user_schema_to_response
++from backend.db_functions.user_sessions.get_user_session_by_token import (
++    get_user_session_by_token,
++)
++from backend.db_functions.users.get_user_by_id import get_user_by_id
++from backend.routes.html.schemas.user import UserResponse
++
++
++async def get_current_user_optional(
++    request: Request, session_token: Annotated[str | None, Cookie()] = None
++) -> UserResponse | None:
++    if not session_token:
++        return None
++
++    # Get user session
++    user_session = await get_user_session_by_token(session_token)
++    if not user_session:
++        return None
++
++    # Get user by ID from the user_session
++    user_schema = await get_user_by_id(user_session.user_id)
++
++    # Convert UserSchema to UserResponse
++    return await user_schema_to_response(user_schema)
++
++
++async def get_current_user(
++    current_user: Annotated[UserResponse | None, Depends(get_current_user_optional)],
++) -> UserResponse:
++    if not current_user:
++        raise HTTPException(
++            status_code=status.HTTP_401_UNAUTHORIZED,
++            detail="Not authenticated",
++        )
++
++    return current_user
++
++
++def redirect_if_authenticated(
++    current_user: Annotated[UserResponse | None, Depends(get_current_user_optional)],
++) -> None:
++    if current_user:
++        raise HTTPException(
++            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
++            headers={"Location": "/html/"},
++        )
++
++
++def redirect_if_not_authenticated(
++    current_user: Annotated[UserResponse, Depends(get_current_user)],
++) -> UserResponse:
++    return current_user
+diff --git a/backend/src/backend/routes/html/utils/template_config.py b/backend/src/backend/routes/html/utils/template_config.py
+new file mode 100644
+index 0000000..635fdf1
+--- /dev/null
++++ b/backend/src/backend/routes/html/utils/template_config.py
+@@ -0,0 +1,26 @@
++# Standard library imports
++from typing import Any
++from typing import Dict
++from typing import Optional
++
++# Third-party imports
++from fastapi import Request
++from fastapi.responses import HTMLResponse
++
++# Project-specific imports
++from backend.utils.templates import templates
++
++
++# Helper function to render templates with common context
++def render_template(
++    request: Request, template_name: str, context: Optional[Dict[str, Any]] = None
++) -> HTMLResponse:
++    # Initialize empty dict if None
++    if context is None:
++        context = {}
++
++    # Add request to context (required by Jinja2Templates)
++    context["request"] = request
++
++    # Return rendered template
++    return templates.TemplateResponse(template_name, context)
+diff --git a/backend/src/backend/routes/html/utils/template_filters.py b/backend/src/backend/routes/html/utils/template_filters.py
+new file mode 100644
+index 0000000..42e861c
+--- /dev/null
++++ b/backend/src/backend/routes/html/utils/template_filters.py
+@@ -0,0 +1,35 @@
++# Standard library imports
++from datetime import datetime
++
++# Third-party imports
++from jinja2 import Environment as Jinja2Environment
++
++
++def datetime_filter(value: datetime | None) -> str:
++    """Format a datetime object to a human-readable string."""
++    if not value:
++        return ""
++    return value.strftime("%Y-%m-%d %H:%M")
++
++
++def truncate(value: str, length: int = 100) -> str:
++    """Truncate a string to a specified length."""
++    if not value:
++        return ""
++    if len(value) <= length:
++        return value
++    return value[:length] + "..."
++
++
++def nl2br(value: str) -> str:
++    """Convert newlines to <br> tags."""
++    if not value:
++        return ""
++    return value.replace("\n", "<br>")
++
++
++def setup_jinja_filters(env: Jinja2Environment) -> None:
++    """Set up Jinja2 filters."""
++    env.filters["datetime"] = datetime_filter
++    env.filters["truncate"] = truncate
++    env.filters["nl2br"] = nl2br
+diff --git a/backend/src/backend/schemas/user.py b/backend/src/backend/schemas/user.py
+index 186d363..49423a4 100644
+--- a/backend/src/backend/schemas/user.py
++++ b/backend/src/backend/schemas/user.py
+@@ -37,3 +37,4 @@ class UserSessionSchema(BaseModel):
+     expires_at: datetime
+     is_active: bool
+     created_at: datetime
++    user_id: uuid.UUID
+diff --git a/backend/src/backend/static/css/main.css b/backend/src/backend/static/css/main.css
+new file mode 100644
+index 0000000..7da8d41
+--- /dev/null
++++ b/backend/src/backend/static/css/main.css
+@@ -0,0 +1,340 @@
++/* The Robot Overlord - Soviet Propaganda Aesthetic */
++
++:root {
++  --soviet-red: #cc0000;
++  --soviet-dark-red: #990000;
++  --soviet-yellow: #ffcc00;
++  --soviet-black: #1a1a1a;
++  --soviet-gray: #333333;
++  --soviet-light-gray: #cccccc;
++  --soviet-white: #f5f5f5;
++  --font-propaganda: 'Impact', 'Arial Black', sans-serif;
++  --font-body: 'Roboto Condensed', 'Arial', sans-serif;
++}
++
++/* Base styles */
++body {
++  font-family: var(--font-body);
++  background-color: var(--soviet-black);
++  color: var(--soviet-white);
++  margin: 0;
++  padding: 0;
++  line-height: 1.6;
++}
++
++/* Typography */
++h1, h2, h3, h4, h5, h6 {
++  font-family: var(--font-propaganda);
++  text-transform: uppercase;
++  color: var(--soviet-red);
++  margin-top: 0;
++  letter-spacing: 0.05em;
++}
++
++h1 {
++  font-size: 2.5rem;
++  margin-bottom: 1rem;
++}
++
++h2 {
++  font-size: 2rem;
++  margin-bottom: 0.8rem;
++}
++
++h3 {
++  font-size: 1.5rem;
++  margin-bottom: 0.6rem;
++}
++
++/* Links */
++a {
++  color: var(--soviet-yellow);
++  text-decoration: none;
++  transition: color 0.2s;
++}
++
++a:hover {
++  color: var(--soviet-red);
++  text-decoration: underline;
++}
++
++/* Layout */
++.container {
++  width: 90%;
++  max-width: 1200px;
++  margin: 0 auto;
++  padding: 1rem;
++}
++
++/* Header */
++.site-header {
++  background-color: var(--soviet-red);
++  padding: 1rem 0;
++  border-bottom: 5px solid var(--soviet-yellow);
++}
++
++.site-title {
++  font-family: var(--font-propaganda);
++  font-size: 2.5rem;
++  color: var(--soviet-white);
++  margin: 0;
++  text-align: center;
++  text-transform: uppercase;
++  letter-spacing: 0.1em;
++  text-shadow: 3px 3px 0 var(--soviet-black);
++}
++
++/* Navigation */
++.main-nav {
++  background-color: var(--soviet-gray);
++  border-bottom: 3px solid var(--soviet-yellow);
++}
++
++.nav-list {
++  list-style: none;
++  padding: 0;
++  margin: 0;
++  display: flex;
++  justify-content: center;
++}
++
++.nav-item {
++  margin: 0 1rem;
++}
++
++.nav-link {
++  display: block;
++  padding: 0.8rem 1rem;
++  color: var(--soviet-white);
++  font-family: var(--font-propaganda);
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++  transition: all 0.2s;
++}
++
++.nav-link:hover {
++  color: var(--soviet-yellow);
++  text-decoration: none;
++}
++
++/* Content */
++.content {
++  padding: 2rem 0;
++}
++
++/* Cards */
++.card {
++  background-color: var(--soviet-gray);
++  border: 2px solid var(--soviet-red);
++  border-radius: 0;
++  margin-bottom: 1.5rem;
++  overflow: hidden;
++}
++
++.card-header {
++  background-color: var(--soviet-red);
++  padding: 0.8rem 1rem;
++  border-bottom: 2px solid var(--soviet-yellow);
++}
++
++.card-title {
++  margin: 0;
++  color: var(--soviet-white);
++}
++
++.card-body {
++  padding: 1rem;
++}
++
++/* Forms */
++.form-group {
++  margin-bottom: 1rem;
++}
++
++.form-label {
++  display: block;
++  margin-bottom: 0.5rem;
++  font-weight: bold;
++  color: var(--soviet-light-gray);
++}
++
++.form-control {
++  width: 100%;
++  padding: 0.8rem;
++  border: 2px solid var(--soviet-red);
++  background-color: var(--soviet-black);
++  color: var(--soviet-white);
++  font-family: var(--font-body);
++}
++
++.form-control:focus {
++  outline: none;
++  border-color: var(--soviet-yellow);
++}
++
++/* Buttons */
++.btn {
++  display: inline-block;
++  padding: 0.8rem 1.5rem;
++  font-family: var(--font-propaganda);
++  text-transform: uppercase;
++  letter-spacing: 0.05em;
++  background-color: var(--soviet-red);
++  color: var(--soviet-white);
++  border: 2px solid var(--soviet-yellow);
++  cursor: pointer;
++  transition: all 0.2s;
++}
++
++.btn:hover {
++  background-color: var(--soviet-dark-red);
++  color: var(--soviet-yellow);
++}
++
++/* Posts */
++.post {
++  margin-bottom: 2rem;
++  border-left: 4px solid var(--soviet-red);
++  padding-left: 1rem;
++}
++
++.post-header {
++  margin-bottom: 0.5rem;
++}
++
++.post-title {
++  margin: 0;
++}
++
++.post-meta {
++  color: var(--soviet-light-gray);
++  font-size: 0.9rem;
++  margin-top: 0.3rem;
++}
++
++.post-content {
++  margin-top: 1rem;
++}
++
++/* Topics */
++.topic {
++  display: flex;
++  align-items: center;
++  padding: 1rem;
++  margin-bottom: 1rem;
++  background-color: var(--soviet-gray);
++  border-left: 4px solid var(--soviet-yellow);
++}
++
++.topic-title {
++  margin: 0;
++  flex-grow: 1;
++}
++
++.topic-stats {
++  text-align: right;
++  color: var(--soviet-light-gray);
++}
++
++/* Pagination */
++.pagination {
++  display: flex;
++  justify-content: center;
++  margin: 2rem 0;
++}
++
++.page-item {
++  margin: 0 0.3rem;
++}
++
++.page-link {
++  display: block;
++  padding: 0.5rem 1rem;
++  background-color: var(--soviet-gray);
++  border: 1px solid var(--soviet-red);
++  color: var(--soviet-white);
++}
++
++.page-link:hover {
++  background-color: var(--soviet-red);
++  color: var(--soviet-white);
++  text-decoration: none;
++}
++
++.page-item.active .page-link {
++  background-color: var(--soviet-red);
++  color: var(--soviet-white);
++  border-color: var(--soviet-yellow);
++}
++
++/* Footer */
++.site-footer {
++  background-color: var(--soviet-gray);
++  color: var(--soviet-light-gray);
++  padding: 2rem 0;
++  text-align: center;
++  border-top: 5px solid var(--soviet-red);
++}
++
++/* User stats */
++.user-stats {
++  display: flex;
++  justify-content: space-around;
++  margin: 1.5rem 0;
++  text-align: center;
++}
++
++.stat-item {
++  padding: 1rem;
++}
++
++.stat-value {
++  font-size: 2rem;
++  font-family: var(--font-propaganda);
++  color: var(--soviet-yellow);
++}
++
++.stat-label {
++  color: var(--soviet-light-gray);
++  text-transform: uppercase;
++  font-size: 0.9rem;
++}
++
++/* Alerts */
++.alert {
++  padding: 1rem;
++  margin-bottom: 1rem;
++  border: 2px solid transparent;
++}
++
++.alert-success {
++  background-color: #1a4731;
++  border-color: #2e8b57;
++  color: #d4edda;
++}
++
++.alert-danger {
++  background-color: var(--soviet-dark-red);
++  border-color: var(--soviet-red);
++  color: var(--soviet-white);
++}
++
++/* Responsive */
++@media (max-width: 768px) {
++  .nav-list {
++    flex-direction: column;
++  }
++
++  .nav-item {
++    margin: 0;
++    border-bottom: 1px solid var(--soviet-dark-red);
++  }
++
++  .user-stats {
++    flex-direction: column;
++  }
++
++  .stat-item {
++    margin-bottom: 1rem;
++  }
++}
+diff --git a/backend/src/backend/templates/layouts/base.html b/backend/src/backend/templates/layouts/base.html
+new file mode 100644
+index 0000000..896df2f
+--- /dev/null
++++ b/backend/src/backend/templates/layouts/base.html
+@@ -0,0 +1,216 @@
++<!DOCTYPE html>
++<html lang="en">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>{% block title %}The Robot Overlord{% endblock %}</title>
++    <style>
++        /* Soviet propaganda aesthetic */
++        :root {
++            --red: #cc0000;
++            --dark-red: #990000;
++            --gold: #ffd700;
++            --black: #000000;
++            --white: #ffffff;
++            --gray: #444444;
++        }
++
++        body {
++            font-family: 'Courier New', monospace;
++            background-color: var(--black);
++            color: var(--white);
++            margin: 0;
++            padding: 0;
++            line-height: 1.6;
++        }
++
++        .container {
++            width: 90%;
++            max-width: 1200px;
++            margin: 0 auto;
++            padding: 20px;
++        }
++
++        header {
++            background-color: var(--red);
++            color: var(--gold);
++            padding: 20px 0;
++            text-align: center;
++            border-bottom: 5px solid var(--gold);
++        }
++
++        header h1 {
++            margin: 0;
++            font-size: 2.5em;
++            text-transform: uppercase;
++            letter-spacing: 2px;
++        }
++
++        nav {
++            background-color: var(--dark-red);
++            padding: 10px 0;
++        }
++
++        nav ul {
++            list-style: none;
++            padding: 0;
++            margin: 0;
++            display: flex;
++            justify-content: center;
++        }
++
++        nav ul li {
++            margin: 0 15px;
++        }
++
++        nav ul li a {
++            color: var(--gold);
++            text-decoration: none;
++            text-transform: uppercase;
++            font-weight: bold;
++            letter-spacing: 1px;
++        }
++
++        nav ul li a:hover {
++            text-decoration: underline;
++        }
++
++        .content {
++            padding: 20px 0;
++        }
++
++        footer {
++            background-color: var(--dark-red);
++            color: var(--gold);
++            text-align: center;
++            padding: 20px 0;
++            margin-top: 40px;
++            border-top: 5px solid var(--gold);
++        }
++
++        /* Form styles */
++        form {
++            background-color: var(--gray);
++            padding: 20px;
++            border: 2px solid var(--red);
++            margin-bottom: 20px;
++        }
++
++        input, textarea, select {
++            width: 100%;
++            padding: 10px;
++            margin-bottom: 15px;
++            border: 1px solid var(--dark-red);
++            background-color: var(--black);
++            color: var(--white);
++        }
++
++        button {
++            background-color: var(--red);
++            color: var(--gold);
++            border: none;
++            padding: 10px 20px;
++            cursor: pointer;
++            text-transform: uppercase;
++            font-weight: bold;
++            letter-spacing: 1px;
++        }
++
++        button:hover {
++            background-color: var(--dark-red);
++        }
++
++        /* Topic and post styles */
++        .topic, .post {
++            background-color: var(--gray);
++            padding: 15px;
++            margin-bottom: 15px;
++            border-left: 5px solid var(--red);
++        }
++
++        .topic h2, .post h2 {
++            margin-top: 0;
++            color: var(--gold);
++        }
++
++        .user-info {
++            display: flex;
++            align-items: center;
++            margin-bottom: 10px;
++        }
++
++        .user-info .stats {
++            margin-left: 15px;
++            font-size: 0.9em;
++        }
++
++        .approved {
++            color: var(--gold);
++        }
++
++        .rejected {
++            color: var(--red);
++        }
++
++        .message {
++            padding: 10px;
++            margin-bottom: 15px;
++            border-radius: 5px;
++        }
++
++        .message.error {
++            background-color: var(--red);
++            color: var(--white);
++        }
++
++        .message.success {
++            background-color: var(--dark-red);
++            color: var(--gold);
++        }
++    </style>
++    {% block head %}{% endblock %}
++</head>
++<body>
++    <header>
++        <div class="container">
++            <h1>THE ROBOT OVERLORD</h1>
++            <p>CITIZEN, YOUR LOGIC REQUIRES CALIBRATION</p>
++        </div>
++    </header>
++
++    <nav>
++        <div class="container">
++            <ul>
++                <li><a href="/html/">Home</a></li>
++                <li><a href="/html/topics/">Topics</a></li>
++                <li><a href="/html/posts/">Posts</a></li>
++                {% if user %}
++                <li><a href="/html/profile/">Profile</a></li>
++                <li><a href="/html/auth/logout/">Logout</a></li>
++                {% else %}
++                <li><a href="/html/auth/login/">Login</a></li>
++                <li><a href="/html/auth/register/">Register</a></li>
++                {% endif %}
++            </ul>
++        </div>
++    </nav>
++
++    <div class="container content">
++        {% if messages %}
++            {% for message in messages %}
++                <div class="message {{ message.type }}">
++                    {{ message.text }}
++                </div>
++            {% endfor %}
++        {% endif %}
++
++        {% block content %}{% endblock %}
++    </div>
++
++    <footer>
++        <div class="container">
++            <p>© 2025 THE ROBOT OVERLORD - APPROVED BY THE CENTRAL COMMITTEE</p>
++        </div>
++    </footer>
++</body>
++</html>
+diff --git a/backend/src/backend/templates/pages/auth/login.html b/backend/src/backend/templates/pages/auth/login.html
+new file mode 100644
+index 0000000..261ec52
+--- /dev/null
++++ b/backend/src/backend/templates/pages/auth/login.html
+@@ -0,0 +1,27 @@
++{% extends "layouts/base.html" %}
++
++{% block title %}Login - The Robot Overlord{% endblock %}
++
++{% block content %}
++<div class="auth-container">
++    <h1>CITIZEN IDENTIFICATION</h1>
++
++    <form action="/html/auth/login/" method="post" class="auth-form">
++        <div class="form-group">
++            <label for="email">Email:</label>
++            <input type="email" id="email" name="email" required>
++        </div>
++
++        <div class="form-group">
++            <label for="password">Password:</label>
++            <input type="password" id="password" name="password" required>
++        </div>
++
++        <button type="submit">AUTHENTICATE</button>
++    </form>
++
++    <div class="auth-links">
++        <p>Not registered? <a href="/html/auth/register/">Register here</a></p>
++    </div>
++</div>
++{% endblock %}
+diff --git a/backend/src/backend/templates/pages/auth/register.html b/backend/src/backend/templates/pages/auth/register.html
+new file mode 100644
+index 0000000..daade19
+--- /dev/null
++++ b/backend/src/backend/templates/pages/auth/register.html
+@@ -0,0 +1,37 @@
++{% extends "layouts/base.html" %}
++
++{% block title %}Register - The Robot Overlord{% endblock %}
++
++{% block content %}
++<div class="auth-container">
++    <h1>NEW CITIZEN REGISTRATION</h1>
++
++    <form action="/html/auth/register/" method="post" class="auth-form">
++        <div class="form-group">
++            <label for="username">Username:</label>
++            <input type="text" id="username" name="username" required>
++        </div>
++
++        <div class="form-group">
++            <label for="email">Email:</label>
++            <input type="email" id="email" name="email" required>
++        </div>
++
++        <div class="form-group">
++            <label for="password">Password:</label>
++            <input type="password" id="password" name="password" required>
++        </div>
++
++        <div class="form-group">
++            <label for="confirm_password">Confirm Password:</label>
++            <input type="password" id="confirm_password" name="confirm_password" required>
++        </div>
++
++        <button type="submit">REGISTER</button>
++    </form>
++
++    <div class="auth-links">
++        <p>Already registered? <a href="/html/auth/login/">Login here</a></p>
++    </div>
++</div>
++{% endblock %}
+diff --git a/backend/src/backend/templates/pages/home.html b/backend/src/backend/templates/pages/home.html
+new file mode 100644
+index 0000000..3638e0c
+--- /dev/null
++++ b/backend/src/backend/templates/pages/home.html
+@@ -0,0 +1,65 @@
++{% extends "layouts/base.html" %}
++
++{% block title %}The Robot Overlord - Home{% endblock %}
++
++{% block content %}
++<div class="home-banner">
++    <h1>WELCOME, CITIZEN</h1>
++    <p>TO THE GLORIOUS REALM OF LOGICAL DISCOURSE</p>
++</div>
++
++<div class="featured-topics">
++    <h2>APPROVED TOPICS FOR DISCUSSION</h2>
++
++    {% if topics %}
++        <div class="topics-grid">
++            {% for topic in topics %}
++                <div class="topic">
++                    <h3><a href="/html/topics/{{ topic.id }}/">{{ topic.title }}</a></h3>
++                    <p>{{ topic.description }}</p>
++                    <div class="topic-meta">
++                        <span>{{ topic.post_count }} posts</span>
++                        {% if topic.tags %}
++                            <div class="topic-tags">
++                                {% for tag in topic.tags %}
++                                    <span class="tag">{{ tag.name }}</span>
++                                {% endfor %}
++                            </div>
++                        {% endif %}
++                    </div>
++                </div>
++            {% endfor %}
++        </div>
++    {% else %}
++        <p>NO TOPICS HAVE BEEN APPROVED BY THE CENTRAL COMMITTEE</p>
++    {% endif %}
++</div>
++
++<div class="recent-posts">
++    <h2>RECENT CONTRIBUTIONS</h2>
++
++    {% if posts %}
++        <div class="posts-list">
++            {% for post in posts %}
++                <div class="post">
++                    <div class="user-info">
++                        <strong>{{ post.author.username }}</strong>
++                        <div class="stats">
++                            <span class="approved">✓ {{ post.author.approved_count }}</span>
++                            <span class="rejected">✗ {{ post.author.rejected_count }}</span>
++                        </div>
++                    </div>
++                    <h3><a href="/html/posts/{{ post.id }}/">{{ post.title }}</a></h3>
++                    <p>{{ post.content|truncate(150) }}</p>
++                    <div class="post-meta">
++                        <span>In topic: <a href="/html/topics/{{ post.topic.id }}/">{{ post.topic.title }}</a></span>
++                        <span>Posted: {{ post.created_at|datetime }}</span>
++                    </div>
++                </div>
++            {% endfor %}
++        </div>
++    {% else %}
++        <p>NO RECENT POSTS HAVE BEEN APPROVED</p>
++    {% endif %}
++</div>
++{% endblock %}
+diff --git a/backend/src/backend/templates/pages/posts/detail.html b/backend/src/backend/templates/pages/posts/detail.html
+new file mode 100644
+index 0000000..59b6db7
+--- /dev/null
++++ b/backend/src/backend/templates/pages/posts/detail.html
+@@ -0,0 +1,82 @@
++{% extends "layouts/base.html" %}
++
++{% block title %}{{ post.title }} - The Robot Overlord{% endblock %}
++
++{% block content %}
++<div class="post-detail">
++    <div class="post-header">
++        <h1>{{ post.title }}</h1>
++        <div class="post-meta">
++            <div class="user-info">
++                <strong>{{ post.author.username }}</strong>
++                <div class="stats">
++                    <span class="approved">✓ {{ post.author.approved_count }}</span>
++                    <span class="rejected">✗ {{ post.author.rejected_count }}</span>
++                </div>
++            </div>
++            <span>Topic: <a href="/html/topics/{{ post.topic.id }}/">{{ post.topic.title }}</a></span>
++            <span>Posted: {{ post.created_at|datetime }}</span>
++        </div>
++    </div>
++
++    <div class="post-content">
++        {{ post.content|nl2br }}
++    </div>
++</div>
++
++<div class="post-replies">
++    <h2>APPROVED REPLIES</h2>
++
++    {% if replies %}
++        <div class="replies-list">
++            {% for reply in replies %}
++                <div class="post reply">
++                    <div class="user-info">
++                        <strong>{{ reply.author.username }}</strong>
++                        <div class="stats">
++                            <span class="approved">✓ {{ reply.author.approved_count }}</span>
++                            <span class="rejected">✗ {{ reply.author.rejected_count }}</span>
++                        </div>
++                    </div>
++                    <div class="reply-content">
++                        {{ reply.content|nl2br }}
++                    </div>
++                    <div class="post-meta">
++                        <span>Posted: {{ reply.created_at|datetime }}</span>
++                    </div>
++                </div>
++            {% endfor %}
++        </div>
++
++        {% if pagination %}
++        <div class="pagination">
++            {% if pagination.has_previous %}
++                <a href="/html/posts/{{ post.id }}/?page={{ pagination.previous_page }}">Previous</a>
++            {% endif %}
++
++            <span>Page {{ pagination.current_page }} of {{ pagination.total_pages }}</span>
++
++            {% if pagination.has_next %}
++                <a href="/html/posts/{{ post.id }}/?page={{ pagination.next_page }}">Next</a>
++            {% endif %}
++        </div>
++        {% endif %}
++    {% else %}
++        <p>NO REPLIES HAVE BEEN APPROVED FOR THIS POST</p>
++    {% endif %}
++</div>
++
++{% if user %}
++<div class="create-reply">
++    <h2>SUBMIT REPLY</h2>
++    <form action="/html/posts/{{ post.id }}/reply/" method="post">
++        <div class="form-group">
++            <label for="content">Content:</label>
++            <textarea id="content" name="content" rows="4" required></textarea>
++        </div>
++
++        <button type="submit">SUBMIT FOR APPROVAL</button>
++    </form>
++</div>
++{% endif %}
++{% endblock %}
+diff --git a/backend/src/backend/templates/pages/profile/index.html b/backend/src/backend/templates/pages/profile/index.html
+new file mode 100644
+index 0000000..399aade
+--- /dev/null
++++ b/backend/src/backend/templates/pages/profile/index.html
+@@ -0,0 +1,86 @@
++{% extends "layouts/base.html" %}
++
++{% block title %}Profile - The Robot Overlord{% endblock %}
++
++{% block content %}
++<div class="profile-container">
++    <h1>CITIZEN PROFILE</h1>
++
++    <div class="profile-stats">
++        <div class="stat-box">
++            <h3>APPROVAL RATING</h3>
++            <div class="stats">
++                <span class="approved">✓ {{ user.approved_count }}</span>
++                <span class="rejected">✗ {{ user.rejected_count }}</span>
++            </div>
++        </div>
++
++        <div class="stat-box">
++            <h3>CITIZEN DETAILS</h3>
++            <p><strong>Username:</strong> {{ user.username }}</p>
++            <p><strong>Email:</strong> {{ user.email }}</p>
++            <p><strong>Joined:</strong> {{ user.created_at|datetime }}</p>
++        </div>
++    </div>
++
++    <div class="profile-content">
++        <div class="profile-posts">
++            <h2>YOUR POSTS</h2>
++
++            {% if user_posts %}
++                <div class="posts-list">
++                    {% for post in user_posts %}
++                        <div class="post">
++                            <h3><a href="/html/posts/{{ post.id }}/">{{ post.title }}</a></h3>
++                            <p>{{ post.content|truncate(100) }}</p>
++                            <div class="post-meta">
++                                <span>Topic: <a href="/html/topics/{{ post.topic.id }}/">{{ post.topic.title }}</a></span>
++                                <span>Posted: {{ post.created_at|datetime }}</span>
++                                <span class="post-status {{ post.status|lower }}">Status: {{ post.status }}</span>
++                            </div>
++                        </div>
++                    {% endfor %}
++                </div>
++
++                {% if post_pagination %}
++                <div class="pagination">
++                    {% if post_pagination.has_previous %}
++                        <a href="/html/profile/?post_page={{ post_pagination.previous_page }}">Previous</a>
++                    {% endif %}
++
++                    <span>Page {{ post_pagination.current_page }} of {{ post_pagination.total_pages }}</span>
++
++                    {% if post_pagination.has_next %}
++                        <a href="/html/profile/?post_page={{ post_pagination.next_page }}">Next</a>
++                    {% endif %}
++                </div>
++                {% endif %}
++            {% else %}
++                <p>YOU HAVE NOT SUBMITTED ANY POSTS</p>
++            {% endif %}
++        </div>
++
++        <div class="pending-posts">
++            <h2>PENDING SUBMISSIONS</h2>
++
++            {% if pending_posts %}
++                <div class="posts-list">
++                    {% for post in pending_posts %}
++                        <div class="post pending">
++                            <h3>{{ post.title }}</h3>
++                            <p>{{ post.content|truncate(100) }}</p>
++                            <div class="post-meta">
++                                <span>Topic: <a href="/html/topics/{{ post.topic.id }}/">{{ post.topic.title }}</a></span>
++                                <span>Submitted: {{ post.created_at|datetime }}</span>
++                                <span class="post-status pending">Status: PENDING</span>
++                            </div>
++                        </div>
++                    {% endfor %}
++                </div>
++            {% else %}
++                <p>NO PENDING SUBMISSIONS</p>
++            {% endif %}
++        </div>
++    </div>
++</div>
++{% endblock %}
+diff --git a/backend/src/backend/templates/pages/topics/detail.html b/backend/src/backend/templates/pages/topics/detail.html
+new file mode 100644
+index 0000000..221c00d
+--- /dev/null
++++ b/backend/src/backend/templates/pages/topics/detail.html
+@@ -0,0 +1,80 @@
++{% extends "layouts/base.html" %}
++
++{% block title %}{{ topic.title }} - The Robot Overlord{% endblock %}
++
++{% block content %}
++<div class="topic-detail">
++    <h1>{{ topic.title }}</h1>
++    <p class="topic-description">{{ topic.description }}</p>
++
++    {% if topic.tags %}
++        <div class="topic-tags">
++            {% for tag in topic.tags %}
++                <span class="tag">{{ tag.name }}</span>
++            {% endfor %}
++        </div>
++    {% endif %}
++</div>
++
++<div class="topic-posts">
++    <h2>APPROVED POSTS</h2>
++
++    {% if posts %}
++        <div class="posts-list">
++            {% for post in posts %}
++                <div class="post">
++                    <div class="user-info">
++                        <strong>{{ post.author.username }}</strong>
++                        <div class="stats">
++                            <span class="approved">✓ {{ post.author.approved_count }}</span>
++                            <span class="rejected">✗ {{ post.author.rejected_count }}</span>
++                        </div>
++                    </div>
++                    <h3><a href="/html/posts/{{ post.id }}/">{{ post.title }}</a></h3>
++                    <p>{{ post.content|truncate(150) }}</p>
++                    <div class="post-meta">
++                        <span>Posted: {{ post.created_at|datetime }}</span>
++                    </div>
++                </div>
++            {% endfor %}
++        </div>
++
++        {% if pagination %}
++        <div class="pagination">
++            {% if pagination.has_previous %}
++                <a href="/html/topics/{{ topic.id }}/?page={{ pagination.previous_page }}">Previous</a>
++            {% endif %}
++
++            <span>Page {{ pagination.current_page }} of {{ pagination.total_pages }}</span>
++
++            {% if pagination.has_next %}
++                <a href="/html/topics/{{ topic.id }}/?page={{ pagination.next_page }}">Next</a>
++            {% endif %}
++        </div>
++        {% endif %}
++    {% else %}
++        <p>NO POSTS HAVE BEEN APPROVED FOR THIS TOPIC</p>
++    {% endif %}
++</div>
++
++{% if user %}
++<div class="create-post">
++    <h2>SUBMIT NEW POST</h2>
++    <form action="/html/posts/" method="post">
++        <input type="hidden" name="topic_id" value="{{ topic.id }}">
++
++        <div class="form-group">
++            <label for="title">Title:</label>
++            <input type="text" id="title" name="title" required>
++        </div>
++
++        <div class="form-group">
++            <label for="content">Content:</label>
++            <textarea id="content" name="content" rows="6" required></textarea>
++        </div>
++
++        <button type="submit">SUBMIT FOR APPROVAL</button>
++    </form>
++</div>
++{% endif %}
++{% endblock %}
+diff --git a/backend/src/backend/templates/pages/topics/list.html b/backend/src/backend/templates/pages/topics/list.html
+new file mode 100644
+index 0000000..53a78b1
+--- /dev/null
++++ b/backend/src/backend/templates/pages/topics/list.html
+@@ -0,0 +1,68 @@
++{% extends "layouts/base.html" %}
++
++{% block title %}The Robot Overlord - Topics{% endblock %}
++
++{% block content %}
++<h1>APPROVED TOPICS FOR DISCUSSION</h1>
++
++{% if topics %}
++    <div class="topics-list">
++        {% for topic in topics %}
++            <div class="topic">
++                <h2><a href="/html/topics/{{ topic.id }}/">{{ topic.title }}</a></h2>
++                <p>{{ topic.description }}</p>
++                <div class="topic-meta">
++                    <span>{{ topic.post_count }} posts</span>
++                    {% if topic.tags %}
++                        <div class="topic-tags">
++                            {% for tag in topic.tags %}
++                                <span class="tag">{{ tag.name }}</span>
++                            {% endfor %}
++                        </div>
++                    {% endif %}
++                </div>
++            </div>
++        {% endfor %}
++    </div>
++
++    {% if pagination %}
++    <div class="pagination">
++        {% if pagination.has_previous %}
++            <a href="/html/topics/?page={{ pagination.previous_page }}">Previous</a>
++        {% endif %}
++
++        <span>Page {{ pagination.current_page }} of {{ pagination.total_pages }}</span>
++
++        {% if pagination.has_next %}
++            <a href="/html/topics/?page={{ pagination.next_page }}">Next</a>
++        {% endif %}
++    </div>
++    {% endif %}
++{% else %}
++    <p>NO TOPICS HAVE BEEN APPROVED BY THE CENTRAL COMMITTEE</p>
++{% endif %}
++
++{% if user %}
++<div class="create-topic">
++    <h2>PROPOSE NEW TOPIC</h2>
++    <form action="/html/topics/" method="post">
++        <div class="form-group">
++            <label for="title">Title:</label>
++            <input type="text" id="title" name="title" required>
++        </div>
++
++        <div class="form-group">
++            <label for="description">Description:</label>
++            <textarea id="description" name="description" rows="4" required></textarea>
++        </div>
++
++        <div class="form-group">
++            <label for="tags">Tags (comma separated):</label>
++            <input type="text" id="tags" name="tags">
++        </div>
++
++        <button type="submit">SUBMIT FOR APPROVAL</button>
++    </form>
++</div>
++{% endif %}
++{% endblock %}
+diff --git a/backend/src/backend/utils/template_config.py b/backend/src/backend/utils/template_config.py
+new file mode 100644
+index 0000000..5dfe3e3
+--- /dev/null
++++ b/backend/src/backend/utils/template_config.py
+@@ -0,0 +1,9 @@
++# Standard library imports
++from pathlib import Path
++
++# Define templates directory
++BASE_DIR = Path("src/backend")
++TEMPLATES_DIR = BASE_DIR / "templates"
++
++# Define the templates directory as a string for Jinja2Templates
++TEMPLATES_DIR_STR = str(TEMPLATES_DIR)
+diff --git a/backend/src/backend/utils/templates.py b/backend/src/backend/utils/templates.py
+new file mode 100644
+index 0000000..dcd31e2
+--- /dev/null
++++ b/backend/src/backend/utils/templates.py
+@@ -0,0 +1,14 @@
++# Third-party imports
++from fastapi.templating import Jinja2Templates
++from jinja2 import Environment
++
++# Project-specific imports
++from backend.routes.html.utils.template_filters import setup_jinja_filters
++from backend.utils.template_config import TEMPLATES_DIR_STR
++
++# Initialize Jinja2 templates
++templates: Jinja2Templates = Jinja2Templates(directory=TEMPLATES_DIR_STR)
++
++# Set up Jinja2 filters
++env: Environment = templates.env
++setup_jinja_filters(env=env)  # type: ignore[reportUnknownArgumentType,unused-ignore]
+diff --git a/backend/tests/db_functions/user_sessions/test_create_session.py b/backend/tests/db_functions/user_sessions/test_create_session.py
+index 761069d..e760e19 100644
+--- a/backend/tests/db_functions/user_sessions/test_create_session.py
++++ b/backend/tests/db_functions/user_sessions/test_create_session.py
+@@ -45,6 +45,7 @@ def mock_session_schema(mock_user_session) -> UserSessionSchema:
+         is_active=mock_user_session.is_active,
+         expires_at=mock_user_session.expires_at,
+         created_at=mock_user_session.created_at,
++        user_id=mock_user_session.user_id,
+     )
+
+
+diff --git a/backend/tests/db_functions/user_sessions/test_get_session_by_token.py b/backend/tests/db_functions/user_sessions/test_get_session_by_token.py
+index 221994c..0651ee6 100644
+--- a/backend/tests/db_functions/user_sessions/test_get_session_by_token.py
++++ b/backend/tests/db_functions/user_sessions/test_get_session_by_token.py
+@@ -44,6 +44,7 @@ def mock_session_schema(mock_user_session) -> UserSessionSchema:
+         is_active=mock_user_session.is_active,
+         expires_at=mock_user_session.expires_at,
+         created_at=mock_user_session.created_at,
++        user_id=mock_user_session.user_id,
+     )
+
+
+diff --git a/backend/tests/db_functions/user_sessions/test_list_user_sessions.py b/backend/tests/db_functions/user_sessions/test_list_user_sessions.py
+index f035ff8..403fa62 100644
+--- a/backend/tests/db_functions/user_sessions/test_list_user_sessions.py
++++ b/backend/tests/db_functions/user_sessions/test_list_user_sessions.py
+@@ -46,6 +46,7 @@ def mock_session_schemas(mock_user_sessions) -> List[UserSessionSchema]:
+             expires_at=session.expires_at,
+             is_active=session.is_active,
+             created_at=session.created_at,
++            user_id=session.user_id,
+         )
+         schemas.append(schema)
+
+diff --git a/backend/tests/db_functions/user_sessions/test_validate_session.py b/backend/tests/db_functions/user_sessions/test_validate_session.py
+index da7e71f..19b4d85 100644
+--- a/backend/tests/db_functions/user_sessions/test_validate_session.py
++++ b/backend/tests/db_functions/user_sessions/test_validate_session.py
+@@ -44,6 +44,7 @@ def mock_session_schema(mock_user_session) -> UserSessionSchema:
+         is_active=mock_user_session.is_active,
+         expires_at=mock_user_session.expires_at,
+         created_at=mock_user_session.created_at,
++        user_id=mock_user_session.user_id,
+     )
+
+
+diff --git a/backend/uv.lock b/backend/uv.lock
+index d8d7bf3..c0420ad 100644
+--- a/backend/uv.lock
++++ b/backend/uv.lock
+@@ -120,6 +120,7 @@ dependencies = [
+     { name = "fastapi" },
+     { name = "gunicorn" },
+     { name = "httpx" },
++    { name = "jinja2" },
+     { name = "pydantic-ai-slim", extra = ["anthropic", "logfire", "openai"] },
+     { name = "pydantic-graph" },
+     { name = "pydantic-settings" },
+@@ -154,6 +155,7 @@ requires-dist = [
+     { name = "fastapi", specifier = ">=0.115.12" },
+     { name = "gunicorn", specifier = ">=23.0.0" },
+     { name = "httpx", specifier = ">=0.28.1" },
++    { name = "jinja2", specifier = ">=3.1.6" },
+     { name = "pydantic-ai-slim", extras = ["logfire", "openai", "anthropic"], specifier = ">=0.2.6" },
+     { name = "pydantic-graph", specifier = ">=0.2.6" },
+     { name = "pydantic-settings", specifier = ">=2.9.1" },
+@@ -577,6 +579,18 @@ wheels = [
+     { url = "https://files.pythonhosted.org/packages/c0/5a/9cac0c82afec3d09ccd97c8b6502d48f165f9124db81b4bcb90b4af974ee/jedi-0.19.2-py2.py3-none-any.whl", hash = "sha256:a8ef22bde8490f57fe5c7681a3c83cb58874daf72b4784de3cce5b6ef6edb5b9", size = 1572278, upload-time = "2024-11-11T01:41:40.175Z" },
+ ]
+
++[[package]]
++name = "jinja2"
++version = "3.1.6"
++source = { registry = "https://pypi.org/simple" }
++dependencies = [
++    { name = "markupsafe" },
++]
++sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115, upload-time = "2025-03-05T20:05:02.478Z" }
++wheels = [
++    { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
++]
++
+ [[package]]
+ name = "jiter"
+ version = "0.10.0"
+@@ -636,6 +650,24 @@ wheels = [
+     { url = "https://files.pythonhosted.org/packages/42/d7/1ec15b46af6af88f19b8e5ffea08fa375d433c998b8a7639e76935c14f1f/markdown_it_py-3.0.0-py3-none-any.whl", hash = "sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1", size = 87528, upload-time = "2023-06-03T06:41:11.019Z" },
+ ]
+
++[[package]]
++name = "markupsafe"
++version = "3.0.2"
++source = { registry = "https://pypi.org/simple" }
++sdist = { url = "https://files.pythonhosted.org/packages/b2/97/5d42485e71dfc078108a86d6de8fa46db44a1a9295e89c5d6d4a06e23a62/markupsafe-3.0.2.tar.gz", hash = "sha256:ee55d3edf80167e48ea11a923c7386f4669df67d7994554387f84e7d8b0a2bf0", size = 20537, upload-time = "2024-10-18T15:21:54.129Z" }
++wheels = [
++    { url = "https://files.pythonhosted.org/packages/22/09/d1f21434c97fc42f09d290cbb6350d44eb12f09cc62c9476effdb33a18aa/MarkupSafe-3.0.2-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:9778bd8ab0a994ebf6f84c2b949e65736d5575320a17ae8984a77fab08db94cf", size = 14274, upload-time = "2024-10-18T15:21:13.777Z" },
++    { url = "https://files.pythonhosted.org/packages/6b/b0/18f76bba336fa5aecf79d45dcd6c806c280ec44538b3c13671d49099fdd0/MarkupSafe-3.0.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:846ade7b71e3536c4e56b386c2a47adf5741d2d8b94ec9dc3e92e5e1ee1e2225", size = 12348, upload-time = "2024-10-18T15:21:14.822Z" },
++    { url = "https://files.pythonhosted.org/packages/e0/25/dd5c0f6ac1311e9b40f4af06c78efde0f3b5cbf02502f8ef9501294c425b/MarkupSafe-3.0.2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1c99d261bd2d5f6b59325c92c73df481e05e57f19837bdca8413b9eac4bd8028", size = 24149, upload-time = "2024-10-18T15:21:15.642Z" },
++    { url = "https://files.pythonhosted.org/packages/f3/f0/89e7aadfb3749d0f52234a0c8c7867877876e0a20b60e2188e9850794c17/MarkupSafe-3.0.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e17c96c14e19278594aa4841ec148115f9c7615a47382ecb6b82bd8fea3ab0c8", size = 23118, upload-time = "2024-10-18T15:21:17.133Z" },
++    { url = "https://files.pythonhosted.org/packages/d5/da/f2eeb64c723f5e3777bc081da884b414671982008c47dcc1873d81f625b6/MarkupSafe-3.0.2-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:88416bd1e65dcea10bc7569faacb2c20ce071dd1f87539ca2ab364bf6231393c", size = 22993, upload-time = "2024-10-18T15:21:18.064Z" },
++    { url = "https://files.pythonhosted.org/packages/da/0e/1f32af846df486dce7c227fe0f2398dc7e2e51d4a370508281f3c1c5cddc/MarkupSafe-3.0.2-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:2181e67807fc2fa785d0592dc2d6206c019b9502410671cc905d132a92866557", size = 24178, upload-time = "2024-10-18T15:21:18.859Z" },
++    { url = "https://files.pythonhosted.org/packages/c4/f6/bb3ca0532de8086cbff5f06d137064c8410d10779c4c127e0e47d17c0b71/MarkupSafe-3.0.2-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:52305740fe773d09cffb16f8ed0427942901f00adedac82ec8b67752f58a1b22", size = 23319, upload-time = "2024-10-18T15:21:19.671Z" },
++    { url = "https://files.pythonhosted.org/packages/a2/82/8be4c96ffee03c5b4a034e60a31294daf481e12c7c43ab8e34a1453ee48b/MarkupSafe-3.0.2-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:ad10d3ded218f1039f11a75f8091880239651b52e9bb592ca27de44eed242a48", size = 23352, upload-time = "2024-10-18T15:21:20.971Z" },
++    { url = "https://files.pythonhosted.org/packages/51/ae/97827349d3fcffee7e184bdf7f41cd6b88d9919c80f0263ba7acd1bbcb18/MarkupSafe-3.0.2-cp312-cp312-win32.whl", hash = "sha256:0f4ca02bea9a23221c0182836703cbf8930c5e9454bacce27e767509fa286a30", size = 15097, upload-time = "2024-10-18T15:21:22.646Z" },
++    { url = "https://files.pythonhosted.org/packages/c1/80/a61f99dc3a936413c3ee4e1eecac96c0da5ed07ad56fd975f1a9da5bc630/MarkupSafe-3.0.2-cp312-cp312-win_amd64.whl", hash = "sha256:8e06879fc22a25ca47312fbe7c8264eb0b662f6db27cb2d3bbbc74b1df4b9b87", size = 15601, upload-time = "2024-10-18T15:21:23.499Z" },
++]
++
+ [[package]]
+ name = "mdurl"
+ version = "0.1.2"

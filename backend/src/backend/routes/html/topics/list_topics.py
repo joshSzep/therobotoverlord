@@ -10,20 +10,17 @@ from fastapi import Request
 from fastapi import status
 from fastapi.responses import HTMLResponse
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse as StarletteRedirectResponse
 
 # Project-specific imports
 from backend.db_functions.topics import create_topic
 from backend.db_functions.topics import list_topics
+from backend.dominate_templates.topics.list import create_topics_list_page
 from backend.routes.html.schemas.user import UserResponse
 from backend.routes.html.utils.auth import get_current_user
 from backend.routes.html.utils.auth import get_current_user_optional
 
 router = APIRouter()
-
-# Initialize Jinja2 templates
-templates = Jinja2Templates(directory="src/backend/templates")
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -52,15 +49,16 @@ async def list_topics_page(
         "next_page": page + 1,
     }
 
-    return templates.TemplateResponse(
-        "pages/topics/list.html",
-        {
-            "request": request,
-            "user": current_user,
-            "topics": topics,
-            "pagination": pagination,
-        },
+    # Create the topics list page using Dominate
+    doc = create_topics_list_page(
+        topics=topics,  # Pass schema objects directly
+        pagination=pagination,
+        user=current_user,  # Pass schema object directly
+        messages=[],  # Empty list instead of None
     )
+
+    # Return the rendered HTML
+    return HTMLResponse(str(doc))
 
 
 @router.post("/", response_class=RedirectResponse)

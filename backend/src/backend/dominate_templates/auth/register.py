@@ -1,0 +1,83 @@
+# Standard library imports
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
+
+# Third-party imports
+from dominate.tags import a
+from dominate.tags import button
+from dominate.tags import div
+from dominate.tags import form
+from dominate.tags import h1
+from dominate.tags import input_
+from dominate.tags import label
+from dominate.tags import p
+from dominate.util import text
+
+# Local imports
+from backend.dominate_templates.base import create_base_document
+from backend.routes.html.schemas.user import UserResponse
+
+
+def create_register_page(
+    user: Optional[Union[UserResponse, Dict[str, Any]]] = None,
+    messages: Optional[List[Dict[str, str]]] = None,
+) -> Any:
+    """
+    Create the registration page using Dominate.
+
+    Args:
+        user: User schema object or dictionary
+        messages: List of message dictionaries
+
+    Returns:
+        A dominate document object
+    """
+    # Create the base document with the registration page title
+    doc = create_base_document(
+        title_text="Register - The Robot Overlord",
+        user=user,
+        messages=messages,
+    )
+
+    # Define the content function to be passed to the base document
+    def content_func() -> None:
+        with div(cls="auth-container"):  # type: ignore
+            h1("NEW CITIZEN REGISTRATION")  # type: ignore
+
+            with form(action="/html/auth/register/", method="post", cls="auth-form"):  # type: ignore
+                with div(cls="form-group"):  # type: ignore
+                    label("Username:", for_="username")  # type: ignore
+                    input_(type="text", id="username", name="username", required=True)  # type: ignore
+
+                with div(cls="form-group"):  # type: ignore
+                    label("Email:", for_="email")  # type: ignore
+                    input_(type="email", id="email", name="email", required=True)  # type: ignore
+
+                with div(cls="form-group"):  # type: ignore
+                    label("Password:", for_="password")  # type: ignore
+                    input_(
+                        type="password", id="password", name="password", required=True
+                    )  # type: ignore
+
+                with div(cls="form-group"):  # type: ignore
+                    label("Confirm Password:", for_="confirm_password")  # type: ignore
+                    input_(
+                        type="password",
+                        id="confirm_password",
+                        name="confirm_password",
+                        required=True,
+                    )  # type: ignore
+
+                button("REGISTER", type="submit")  # type: ignore
+
+            with div(cls="auth-links"), p():  # type: ignore
+                text("Already registered? ")  # type: ignore
+                a("Login here", href="/html/auth/login/")  # type: ignore
+
+    # Set the content function in the base document
+    doc.get_or_create_body().add(content_func)
+
+    return doc

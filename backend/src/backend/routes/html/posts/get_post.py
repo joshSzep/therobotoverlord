@@ -10,18 +10,15 @@ from fastapi import Query
 from fastapi import Request
 from fastapi import status
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 
 # Project-specific imports
 from backend.db_functions.posts import get_post_by_id
 from backend.db_functions.posts import list_post_replies
+from backend.dominate_templates.posts.detail import create_post_detail_page
 from backend.routes.html.schemas.user import UserResponse
 from backend.routes.html.utils.auth import get_current_user_optional
 
 router = APIRouter()
-
-# Initialize Jinja2 templates
-templates = Jinja2Templates(directory="src/backend/templates")
 
 
 @router.get("/{post_id}/", response_class=HTMLResponse)
@@ -59,13 +56,13 @@ async def get_post_page(
         "next_page": page + 1,
     }
 
-    return templates.TemplateResponse(
-        "pages/posts/detail.html",
-        {
-            "request": request,
-            "user": current_user,
-            "post": post,
-            "replies": replies,
-            "pagination": pagination,
-        },
+    # Create the post detail page using Dominate
+    doc = create_post_detail_page(
+        post=post,  # Pass schema object directly
+        replies=replies,  # Pass schema objects directly
+        pagination=pagination,
+        user=current_user,  # Pass schema object directly
     )
+
+    # Return the rendered HTML
+    return HTMLResponse(str(doc))
