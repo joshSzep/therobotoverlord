@@ -47,22 +47,28 @@ async def list_threaded_posts_by_topic(
         post_responses.append(post_schema)
         post_id_map[post.id] = post_schema
 
-    # Now fetch all replies for these posts
+    # Now fetch ALL replies for the topic (not just direct replies to top-level posts)
+    # This allows us to build the complete threading structure
     if top_level_posts:
-        top_level_ids = [post.id for post in top_level_posts]
-
-        # Get all replies for the top-level posts
+        # Get all posts for this topic that are replies (have a parent)
         all_replies = (
             await Post.filter(topic_id=topic_id)
-            .filter(parent_post__id__in=top_level_ids)
+            .exclude(parent_post=None)
             .order_by("created_at")
         )
 
-        # Convert replies to schema objects and organize them
+        # Convert all replies to schema objects
+        reply_schemas = []
         for reply in all_replies:
             reply_schema = await post_to_schema(reply)
+            reply_schemas.append(reply_schema)
+            post_id_map[reply.id] = reply_schema
 
-            # Find the parent post in our map
+        # Now organize all replies into their proper parent-child relationships
+        for reply in all_replies:
+            reply_schema = post_id_map[reply.id]
+
+            # If the parent is in our map (either a top-level post or another reply)
             if reply.parent_post and reply.parent_post.id in post_id_map:
                 parent = post_id_map[reply.parent_post.id]
 
@@ -72,9 +78,6 @@ async def list_threaded_posts_by_topic(
 
                 # Add this reply to the parent's replies
                 parent.replies.append(reply_schema)
-
-                # Add this reply to our map in case it has its own replies
-                post_id_map[reply.id] = reply_schema
 
     logger.debug(f"Retrieved {len(post_responses)} threaded posts for topic {topic_id}")
     return PostList(posts=post_responses, count=count)

@@ -48,12 +48,11 @@ def create_posts_list_page(
             with div(cls="posts-list"):  # type: ignore
                 for post in posts:
                     with div(cls="post"):  # type: ignore
-                        # Use schema object content
+                        # Use schema object content as a permalink to the post detail
                         if post.content:
-                            content_preview = post.content[:150]
-                            if len(post.content) > 150:
-                                content_preview += "..."
-                            p(content_preview)  # type: ignore
+                            # Make the content a permalink to the post detail
+                            with p():  # type: ignore
+                                a(post.content, href=f"/html/posts/{post.id}/")  # type: ignore
 
                         with div(cls="post-meta"):  # type: ignore
                             # Display author if available

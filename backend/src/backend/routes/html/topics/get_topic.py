@@ -1,6 +1,7 @@
 # Standard library imports
 import logging
 from typing import Annotated
+from typing import Optional
 from uuid import UUID
 
 # Third-party imports
@@ -34,6 +35,7 @@ async def get_topic_page(
     current_user: Annotated[UserResponse | None, Depends(get_current_user_optional)],
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
+    highlight: Optional[str] = Query(None, description="Post ID to highlight"),
 ) -> HTMLResponse:
     # Get topic
     topic = await get_topic_by_id(topic_id)
@@ -63,6 +65,7 @@ async def get_topic_page(
         current_page=page,
         total_pages=total_pages,
         current_user=current_user,
+        highlight_post_id=highlight,
     )
 
     # Return the rendered HTML

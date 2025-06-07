@@ -31,9 +31,15 @@ def render_post(
     topic_id: UUID,
     indent_level: int = 0,
     current_user: Optional[Any] = None,
+    highlight_post_id: Optional[str] = None,
 ) -> None:
     """Recursively render a post and its replies."""
-    with div(cls=f"post-container indent-level-{indent_level}"):  # type: ignore
+    # Add highlight class if this post is the one to highlight
+    post_classes = f"post-container indent-level-{indent_level}"
+    if highlight_post_id and str(post.id) == highlight_post_id:
+        post_classes += " highlighted-post"
+
+    with div(cls=post_classes, id=f"post-{post.id}"):  # type: ignore
         # Post header with author info
         with div(cls="post-header"), div(cls="post-meta"):  # type: ignore
             # Author info
@@ -56,20 +62,12 @@ def render_post(
                 cls="rejected",
             )  # type: ignore
 
-        # Post content preview
-        with div(cls="post-preview"):  # type: ignore
-            # Get first 50 chars of content as preview
-            preview = post.content[:50]
-            if len(post.content) > 50:
-                preview += "..."
-
-            a(preview, href=f"/html/posts/{post.id}/")  # type: ignore
-
-        # Post content
-        content = post.content
-        if len(content) > 150:
-            content = content[:150] + "..."
-        p(content, cls="post-content")  # type: ignore
+        # Post content as a deep link
+        with div(cls="post-content"):  # type: ignore
+            # Make the full content a deep link back to this page with it highlighted
+            post_url = f"/html/topics/{topic_id}/"
+            post_url += f"?highlight={post.id}"
+            a(post.content, href=post_url, cls="post-content-link")  # type: ignore
 
         # Post metadata
         with div(cls="post-meta"):  # type: ignore
@@ -112,7 +110,13 @@ def render_post(
         if hasattr(post, "replies") and post.replies:
             with div(cls="replies"):  # type: ignore
                 for reply in post.replies:
-                    render_post(reply, topic_id, indent_level + 1, current_user)
+                    render_post(
+                        reply,
+                        topic_id,
+                        indent_level + 1,
+                        current_user,
+                        highlight_post_id=highlight_post_id,
+                    )
 
 
 def create_topic_detail_page(
@@ -122,6 +126,7 @@ def create_topic_detail_page(
     current_page: int,
     total_pages: int,
     current_user: Optional[UserResponse] = None,
+    highlight_post_id: Optional[str] = None,
 ) -> Any:
     """
     Create the topic detail page using Dominate.
@@ -145,7 +150,9 @@ def create_topic_detail_page(
     def content_func() -> None:
         # Topic detail section
         with div(cls="topic-detail"):  # type: ignore
-            h1(topic.title)  # type: ignore
+            # Make the title a deep link back to this page with no highlight
+            with h1():  # type: ignore
+                a(topic.title, href=f"/html/topics/{topic.id}/", cls="topic-title-link")  # type: ignore
 
             topic_desc = getattr(topic, "description", "")
             p(topic_desc, cls="topic-description")  # type: ignore
@@ -171,6 +178,7 @@ def create_topic_detail_page(
                             topic_id=topic.id,
                             indent_level=0,
                             current_user=current_user,
+                            highlight_post_id=highlight_post_id,
                         )
 
                 # Pagination controls

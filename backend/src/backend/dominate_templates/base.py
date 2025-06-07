@@ -21,6 +21,7 @@ from dominate.tags import nav
 from dominate.tags import p
 from dominate.tags import script
 from dominate.tags import span
+from dominate.tags import style
 from dominate.tags import ul
 from dominate.util import text
 
@@ -70,6 +71,48 @@ def create_base_document(
 
         # JavaScript files
         script(src="/static/js/threaded-posts.js")  # type: ignore
+
+        # Inline CSS for highlighted posts
+        with style():  # type: ignore
+            text(  # type: ignore
+                """
+            .highlighted-post {
+                border: 2px solid #ff0000;
+                background-color: rgba(255, 0, 0, 0.05);
+                animation: highlight-pulse 2s infinite;
+            }
+            @keyframes highlight-pulse {
+                0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+                70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+            }
+
+            /* Style for topic title link to look like a regular heading */
+            .topic-title-link {
+                color: inherit;
+                text-decoration: none;
+            }
+            .topic-title-link:hover {
+                text-decoration: underline;
+            }
+            """
+            )
+
+        # JavaScript to scroll to highlighted post
+        with script():  # type: ignore
+            text(  # type: ignore
+                """
+            document.addEventListener('DOMContentLoaded', function() {
+                const highlightedPost = document.querySelector('.highlighted-post');
+                if (highlightedPost) {
+                    highlightedPost.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            });
+            """
+            )
 
         # Additional head content if provided
         if head_content_func:
