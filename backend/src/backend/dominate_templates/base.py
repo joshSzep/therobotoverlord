@@ -17,6 +17,7 @@ from dominate.tags import link
 from dominate.tags import meta
 from dominate.tags import p
 from dominate.tags import script
+from dominate.tags import span
 from dominate.tags import style
 from dominate.util import text
 
@@ -99,6 +100,16 @@ def create_base_document(
             .site-title:hover {
                 text-decoration: underline;
             }
+
+            /* Colored approval/rejection counters */
+            .approved-count {
+                color: #2ecc71; /* Green color for checkmarks */
+                font-weight: bold;
+            }
+            .rejected-count {
+                color: #e74c3c; /* Red color for X marks */
+                font-weight: bold;
+            }
             """
             )
 
@@ -136,7 +147,9 @@ def create_base_document(
                         display_name = display_name[1:]
                     a(display_name, href=f"/html/profile/{user.id}/")  # type: ignore
                     # Show approval/rejection counters instead of calibration text
-                    text(f" ✓ {user.approved_count} | ✗ {user.rejected_count}")  # type: ignore
+                    span(f"✓ {user.approved_count}", cls="approved-count")  # type: ignore
+                    text(" | ")  # type: ignore
+                    span(f"✗ {user.rejected_count}", cls="rejected-count")  # type: ignore
                 else:
                     # When not logged in, make CITIZEN a login link
                     a("CITIZEN", href="/html/auth/login/")  # type: ignore

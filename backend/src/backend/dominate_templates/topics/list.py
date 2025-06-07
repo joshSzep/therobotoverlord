@@ -16,6 +16,7 @@ from dominate.tags import label
 from dominate.tags import p
 from dominate.tags import span
 from dominate.tags import textarea
+from dominate.util import text
 
 # Local imports
 from backend.dominate_templates.base import create_base_document
@@ -50,25 +51,53 @@ def create_topics_list_page(
         if topics:
             with div(cls="topics-list"):  # type: ignore
                 for topic in topics:
-                    with div(cls="topic"):  # type: ignore
-                        with h2():  # type: ignore
-                            # Use schema object attributes directly
-                            a(topic.title, href=f"/html/topics/{topic.id}/")  # type: ignore
+                    with div(cls="topic-card"):  # type: ignore
+                        # Topic header with title
+                        with div(cls="topic-header"), h2():  # type: ignore
+                            a(
+                                topic.title,
+                                href=f"/html/topics/{topic.id}/",
+                                cls="topic-title-link",
+                            )  # type: ignore
 
-                        # Use schema object description
-                        if topic.description:
-                            p(topic.description)  # type: ignore
+                        # Topic content section
+                        with div(cls="topic-content"):  # type: ignore
+                            # Description
+                            if topic.description:
+                                with div(cls="topic-description"):  # type: ignore
+                                    p(topic.description)  # type: ignore
 
-                        with div(cls="topic-meta"):  # type: ignore
-                            # Display post count if available
-                            if hasattr(topic, "post_count"):
-                                span(f"{topic.post_count} posts")  # type: ignore
-
-                            # Display tags if available
-                            if topic.tags:
+                            # Topic metadata section
+                            with div(cls="topic-meta"):  # type: ignore
+                                # Tags section
                                 with div(cls="topic-tags"):  # type: ignore
-                                    for tag in topic.tags:
-                                        span(tag.name, cls="tag")  # type: ignore
+                                    if topic.tags:
+                                        for tag in topic.tags:
+                                            span(tag.name, cls="tag")  # type: ignore
+                                    else:
+                                        span("No tags", cls="no-tags")  # type: ignore
+
+                                # Stats section
+                                with div(cls="topic-stats"):  # type: ignore
+                                    # Post count
+                                    with div(cls="post-count"):  # type: ignore
+                                        post_count = getattr(topic, "post_count", 0)
+                                        span(f"{post_count} posts", cls="count")  # type: ignore
+
+                                    # Display author info if available
+                                    if hasattr(topic, "author"):
+                                        with div(cls="author-info"):  # type: ignore
+                                            text("Created by: ")  # type: ignore
+                                            author = topic.author
+                                            author_name = getattr(
+                                                author, "display_name", "Unknown"
+                                            )
+                                            author_id = getattr(author, "id", None)
+                                            if author_id:
+                                                href = f"/html/profile/{author_id}/"
+                                                a(author_name, href=href)  # type: ignore
+                                            else:
+                                                text(author_name)  # type: ignore
 
             # Pagination controls
             if pagination:
@@ -88,8 +117,8 @@ def create_topics_list_page(
         else:
             p("NO TOPICS HAVE BEEN APPROVED BY THE CENTRAL COMMITTEE")  # type: ignore
 
-        # Create topic form section (only if user is logged in)
-        if user:
+        # Create topic form section (only if user is an admin)
+        if user and user.is_admin:
             with div(cls="create-topic"):  # type: ignore
                 h2("PROPOSE NEW TOPIC")  # type: ignore
                 with form(action="/html/topics/", method="post"):  # type: ignore

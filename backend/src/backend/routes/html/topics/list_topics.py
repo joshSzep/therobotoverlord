@@ -1,5 +1,6 @@
 # Standard library imports
 from typing import Annotated
+from uuid import UUID
 
 # Third-party imports
 from fastapi import APIRouter
@@ -13,6 +14,10 @@ from fastapi.responses import RedirectResponse
 from starlette.responses import RedirectResponse as StarletteRedirectResponse
 
 # Project-specific imports
+from backend.db_functions.tags.get_or_create_tag_by_name import (
+    get_or_create_tag_by_name,
+)
+from backend.db_functions.topic_tags import add_tags_to_topic
 from backend.db_functions.topics import create_topic
 from backend.db_functions.topics import list_topics
 from backend.dominate_templates.topics.list import create_topics_list_page
@@ -71,7 +76,7 @@ async def create_topic_action(
     # Create topic
     topic = await create_topic(
         title=title,
-        description="",  # Empty description for now
+        description=description,  # Use the description from the form
         created_by_id=current_user.id,
     )
 
@@ -79,8 +84,14 @@ async def create_topic_action(
     if tags:
         tag_names = [tag.strip() for tag in tags.split(",") if tag.strip()]
         if tag_names:
-            # We would handle tag creation here
-            pass
+            # Get or create tags and collect their IDs
+            tag_ids: list[UUID] = []
+            for tag_name in tag_names:
+                tag = await get_or_create_tag_by_name(tag_name)
+                tag_ids.append(tag.id)
+
+            # Add tags to the topic
+            await add_tags_to_topic(topic_id=topic.id, tag_ids=tag_ids)
 
     # Redirect to the topic detail page
     return StarletteRedirectResponse(

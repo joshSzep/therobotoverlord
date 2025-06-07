@@ -244,23 +244,86 @@ a:visited:hover {
 }
 
 /* Topics */
-.topic {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  margin-bottom: 1rem;
+.topic-card {
+  margin-bottom: 1.5rem;
   background-color: var(--soviet-gray);
   border-left: 4px solid var(--soviet-yellow);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.topic-title {
+.topic-header {
+  padding: 1rem 1rem 0.5rem;
+  border-bottom: 1px solid var(--soviet-dark-red);
+}
+
+.topic-header h2 {
   margin: 0;
-  flex-grow: 1;
+}
+
+.topic-content {
+  padding: 0.5rem 1rem 1rem;
+}
+
+.topic-description {
+  margin-bottom: 1rem;
+  color: var(--soviet-white);
+  line-height: 1.4;
+}
+
+.topic-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--soviet-dark-red);
+  color: var(--soviet-light-gray);
+}
+
+.topic-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background-color: var(--soviet-dark-red);
+  color: var(--soviet-white);
+  border-radius: 2px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.no-tags {
+  font-style: italic;
+  color: var(--soviet-light-gray);
+  font-size: 0.8rem;
 }
 
 .topic-stats {
   text-align: right;
   color: var(--soviet-light-gray);
+}
+
+.post-count {
+  margin-bottom: 0.5rem;
+}
+
+.author-info {
+  font-size: 0.9rem;
+}
+
+/* Approval/Rejection counters */
+.approved-count {
+  color: #2ecc71; /* Green color for checkmarks */
+  font-weight: bold;
+}
+
+.rejected-count {
+  color: #e74c3c; /* Red color for X marks */
+  font-weight: bold;
 }
 
 /* Pagination */
