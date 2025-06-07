@@ -2,10 +2,10 @@
 
 ## Backend Database Functions
 
-- [ ] **Update Post Creation Flow**
+- [x] **Update Post Creation Flow**
   - [x] Modify `create_post_action` to use `create_pending_post` instead of `create_post`
   - [x] Add background task to trigger AI moderation after pending post creation
-  - [ ] Update reply creation to use pending posts system
+  - [x] Update reply creation to use pending posts system
 
 - [ ] **Enhance AI Moderation Service**
   - [ ] Configure Anthropic Claude API integration
