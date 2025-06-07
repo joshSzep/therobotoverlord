@@ -1,4 +1,5 @@
 # Standard library imports
+import logging
 from typing import Annotated
 
 # Third-party imports
@@ -6,7 +7,6 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import Form
 from fastapi import Request
-from fastapi import Response
 from fastapi import status
 from fastapi.responses import HTMLResponse
 from fastapi.responses import RedirectResponse
@@ -17,6 +17,9 @@ from backend.db_functions.user_sessions.create_session import create_session
 from backend.db_functions.users.authenticate_user import authenticate_user
 from backend.dominate_templates.auth.login import create_login_page
 from backend.routes.html.utils.auth import redirect_if_authenticated
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -32,7 +35,6 @@ async def login_page(
 @router.post("/login/", response_class=RedirectResponse)
 async def login_action(
     request: Request,
-    response: Response,
     _: Annotated[None, Depends(redirect_if_authenticated)],
     email: str = Form(...),
     password: str = Form(...),
@@ -53,18 +55,27 @@ async def login_action(
         user_agent=request.headers.get("user-agent", ""),
     )
 
-    # Set session cookie
-    response.set_cookie(
+    logger.debug("Created session with token: %s", session.session_token)
+
+    # Create redirect response
+    redirect = StarletteRedirectResponse(
+        url="/html/",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+    # Set cookie directly on the redirect response
+    redirect.set_cookie(
         key="session_token",
         value=session.session_token,
         httponly=True,
         max_age=7 * 24 * 60 * 60,  # 7 days
-        secure=True,
+        # Don't use secure=True in development environment
+        secure=False,
         samesite="lax",
+        path="/",  # Make cookie available for the entire site
     )
 
-    # Redirect to home page
-    return StarletteRedirectResponse(
-        url="/html/",
-        status_code=status.HTTP_303_SEE_OTHER,
-    )
+    logger.debug("Set cookie on response: session_token=%s", session.session_token)
+
+    # Return the redirect with the cookie
+    return redirect

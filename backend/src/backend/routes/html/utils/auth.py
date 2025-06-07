@@ -1,4 +1,5 @@
 # Standard library imports
+import logging
 from typing import Annotated
 
 # Third-party imports
@@ -16,17 +17,32 @@ from backend.db_functions.user_sessions.get_user_session_by_token import (
 from backend.db_functions.users.get_user_by_id import get_user_by_id
 from backend.routes.html.schemas.user import UserResponse
 
+# Configure logger
+logger = logging.getLogger(__name__)
+
 
 async def get_current_user_optional(
-    request: Request, session_token: Annotated[str | None, Cookie()] = None
+    request: Request,
+    session_token: Annotated[str | None, Cookie()] = None,
 ) -> UserResponse | None:
+    # Log session token status
+    logger.debug("Session token received: %s", session_token)
+
     if not session_token:
+        logger.debug("No session token in cookie")
         return None
 
     # Get user session
     user_session = await get_user_session_by_token(session_token)
     if not user_session:
+        logger.debug("No user session found for token: %s", session_token)
         return None
+
+    logger.debug(
+        "Found user session: %s for user: %s",
+        user_session.id,
+        user_session.user_id,
+    )
 
     # Get user by ID from the user_session
     user_schema = await get_user_by_id(user_session.user_id)

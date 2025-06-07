@@ -58,6 +58,14 @@ a:hover {
   text-decoration: underline;
 }
 
+a:visited {
+  color: #e6b800; /* Slightly darker yellow instead of purple */
+}
+
+a:visited:hover {
+  color: var(--soviet-red);
+}
+
 /* Layout */
 .container {
   width: 90%;
@@ -71,6 +79,19 @@ a:hover {
   background-color: var(--soviet-red);
   padding: 1rem 0;
   border-bottom: 5px solid var(--soviet-yellow);
+}
+
+.user-status {
+  background-color: var(--soviet-dark-red);
+  color: var(--soviet-white);
+  padding: 0.5rem 1rem;
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.user-status .user-name {
+  font-weight: bold;
+  color: var(--soviet-yellow);
 }
 
 .site-title {
@@ -88,6 +109,12 @@ a:hover {
 .main-nav {
   background-color: var(--soviet-gray);
   border-bottom: 3px solid var(--soviet-yellow);
+}
+
+.nav-item.active .nav-link {
+  background-color: var(--soviet-dark-red);
+  color: var(--soviet-yellow);
+  font-weight: bold;
 }
 
 .nav-list {

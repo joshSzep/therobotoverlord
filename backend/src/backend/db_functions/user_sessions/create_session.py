@@ -27,4 +27,7 @@ async def create_session(
         expires_at=now_utc() + timedelta(days=expires_in_days),
     )
 
+    # Explicitly fetch the user relationship before converting
+    await session.fetch_related("user")
+
     return await user_session_to_schema(session)

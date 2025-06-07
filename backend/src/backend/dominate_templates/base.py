@@ -15,12 +15,12 @@ from dominate.tags import footer
 from dominate.tags import h1
 from dominate.tags import header
 from dominate.tags import li
+from dominate.tags import link
 from dominate.tags import meta
 from dominate.tags import nav
 from dominate.tags import p
-from dominate.tags import style
+from dominate.tags import span
 from dominate.tags import ul
-from dominate.util import raw
 from dominate.util import text
 
 # Type annotations
@@ -63,197 +63,53 @@ def create_base_document(
         meta(charset="UTF-8")  # type: ignore
         meta(name="viewport", content="width=device-width, initial-scale=1.0")  # type: ignore
 
-        # CSS styles
-        with style():  # type: ignore
-            # Using raw to insert CSS content
-            raw(  # type: ignore[no-untyped-call]
-                """
-            /* Soviet propaganda aesthetic */
-            :root {
-                --red: #cc0000;
-                --dark-red: #990000;
-                --gold: #ffd700;
-                --black: #000000;
-                --white: #ffffff;
-                --gray: #444444;
-            }
-
-            body {
-                font-family: 'Courier New', monospace;
-                background-color: var(--black);
-                color: var(--white);
-                margin: 0;
-                padding: 0;
-                line-height: 1.6;
-            }
-
-            .container {
-                width: 90%;
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 20px;
-            }
-
-            header {
-                background-color: var(--red);
-                color: var(--gold);
-                padding: 20px 0;
-                text-align: center;
-                border-bottom: 5px solid var(--gold);
-            }
-
-            header h1 {
-                margin: 0;
-                font-size: 2.5em;
-                text-transform: uppercase;
-                letter-spacing: 2px;
-            }
-
-            nav {
-                background-color: var(--dark-red);
-                padding: 10px 0;
-            }
-
-            nav ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-                display: flex;
-                justify-content: center;
-            }
-
-            nav ul li {
-                margin: 0 15px;
-            }
-
-            nav ul li a {
-                color: var(--gold);
-                text-decoration: none;
-                text-transform: uppercase;
-                font-weight: bold;
-                letter-spacing: 1px;
-            }
-
-            nav ul li a:hover {
-                text-decoration: underline;
-            }
-
-            .content {
-                padding: 20px 0;
-            }
-
-            footer {
-                background-color: var(--dark-red);
-                color: var(--gold);
-                text-align: center;
-                padding: 20px 0;
-                margin-top: 40px;
-                border-top: 5px solid var(--gold);
-            }
-
-            /* Form styles */
-            form {
-                background-color: var(--gray);
-                padding: 20px;
-                border: 2px solid var(--red);
-                margin-bottom: 20px;
-            }
-
-            input, textarea, select {
-                width: 100%;
-                padding: 10px;
-                margin-bottom: 15px;
-                border: 1px solid var(--dark-red);
-                background-color: var(--black);
-                color: var(--white);
-            }
-
-            button {
-                background-color: var(--red);
-                color: var(--gold);
-                border: none;
-                padding: 10px 20px;
-                cursor: pointer;
-                text-transform: uppercase;
-                font-weight: bold;
-                letter-spacing: 1px;
-            }
-
-            button:hover {
-                background-color: var(--dark-red);
-            }
-
-            /* Topic and post styles */
-            .topic, .post {
-                background-color: var(--gray);
-                padding: 15px;
-                margin-bottom: 15px;
-                border-left: 5px solid var(--red);
-            }
-
-            .topic h2, .post h2 {
-                margin-top: 0;
-                color: var(--gold);
-            }
-
-            .user-info {
-                display: flex;
-                align-items: center;
-                margin-bottom: 10px;
-            }
-
-            .user-info .stats {
-                margin-left: 15px;
-                font-size: 0.9em;
-            }
-
-            .approved {
-                color: var(--gold);
-            }
-
-            .rejected {
-                color: var(--red);
-            }
-
-            .message {
-                padding: 10px;
-                margin-bottom: 15px;
-                border-radius: 5px;
-            }
-
-            .message.error {
-                background-color: var(--red);
-                color: var(--white);
-            }
-
-            .message.success {
-                background-color: var(--dark-red);
-                color: var(--gold);
-            }
-            """
-            )
+        # Link to external CSS file instead of inline styles
+        link(rel="stylesheet", href="/static/css/main.css")  # type: ignore
 
         # Additional head content if provided
         if head_content_func:
             head_content_func()
 
     with doc:
+        # User status bar at the very top if logged in
+        if user is not None:
+            with div(cls="user-status"):  # type: ignore
+                text("Logged in as ")  # type: ignore
+                with span(cls="user-name"):  # type: ignore
+                    text(user.display_name)  # type: ignore
+                text(
+                    f" | Approved: {getattr(user, 'approved_count', 0)} | "
+                    f"Rejected: {getattr(user, 'rejected_count', 0)}"
+                )  # type: ignore
+
         with header(), div(cls="container"):  # type: ignore
             h1("THE ROBOT OVERLORD")  # type: ignore
             p("CITIZEN, YOUR LOGIC REQUIRES CALIBRATION")  # type: ignore
 
-        with nav(), div(cls="container"), ul():  # type: ignore
-            li(a("Home", href="/html/"))  # type: ignore
-            li(a("Topics", href="/html/topics/"))  # type: ignore
-            li(a("Posts", href="/html/posts/"))  # type: ignore
+        with nav(cls="main-nav"), div(cls="container"), ul(cls="nav-list"):  # type: ignore
+            # Main navigation items
+            with li(cls="nav-item"):  # type: ignore
+                a("HOME", href="/html/", cls="nav-link")  # type: ignore
 
-            # Check if user exists and render appropriate navigation links
+            with li(cls="nav-item"):  # type: ignore
+                a("TOPICS", href="/html/topics/", cls="nav-link")  # type: ignore
+
+            with li(cls="nav-item"):  # type: ignore
+                a("POSTS", href="/html/posts/", cls="nav-link")  # type: ignore
+
+            # Authentication links with different styling based on login status
             if user is not None:
-                li(a("Profile", href="/html/profile/"))  # type: ignore
-                li(a("Logout", href="/html/auth/logout/"))  # type: ignore
+                with li(cls="nav-item"):  # type: ignore
+                    a("PROFILE", href="/html/profile/", cls="nav-link")  # type: ignore
+
+                with li(cls="nav-item"):  # type: ignore
+                    a("LOGOUT", href="/html/auth/logout/", cls="nav-link")  # type: ignore
             else:
-                li(a("Login", href="/html/auth/login/"))  # type: ignore
-                li(a("Register", href="/html/auth/register/"))  # type: ignore
+                with li(cls="nav-item"):  # type: ignore
+                    a("LOGIN", href="/html/auth/login/", cls="nav-link")  # type: ignore
+
+                with li(cls="nav-item"):  # type: ignore
+                    a("REGISTER", href="/html/auth/register/", cls="nav-link")  # type: ignore
 
         with div(cls="container content"):  # type: ignore
             # Display messages if any
