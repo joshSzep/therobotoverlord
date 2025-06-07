@@ -42,10 +42,10 @@ init_tortoise(app)
 app.mount("/static", StaticFiles(directory="src/backend/static"), name="static")
 
 
-# Root route redirect to HTML frontend
+# Root route redirect to HTML topics page
 @app.get("/")
 async def redirect_to_html() -> StarletteRedirectResponse:
-    return StarletteRedirectResponse(url="/html/")
+    return StarletteRedirectResponse(url="/html/topics/")
 
 
 # Include main router

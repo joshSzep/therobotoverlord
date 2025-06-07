@@ -6,22 +6,21 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import Request
 from fastapi import status
-from fastapi.responses import RedirectResponse
+from starlette.responses import RedirectResponse
 
 # Project-specific imports
 from backend.routes.html.schemas.user import UserResponse
-from backend.routes.html.utils.auth import get_current_user
+from backend.routes.html.utils.auth import get_current_user_optional
 
 router = APIRouter()
 
 
 @router.get("/", response_class=RedirectResponse)
-async def profile_page(
+async def root_redirect(
     request: Request,
-    current_user: Annotated[UserResponse, Depends(get_current_user)],
+    current_user: Annotated[UserResponse | None, Depends(get_current_user_optional)],
 ) -> RedirectResponse:
-    # Redirect to the user's profile page by UUID
-    return RedirectResponse(
-        url=f"/html/profile/{current_user.id}/",
-        status_code=status.HTTP_302_FOUND,
-    )
+    """
+    Root HTML route that redirects to the topics page.
+    """
+    return RedirectResponse(url="/html/topics/", status_code=status.HTTP_302_FOUND)

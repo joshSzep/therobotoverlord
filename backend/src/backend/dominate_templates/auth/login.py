@@ -3,7 +3,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Union
 
 # Third-party imports
 from dominate.tags import a
@@ -22,7 +21,7 @@ from backend.routes.html.schemas.user import UserResponse
 
 
 def create_login_page(
-    user: Optional[Union[UserResponse, Dict[str, Any]]] = None,
+    user: Optional[UserResponse] = None,
     messages: Optional[List[Dict[str, str]]] = None,
 ) -> Any:
     """

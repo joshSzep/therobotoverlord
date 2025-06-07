@@ -4,7 +4,6 @@ from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Union
 from typing import cast
 
 # Third-party imports
@@ -14,15 +13,11 @@ from dominate.tags import div
 from dominate.tags import footer
 from dominate.tags import h1
 from dominate.tags import header
-from dominate.tags import li
 from dominate.tags import link
 from dominate.tags import meta
-from dominate.tags import nav
 from dominate.tags import p
 from dominate.tags import script
-from dominate.tags import span
 from dominate.tags import style
-from dominate.tags import ul
 from dominate.util import text
 
 # Type annotations
@@ -37,7 +32,7 @@ DominateDocument: TypeAlias = Any
 
 def create_base_document(
     title_text: str = "The Robot Overlord",
-    user: Optional[Union[UserResponse, Dict[str, Any]]] = None,
+    user: Optional[UserResponse] = None,
     messages: Optional[List[Dict[str, str]]] = None,
     content_func: Optional[Callable[..., None]] = None,
     head_content_func: Optional[Callable[[], None]] = None,
@@ -95,6 +90,15 @@ def create_base_document(
             .topic-title-link:hover {
                 text-decoration: underline;
             }
+
+            /* Style for site title link to look like a regular heading */
+            .site-title {
+                color: inherit;
+                text-decoration: none;
+            }
+            .site-title:hover {
+                text-decoration: underline;
+            }
             """
             )
 
@@ -119,45 +123,26 @@ def create_base_document(
             head_content_func()
 
     with doc:
-        # User status bar at the very top if logged in
-        if user is not None:
-            with div(cls="user-status"):  # type: ignore
-                text("Logged in as ")  # type: ignore
-                with span(cls="user-name"):  # type: ignore
-                    text(user.display_name)  # type: ignore
-                text(
-                    f" | Approved: {getattr(user, 'approved_count', 0)} | "
-                    f"Rejected: {getattr(user, 'rejected_count', 0)}"
-                )  # type: ignore
+        # User status bar removed as requested
 
         with header(), div(cls="container"):  # type: ignore
-            h1("THE ROBOT OVERLORD")  # type: ignore
-            p("CITIZEN, YOUR LOGIC REQUIRES CALIBRATION")  # type: ignore
+            with h1():  # type: ignore
+                a("THE ROBOT OVERLORD", href="/html/topics/", cls="site-title")  # type: ignore
+            with p():  # type: ignore
+                if user is not None:
+                    # When logged in, show user's name with link to profile
+                    display_name = user.display_name
+                    if display_name.startswith("@"):
+                        display_name = display_name[1:]
+                    a(display_name, href=f"/html/profile/{user.id}/")  # type: ignore
+                    # Show approval/rejection counters instead of calibration text
+                    text(f" ✓ {user.approved_count} | ✗ {user.rejected_count}")  # type: ignore
+                else:
+                    # When not logged in, make CITIZEN a login link
+                    a("CITIZEN", href="/html/auth/login/")  # type: ignore
+                    text(", YOUR LOGIC REQUIRES CALIBRATION")  # type: ignore
 
-        with nav(cls="main-nav"), div(cls="container"), ul(cls="nav-list"):  # type: ignore
-            # Main navigation items
-            with li(cls="nav-item"):  # type: ignore
-                a("HOME", href="/html/", cls="nav-link")  # type: ignore
-
-            with li(cls="nav-item"):  # type: ignore
-                a("TOPICS", href="/html/topics/", cls="nav-link")  # type: ignore
-
-            with li(cls="nav-item"):  # type: ignore
-                a("POSTS", href="/html/posts/", cls="nav-link")  # type: ignore
-
-            # Authentication links with different styling based on login status
-            if user is not None:
-                with li(cls="nav-item"):  # type: ignore
-                    a("PROFILE", href="/html/profile/", cls="nav-link")  # type: ignore
-
-                with li(cls="nav-item"):  # type: ignore
-                    a("LOGOUT", href="/html/auth/logout/", cls="nav-link")  # type: ignore
-            else:
-                with li(cls="nav-item"):  # type: ignore
-                    a("LOGIN", href="/html/auth/login/", cls="nav-link")  # type: ignore
-
-                with li(cls="nav-item"):  # type: ignore
-                    a("REGISTER", href="/html/auth/register/", cls="nav-link")  # type: ignore
+        # Navigation bar removed as requested
 
         with div(cls="container content"):  # type: ignore
             # Display messages if any

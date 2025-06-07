@@ -24,17 +24,20 @@ from backend.schemas.topic import TopicResponse
 
 
 def create_profile_page(
-    user: UserResponse,
+    profile_user: UserResponse,
+    current_user: Optional[UserResponse] = None,
     user_posts: Optional[List[PostResponse]] = None,
     pending_posts: Optional[List[PostResponse]] = None,
     post_pagination: Optional[Dict[str, Any]] = None,
     topic_map: Optional[Dict[UUID, TopicResponse]] = None,
+    is_own_profile: bool = True,
 ) -> Any:
     """
     Create the profile page using Dominate.
 
     Args:
-        user: User schema object
+        profile_user: User schema object for the profile being viewed
+        current_user: Currently logged-in user schema object
         user_posts: List of user's approved post schema objects
         pending_posts: List of user's pending post schema objects
         post_pagination: Pagination information for user posts
@@ -45,7 +48,11 @@ def create_profile_page(
 
     def content_func() -> None:
         with div(cls="profile-container"):  # type: ignore
-            h1("CITIZEN PROFILE")  # type: ignore
+            # Use the user's display name in the heading when viewing own profile
+            if is_own_profile:
+                h1(f"{profile_user.display_name}'S PROFILE")  # type: ignore
+            else:
+                h1("CITIZEN PROFILE")  # type: ignore
 
             # Profile stats section
             with div(cls="profile-stats"):  # type: ignore
@@ -53,8 +60,8 @@ def create_profile_page(
                 with div(cls="stat-box"):  # type: ignore
                     h3("APPROVAL RATING")  # type: ignore
                     with div(cls="stats"):  # type: ignore
-                        approved_count = getattr(user, "approved_count", 0)
-                        rejected_count = getattr(user, "rejected_count", 0)
+                        approved_count = getattr(profile_user, "approved_count", 0)
+                        rejected_count = getattr(profile_user, "rejected_count", 0)
                         span(
                             f"✓ {approved_count}",
                             cls="approved",
@@ -69,17 +76,21 @@ def create_profile_page(
                     h3("CITIZEN DETAILS")  # type: ignore
                     with p():  # type: ignore
                         strong("Username: ")  # type: ignore
-                        username = getattr(user, "display_name", user.email)
+                        username = getattr(
+                            profile_user, "display_name", profile_user.email
+                        )
                         text(username)  # type: ignore
 
-                    with p():  # type: ignore
-                        strong("Email: ")  # type: ignore
-                        email = user.email
-                        text(email)  # type: ignore
+                    # Only show email if viewing own profile
+                    if is_own_profile:
+                        with p():  # type: ignore
+                            strong("Email: ")  # type: ignore
+                            email = profile_user.email
+                            text(email)  # type: ignore
 
                     with p():  # type: ignore
                         strong("Joined: ")  # type: ignore
-                        created_at = user.created_at
+                        created_at = profile_user.created_at
                         # Format the datetime to string to avoid TypeError
                         formatted_date = (
                             created_at.strftime("%Y-%m-%d %H:%M:%S")
@@ -88,11 +99,16 @@ def create_profile_page(
                         )
                         text(formatted_date)  # type: ignore
 
+                    # Add logout link only on own profile
+                    if is_own_profile:
+                        with p():  # type: ignore
+                            a("LOGOUT", href="/html/auth/logout/", cls="logout-link")  # type: ignore
+
             # Profile content section
             with div(cls="profile-content"):  # type: ignore
                 # User posts section
                 with div(cls="profile-posts"):  # type: ignore
-                    h2("YOUR POSTS")  # type: ignore
+                    h2("YOUR POSTS" if is_own_profile else "CITIZEN POSTS")  # type: ignore
 
                     if user_posts:
                         with div(cls="posts-list"):  # type: ignore
@@ -104,7 +120,7 @@ def create_profile_page(
                                     with div(cls="post-content"):  # type: ignore
                                         a(
                                             post_content,
-                                            href=f"/html/posts/{post.id}/",
+                                            href=f"/html/topics/{post.topic_id}/?highlight={post.id}",
                                             cls="post-link",
                                         )  # type: ignore
 
@@ -139,7 +155,7 @@ def create_profile_page(
                                     prev_page = post_pagination.get("previous_page", 1)
                                     a(
                                         "Previous",
-                                        href=f"/html/profile/?post_page={prev_page}",
+                                        href=f"/html/profile/{profile_user.id}/?post_page={prev_page}",
                                     )  # type: ignore
 
                                 current_page = post_pagination.get("current_page", 1)
@@ -153,16 +169,15 @@ def create_profile_page(
                                     next_page = post_pagination.get("next_page", 1)
                                     a(
                                         "Next",
-                                        href=f"/html/profile/?post_page={next_page}",
+                                        href=f"/html/profile/{profile_user.id}/?post_page={next_page}",
                                     )  # type: ignore
                     else:
                         p("YOU HAVE NOT SUBMITTED ANY POSTS")  # type: ignore
 
-                # Pending posts section
-                with div(cls="pending-posts"):  # type: ignore
-                    h2("PENDING SUBMISSIONS")  # type: ignore
-
-                    if pending_posts:
+                # Pending posts section - only show if viewing own profile
+                if is_own_profile and pending_posts:
+                    with div(cls="pending-posts"):  # type: ignore
+                        h2("PENDING SUBMISSIONS")  # type: ignore
                         with div(cls="posts-list"):  # type: ignore
                             for post in pending_posts:
                                 with div(cls="post pending"):  # type: ignore
@@ -172,7 +187,7 @@ def create_profile_page(
                                     with div(cls="post-content"):  # type: ignore
                                         a(
                                             post_content,
-                                            href=f"/html/posts/{post.id}/",
+                                            href=f"/html/topics/{post.topic_id}/?highlight={post.id}",
                                             cls="post-link",
                                         )  # type: ignore
 
@@ -193,10 +208,14 @@ def create_profile_page(
                                         span(
                                             "Status: PENDING", cls="post-status pending"
                                         )  # type: ignore
-                    else:
+                elif is_own_profile:
+                    with div(cls="pending-posts"):  # type: ignore
+                        h2("PENDING SUBMISSIONS")  # type: ignore
                         p("NO PENDING SUBMISSIONS")  # type: ignore
 
     # Create the base document with the content function
     return create_base_document(
-        title_text="Profile - The Robot Overlord", user=user, content_func=content_func
+        title_text="Profile - The Robot Overlord",
+        user=current_user,
+        content_func=content_func,
     )

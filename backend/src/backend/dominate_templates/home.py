@@ -90,7 +90,8 @@ def create_home_page(
                                 approved_count = getattr(author, "approved_count", 0)
                                 rejected_count = getattr(author, "rejected_count", 0)
 
-                                strong(username)  # type: ignore
+                                with strong():  # type: ignore
+                                    a(username, href=f"/html/profile/{author.id}/")  # type: ignore
                                 with div(cls="stats"):  # type: ignore
                                     span(
                                         f"✓ {approved_count}",

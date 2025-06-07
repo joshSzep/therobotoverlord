@@ -61,8 +61,9 @@ def create_post_detail_page(
                         # Access author directly from post schema
                         author = post.author
 
-                        # Display author name
-                        strong(author.display_name)  # type: ignore
+                        # Display author name as a deep link to profile
+                        with strong():  # type: ignore
+                            a(author.display_name, href=f"/html/profile/{author.id}/")  # type: ignore
 
                         # Handle stats
                         with div(cls="stats"):  # type: ignore
@@ -105,8 +106,10 @@ def create_post_detail_page(
                                 # Access author directly from reply schema
                                 author = reply.author
 
-                                # Display author name
-                                strong(author.display_name)  # type: ignore
+                                # Display author name as a deep link to profile
+                                with strong():  # type: ignore
+                                    href = f"/html/profile/{author.id}/"
+                                    a(author.display_name, href=href)  # type: ignore
 
                                 # Handle stats
                                 with div(cls="stats"):  # type: ignore

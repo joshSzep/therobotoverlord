@@ -44,8 +44,8 @@ def render_post(
         with div(cls="post-header"), div(cls="post-meta"):  # type: ignore
             # Author info
             a(
-                f"@{post.author.display_name}",
-                href=f"/html/users/{post.author.id}/profile/",
+                post.author.display_name,
+                href=f"/html/profile/{post.author.id}/",
                 cls="author-link",
             )  # type: ignore
 

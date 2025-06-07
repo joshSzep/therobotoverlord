@@ -3,7 +3,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Union
 
 # Third-party imports
 from dominate.tags import a
@@ -30,7 +29,7 @@ from backend.schemas.topic import TopicResponse
 def create_topics_list_page(
     topics: List[TopicResponse],
     pagination: Dict[str, Any],
-    user: Optional[Union[UserResponse, Dict[str, Any]]] = None,
+    user: Optional[UserResponse] = None,
     messages: Optional[List[Dict[str, str]]] = None,
 ) -> Any:
     """
