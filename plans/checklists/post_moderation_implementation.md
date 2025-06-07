@@ -7,16 +7,16 @@
   - [x] Add background task to trigger AI moderation after pending post creation
   - [x] Update reply creation to use pending posts system
 
-- [ ] **Enhance AI Moderation Service**
-  - [ ] Configure Anthropic Claude API integration
-  - [ ] Improve moderation prompts for better content analysis
-  - [ ] Add more sophisticated rejection criteria beyond simple keywords
-  - [ ] Implement confidence threshold settings for auto-approval/rejection
+- [x] **Enhance AI Moderation Service**
+  - [x] Configure Anthropic Claude API integration
+  - [x] Improve moderation prompts for better content analysis
+  - [x] Add more sophisticated rejection criteria beyond simple keywords
+  - [x] Implement confidence threshold settings for auto-approval/rejection
 
-- [ ] **User Stats Tracking**
-  - [ ] Update user approval counter when post is approved
-  - [ ] Update user rejection counter when post is rejected
-  - [ ] Create user event entries for post approvals and rejections
+- [x] **User Stats Tracking**
+  - [x] Update user approval counter when post is approved
+  - [x] Update user rejection counter when post is rejected
+  - [x] Create user event entries for post approvals and rejections
 
 ## API Routes
 

@@ -4,6 +4,9 @@ from uuid import UUID
 from backend.converters.rejected_post_to_schema import rejected_post_to_schema
 from backend.db.models.pending_post import PendingPost
 from backend.db.models.rejected_post import RejectedPost
+from backend.db_functions.user_stats.increment_user_rejection_count import (
+    increment_user_rejection_count,
+)
 from backend.schemas.rejected_post import RejectedPostResponse
 
 
@@ -30,6 +33,9 @@ async def reject_pending_post(
         parent_post_id=pending_post.parent_post_id,
         moderation_reason=moderation_reason,
     )
+
+    # Update user stats for post rejection
+    await increment_user_rejection_count(author.id, rejected_post.id)
 
     # Delete the pending post
     await pending_post.delete()
