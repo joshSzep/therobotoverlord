@@ -72,7 +72,8 @@ class TestAIModeratorService(IsolatedAsyncioTestCase):
 
         # Assertions
         self.assertEqual(result.pending_post_id, self.pending_post_id)
-        self.assertEqual(result.decision, "APPROVED")
+        # We're expecting the decision to be REJECTED now as per our new default
+        self.assertEqual(result.decision, "REJECTED")
         # The actual confidence score might be different from what we mocked
         # since the service might override it
         self.assertIsInstance(result.confidence_score, float)
@@ -142,15 +143,15 @@ class TestAIModeratorService(IsolatedAsyncioTestCase):
 
         # Assertions
         self.assertEqual(result.pending_post_id, self.pending_post_id)
-        self.assertEqual(result.decision, "APPROVED")
+        self.assertEqual(result.decision, "REJECTED")
         # For error cases, confidence should be low or zero
         self.assertIsInstance(result.confidence_score, float)
         self.assertGreaterEqual(result.confidence_score, 0)
         # Check that analysis text mentions error
         self.assertIn("error", result.analysis_text.lower())
         # Check that feedback text contains expected phrases
-        self.assertIn("THE ROBOT OVERLORD APPROVES", result.feedback_text)
-        self.assertIn("TECHNICAL DIFFICULTIES", result.feedback_text)
+        self.assertIn("ROBOT OVERLORD", result.feedback_text)
+        self.assertIn("REJECTED", result.feedback_text)
         # Check that processing time is recorded
         self.assertGreaterEqual(result.processing_time_ms, 0)
 

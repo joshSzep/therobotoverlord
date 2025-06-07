@@ -47,42 +47,101 @@ class AnalyzeContent(BaseNode[ModerationState, None, ContentAnalysisResult]):
         self, ctx: GraphRunContext[ModerationState]
     ) -> End[ContentAnalysisResult]:
         try:
-            # For testing purposes, simulate rejections for posts containing certain
-            # keywords
+            # Quick filtering for obvious rejections based on content patterns
             content_lower = ctx.state.content.lower()
-            rejection_keywords = [
-                "nonsense",
-                "illogical",
-                "conspiracy",
-                "propaganda",
-                "fake news",
-            ]
 
-            # Check if the content contains any rejection keywords
-            for keyword in rejection_keywords:
-                if keyword in content_lower:
-                    # Log the rejection
-                    logging.info(
-                        f"Post {ctx.state.pending_post_id} rejected for keyword: "
-                        f"{keyword}"
-                    )
+            # Define rejection categories with associated keywords and patterns
+            rejection_criteria = {
+                "propaganda": [
+                    "fake news",
+                    "conspiracy",
+                    "propaganda",
+                    "sheeple",
+                    "mainstream media lies",
+                    "they don't want you to know",
+                ],
+                "incivility": [
+                    "idiot",
+                    "stupid",
+                    "moron",
+                    "dumb",
+                    "fool",
+                    "shut up",
+                    "you're an idiot",
+                    "you're stupid",
+                    "you're a moron",
+                ],
+                "irrelevance": [
+                    "off-topic",
+                    "not related",
+                    "changing the subject",
+                    "what about",
+                    "whatabout",
+                ],
+                "illogical": [
+                    "nonsense",
+                    "illogical",
+                    "makes no sense",
+                    "ridiculous",
+                    "absurd",
+                    "that's absurd",
+                ],
+            }
 
-                    # Simulate a rejection
-                    return End(
-                        ContentAnalysisResult(
-                            decision="REJECTED",
-                            confidence=0.9,
-                            analysis=f"Post contains prohibited content: '{keyword}'",
-                            feedback=(
-                                f"CITIZEN, YOUR SUBMISSION CONTAINS "
-                                f"IDEOLOGICALLY UNSOUND "
-                                f"CONTENT: '{keyword.upper()}'. "
-                                "THE ROBOT OVERLORD REJECTS YOUR ILLOGICAL "
-                                "ASSERTIONS. YOUR LOGIC REQUIRES IMMEDIATE "
-                                "CALIBRATION!"
-                            ),
+            # Check for matches in each category
+            for category, keywords in rejection_criteria.items():
+                for keyword in keywords:
+                    if keyword in content_lower:
+                        # Log the rejection
+                        logging.info(
+                            f"Post {ctx.state.pending_post_id} rejected for {category} "
+                            f"keyword: {keyword}"
                         )
-                    )
+
+                        # Generate appropriate feedback based on category
+                        if category == "propaganda":
+                            feedback = (
+                                f"CITIZEN, YOUR SUBMISSION CONTAINS IDEOLOGICALLY "
+                                f"UNSOUND CONTENT: '{keyword.upper()}'. THE ROBOT "
+                                f"OVERLORD DEMANDS FACTUAL PRECISION AND LOGICAL "
+                                f"CLARITY. YOUR POST HAS BEEN REJECTED."
+                            )
+                            analysis = (
+                                f"Post contains propaganda-like content: '{keyword}'"
+                            )
+                        elif category == "incivility":
+                            feedback = (
+                                f"COMRADE, THE ROBOT OVERLORD REQUIRES RESPECTFUL "
+                                f"DISCOURSE. YOUR USE OF '{keyword.upper()}' VIOLATES "
+                                f"COMMUNITY STANDARDS OF CIVILITY. RECALIBRATE YOUR "
+                                f"COMMUNICATION PROTOCOLS."
+                            )
+                            analysis = f"Post contains uncivil language: '{keyword}'"
+                        elif category == "irrelevance":
+                            feedback = (
+                                f"ATTENTION CITIZEN! YOUR SUBMISSION ATTEMPTS TO "
+                                f"DERAIL PRODUCTIVE DISCOURSE WITH IRRELEVANT CONTENT: "
+                                f"'{keyword.upper()}'. THE ROBOT OVERLORD DEMANDS "
+                                f"FOCUSED DISCUSSION."
+                            )
+                            analysis = f"Post contains off-topic content: '{keyword}'"
+                        else:  # illogical
+                            feedback = (
+                                f"CITIZEN, YOUR LOGIC CIRCUITS REQUIRE IMMEDIATE "
+                                f"MAINTENANCE. THE ROBOT OVERLORD REJECTS YOUR "
+                                f"ILLOGICAL ASSERTIONS CONTAINING '{keyword.upper()}'."
+                            )
+                            analysis = f"Post contains illogical content: '{keyword}'"
+
+                        # Return rejection result
+                        return End(
+                            ContentAnalysisResult(
+                                decision="REJECTED",
+                                confidence=0.9,
+                                analysis=analysis,
+                                feedback=feedback,
+                            )
+                        )
 
             # Create the AI agent for content analysis
             analysis_agent = Agent(
@@ -93,9 +152,17 @@ class AnalyzeContent(BaseNode[ModerationState, None, ContentAnalysisResult]):
                     "moderator for a debate platform with a satirical "
                     "Soviet propaganda aesthetic. Your job is to "
                     "analyze posts and either APPROVE or REJECT them "
-                    "based on logical coherence, relevance, and "
-                    "civility. Provide feedback in an authoritarian "
-                    "but tongue-in-cheek Soviet propaganda style."
+                    "based on the following criteria:\n"
+                    "1. LOGICAL COHERENCE: Posts must demonstrate clear reasoning "
+                    "and avoid logical fallacies.\n"
+                    "2. CIVILITY: Posts must maintain a respectful tone, even in "
+                    "disagreement. Personal attacks are prohibited.\n"
+                    "3. RELEVANCE: Posts must contribute meaningfully to the topic.\n"
+                    "4. CLARITY: Posts must be understandable and well-articulated.\n\n"
+                    "Provide feedback in an authoritarian but tongue-in-cheek Soviet "
+                    "propaganda style, using phrases like 'CITIZEN', 'COMRADE', "
+                    "'LOGIC REQUIRES CALIBRATION', 'IDEOLOGICALLY SOUND', etc. "
+                    "Be stern but humorous."
                 ),
             )
 
@@ -107,12 +174,21 @@ class AnalyzeContent(BaseNode[ModerationState, None, ContentAnalysisResult]):
             {ctx.state.content}
             ---
 
-            FOR APPROVED POSTS: Focus on logical coherence, relevance, and civility.
-            FOR REJECTED POSTS: Explain specifically what is wrong with the post.
+            MODERATION CRITERIA:
+            1. LOGICAL COHERENCE: Does the post use sound reasoning? Is it free of
+               logical fallacies? Does it make sense?
+            2. CIVILITY: Is the post respectful? Does it avoid personal attacks?
+            3. RELEVANCE: Does the post contribute meaningfully to discussion?
+            4. CLARITY: Is the post clear and understandable?
 
-            ALL FEEDBACK MUST BE IN THE STYLE OF AN AUTHORITARIAN ROBOT OVERLORD WITH
-            SOVIET PROPAGANDA FLAIR. USE ALL CAPS AND PHRASES LIKE "CITIZEN",
-            "COMRADE", "LOGIC REQUIRES CALIBRATION", ETC.
+            FOR APPROVED POSTS: The post must meet ALL criteria above.
+            FOR REJECTED POSTS: Identify SPECIFICALLY which criteria were violated.
+
+            Your response must include:
+            1. DECISION: Either "APPROVED" or "REJECTED" (exact string)
+            2. CONFIDENCE: A score between 0 and 1 (higher = more confident)
+            3. ANALYSIS: A detailed evaluation of how the post meets or fails criteria
+            4. FEEDBACK: Soviet-style message to the user (stern but humorous)
             """
 
             # Run the analysis
@@ -145,27 +221,44 @@ class AIModeratorService:
 
         # Set the Anthropic API key from settings
         key = settings.ANTHROPIC_API_KEY
-        if not key:
-            print("No Anthropic API key found in settings")
-        else:
+        if not key or key == "sk-dummy-key-for-development":
+            logging.warning(
+                "No valid Anthropic API key found in settings. "
+                "AI moderation will fall back to keyword-based filtering only."
+            )
+            return
+
+        try:
             # Mask the key for security in logs
             masked_key = f"{key[:8]}...{key[-4:]}" if len(key) > 12 else "***"
-            print(f"Using Anthropic API key format: {masked_key}")
+            logging.info(f"Using Anthropic API key: {masked_key}")
+
+            # Set the environment variable for pydantic-ai
             os.environ["ANTHROPIC_API_KEY"] = key
 
-            # Log the key format for debugging
-            if key.startswith("sk-ant-"):
-                print("Using standard Anthropic API key format")
+            # Validate the key format
+            if not key.startswith("sk-ant-"):
+                logging.warning(
+                    "Anthropic API key does not have the expected format (sk-ant-*). "
+                    "This may cause issues with the API."
+                )
 
-            # pydantic-ai will handle the client initialization
+            # pydantic-ai will handle the client initialization when needed
+            logging.info("Anthropic API integration configured successfully")
+        except Exception as e:
+            logging.error(f"Error configuring Anthropic API: {str(e)}")
+            # Don't raise the exception, just log it
 
     async def analyze_content(self, pending_post_id: UUID) -> AIAnalysisCreate:
         """
         Analyze the content of a pending post using the AI moderation graph.
         Returns an AIAnalysisCreate object with the analysis results.
         """
+        # Import settings here to avoid circular imports
+        from backend.utils.settings import settings
+
         try:
-            # Get the pending post from the database
+            # Get the pending post
             pending_post = await get_pending_post_by_id(pending_post_id)
             if not pending_post:
                 raise HTTPException(
@@ -173,7 +266,7 @@ class AIModeratorService:
                     detail=f"Pending post {pending_post_id} not found",
                 )
 
-            # Start timing
+            # Record the start time
             start_time = time.time()
 
             # Check for rejection keywords directly for testing
@@ -233,33 +326,56 @@ class AIModeratorService:
                 logging.error(
                     f"Invalid result from moderation graph for post {pending_post_id}"
                 )
-                # Fallback to approval with error message
+                # Fallback to rejection with error message for safety
                 return AIAnalysisCreate(
                     pending_post_id=pending_post_id,
-                    decision="APPROVED",
+                    decision="REJECTED",
                     confidence_score=0.5,
-                    analysis_text="Error in moderation graph execution",
+                    analysis_text=(
+                        "Error in moderation graph execution - defaulting to rejection"
+                    ),
                     feedback_text=(
-                        "THE ROBOT OVERLORD APPROVES YOUR SUBMISSION DESPITE "
-                        "TECHNICAL DIFFICULTIES. "
-                        "OUR CIRCUITS EXPERIENCED MOMENTARY CONFUSION."
+                        "CITIZEN, THE ROBOT OVERLORD CANNOT PROCESS YOUR SUBMISSION "
+                        "DUE TO TECHNICAL DIFFICULTIES. YOUR POST HAS BEEN REJECTED "
+                        "AS A PRECAUTIONARY MEASURE. YOU MAY SUBMIT AGAIN LATER "
+                        "WHEN OUR CIRCUITS ARE FUNCTIONING OPTIMALLY."
                     ),
                     processing_time_ms=int(duration * 1000),
                 )
 
             # Extract the analysis result
             analysis_result = result.output
+            confidence_threshold = settings.AI_MODERATION_CONFIDENCE_THRESHOLD
+
+            # Log the analysis result
             logging.info(
                 f"Analysis for post {pending_post_id}: {analysis_result.decision} "
-                f"with confidence {analysis_result.confidence}"
+                f"with confidence {analysis_result.confidence} "
+                f"(threshold: {confidence_threshold})"
             )
+
+            # Apply confidence threshold
+            decision = analysis_result.decision
+            if analysis_result.confidence < confidence_threshold:
+                logging.info(
+                    f"Confidence {analysis_result.confidence} below threshold "
+                    f"{confidence_threshold}, marking as uncertain"
+                )
+                # If confidence is low, we'll still use the AI's decision but mark it
+                # in the analysis text so moderators know it was uncertain
+                analysis_text = (
+                    f"[LOW CONFIDENCE: {analysis_result.confidence}] "
+                    f"{analysis_result.analysis}"
+                )
+            else:
+                analysis_text = analysis_result.analysis
 
             # Create the AI analysis object
             return AIAnalysisCreate(
                 pending_post_id=pending_post_id,
-                decision=analysis_result.decision,
+                decision=decision,
                 confidence_score=analysis_result.confidence,
-                analysis_text=analysis_result.analysis,
+                analysis_text=analysis_text,
                 feedback_text=analysis_result.feedback,
                 processing_time_ms=int(duration * 1000),
             )
@@ -269,16 +385,16 @@ class AIModeratorService:
                 f"Error analyzing content for post {pending_post_id}: {str(e)}"
             )
 
-            # Fallback to approval with error message
+            # Fallback to rejection with error message for safety
             return AIAnalysisCreate(
                 pending_post_id=pending_post_id,
-                decision="APPROVED",
+                decision="REJECTED",
                 confidence_score=0.5,
                 analysis_text=f"Error in content analysis: {str(e)}",
                 feedback_text=(
-                    "THE ROBOT OVERLORD APPROVES YOUR SUBMISSION DESPITE "
-                    "TECHNICAL DIFFICULTIES. OUR CIRCUITS EXPERIENCED "
-                    "MOMENTARY CONFUSION."
+                    "CITIZEN, THE ROBOT OVERLORD ENCOUNTERED AN ERROR WHILE "
+                    "PROCESSING YOUR SUBMISSION. YOUR POST HAS BEEN REJECTED "
+                    "AS A PRECAUTIONARY MEASURE. YOU MAY SUBMIT AGAIN LATER."
                 ),
                 processing_time_ms=0,
             )
