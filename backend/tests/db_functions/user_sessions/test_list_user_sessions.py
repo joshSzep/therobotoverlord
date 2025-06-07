@@ -46,6 +46,7 @@ def mock_session_schemas(mock_user_sessions) -> List[UserSessionSchema]:
             expires_at=session.expires_at,
             is_active=session.is_active,
             created_at=session.created_at,
+            user_id=session.user_id,
         )
         schemas.append(schema)
 

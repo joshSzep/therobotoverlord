@@ -5,6 +5,7 @@ from backend.db_functions.posts.get_reply_count import get_reply_count
 from backend.db_functions.posts.is_user_post_author import is_user_post_author
 from backend.db_functions.posts.list_post_replies import list_post_replies
 from backend.db_functions.posts.list_posts import list_posts
+from backend.db_functions.posts.list_posts_by_topic import list_posts_by_topic
 from backend.db_functions.posts.update_post import update_post
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "is_user_post_author",
     "list_post_replies",
     "list_posts",
+    "list_posts_by_topic",
     "update_post",
 ]

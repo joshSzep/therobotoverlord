@@ -1,0 +1,86 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Profile - The Robot Overlord{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h1>CITIZEN PROFILE</h1>
+
+    <div class="profile-stats">
+        <div class="stat-box">
+            <h3>APPROVAL RATING</h3>
+            <div class="stats">
+                <span class="approved">✓ {{ user.approved_count }}</span>
+                <span class="rejected">✗ {{ user.rejected_count }}</span>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <h3>CITIZEN DETAILS</h3>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Joined:</strong> {{ user.created_at|datetime }}</p>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-posts">
+            <h2>YOUR POSTS</h2>
+
+            {% if user_posts %}
+                <div class="posts-list">
+                    {% for post in user_posts %}
+                        <div class="post">
+                            <h3><a href="/html/posts/{{ post.id }}/">{{ post.title }}</a></h3>
+                            <p>{{ post.content|truncate(100) }}</p>
+                            <div class="post-meta">
+                                <span>Topic: <a href="/html/topics/{{ post.topic.id }}/">{{ post.topic.title }}</a></span>
+                                <span>Posted: {{ post.created_at|datetime }}</span>
+                                <span class="post-status {{ post.status|lower }}">Status: {{ post.status }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if post_pagination %}
+                <div class="pagination">
+                    {% if post_pagination.has_previous %}
+                        <a href="/html/profile/?post_page={{ post_pagination.previous_page }}">Previous</a>
+                    {% endif %}
+
+                    <span>Page {{ post_pagination.current_page }} of {{ post_pagination.total_pages }}</span>
+
+                    {% if post_pagination.has_next %}
+                        <a href="/html/profile/?post_page={{ post_pagination.next_page }}">Next</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% else %}
+                <p>YOU HAVE NOT SUBMITTED ANY POSTS</p>
+            {% endif %}
+        </div>
+
+        <div class="pending-posts">
+            <h2>PENDING SUBMISSIONS</h2>
+
+            {% if pending_posts %}
+                <div class="posts-list">
+                    {% for post in pending_posts %}
+                        <div class="post pending">
+                            <h3>{{ post.title }}</h3>
+                            <p>{{ post.content|truncate(100) }}</p>
+                            <div class="post-meta">
+                                <span>Topic: <a href="/html/topics/{{ post.topic.id }}/">{{ post.topic.title }}</a></span>
+                                <span>Submitted: {{ post.created_at|datetime }}</span>
+                                <span class="post-status pending">Status: PENDING</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>NO PENDING SUBMISSIONS</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

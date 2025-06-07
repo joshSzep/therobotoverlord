@@ -37,3 +37,4 @@ class UserSessionSchema(BaseModel):
     expires_at: datetime
     is_active: bool
     created_at: datetime
+    user_id: uuid.UUID

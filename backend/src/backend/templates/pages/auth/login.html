@@ -1,0 +1,27 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Login - The Robot Overlord{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h1>CITIZEN IDENTIFICATION</h1>
+
+    <form action="/html/auth/login/" method="post" class="auth-form">
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <button type="submit">AUTHENTICATE</button>
+    </form>
+
+    <div class="auth-links">
+        <p>Not registered? <a href="/html/auth/register/">Register here</a></p>
+    </div>
+</div>
+{% endblock %}

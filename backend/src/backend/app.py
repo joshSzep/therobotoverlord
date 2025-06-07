@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 
 # Third-party imports
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import RedirectResponse as StarletteRedirectResponse
 
 # Project-specific imports
 from backend.db import init_tortoise
@@ -35,6 +37,16 @@ app = FastAPI(
 
 # Initialize database
 init_tortoise(app)
+
+# Set up static files
+app.mount("/static", StaticFiles(directory="src/backend/static"), name="static")
+
+
+# Root route redirect to HTML frontend
+@app.get("/")
+async def redirect_to_html() -> StarletteRedirectResponse:
+    return StarletteRedirectResponse(url="/html/")
+
 
 # Include main router
 app.include_router(router)

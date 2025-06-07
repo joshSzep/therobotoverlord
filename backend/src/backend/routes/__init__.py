@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from backend.routes.admin import router as admin_router
 from backend.routes.auth import router as auth_router
 from backend.routes.health import router as health_router
+from backend.routes.html import router as html_router
 from backend.routes.pending_posts import router as pending_posts_router
 from backend.routes.posts import router as posts_router
 from backend.routes.profile import router as profile_router
@@ -25,3 +26,6 @@ router.include_router(posts_router)
 router.include_router(pending_posts_router)
 router.include_router(user_stats_router)
 router.include_router(health_router)
+
+# Include HTML template-driven frontend router
+router.include_router(html_router)

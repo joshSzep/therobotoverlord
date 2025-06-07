@@ -12,6 +12,7 @@ from backend.db_functions.user_sessions.deactivate_all_user_sessions import (
     deactivate_all_user_sessions,
 )
 from backend.db_functions.user_sessions.deactivate_session import deactivate_session
+from backend.db_functions.user_sessions.delete_user_session import delete_user_session
 from backend.db_functions.user_sessions.get_session_by_token import get_session_by_token
 from backend.db_functions.user_sessions.list_user_sessions import list_user_sessions
 from backend.db_functions.user_sessions.validate_session import validate_session
@@ -21,6 +22,7 @@ __all__ = [
     "create_session",
     "deactivate_all_user_sessions",
     "deactivate_session",
+    "delete_user_session",
     "get_session_by_token",
     "list_user_sessions",
     "validate_session",

@@ -45,6 +45,7 @@ def mock_session_schema(mock_user_session) -> UserSessionSchema:
         is_active=mock_user_session.is_active,
         expires_at=mock_user_session.expires_at,
         created_at=mock_user_session.created_at,
+        user_id=mock_user_session.user_id,
     )
 
 

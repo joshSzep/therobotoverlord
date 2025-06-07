@@ -1,0 +1,340 @@
+/* The Robot Overlord - Soviet Propaganda Aesthetic */
+
+:root {
+  --soviet-red: #cc0000;
+  --soviet-dark-red: #990000;
+  --soviet-yellow: #ffcc00;
+  --soviet-black: #1a1a1a;
+  --soviet-gray: #333333;
+  --soviet-light-gray: #cccccc;
+  --soviet-white: #f5f5f5;
+  --font-propaganda: 'Impact', 'Arial Black', sans-serif;
+  --font-body: 'Roboto Condensed', 'Arial', sans-serif;
+}
+
+/* Base styles */
+body {
+  font-family: var(--font-body);
+  background-color: var(--soviet-black);
+  color: var(--soviet-white);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-propaganda);
+  text-transform: uppercase;
+  color: var(--soviet-red);
+  margin-top: 0;
+  letter-spacing: 0.05em;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: 2rem;
+  margin-bottom: 0.8rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Links */
+a {
+  color: var(--soviet-yellow);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--soviet-red);
+  text-decoration: underline;
+}
+
+/* Layout */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Header */
+.site-header {
+  background-color: var(--soviet-red);
+  padding: 1rem 0;
+  border-bottom: 5px solid var(--soviet-yellow);
+}
+
+.site-title {
+  font-family: var(--font-propaganda);
+  font-size: 2.5rem;
+  color: var(--soviet-white);
+  margin: 0;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 3px 3px 0 var(--soviet-black);
+}
+
+/* Navigation */
+.main-nav {
+  background-color: var(--soviet-gray);
+  border-bottom: 3px solid var(--soviet-yellow);
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-item {
+  margin: 0 1rem;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.8rem 1rem;
+  color: var(--soviet-white);
+  font-family: var(--font-propaganda);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--soviet-yellow);
+  text-decoration: none;
+}
+
+/* Content */
+.content {
+  padding: 2rem 0;
+}
+
+/* Cards */
+.card {
+  background-color: var(--soviet-gray);
+  border: 2px solid var(--soviet-red);
+  border-radius: 0;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.card-header {
+  background-color: var(--soviet-red);
+  padding: 0.8rem 1rem;
+  border-bottom: 2px solid var(--soviet-yellow);
+}
+
+.card-title {
+  margin: 0;
+  color: var(--soviet-white);
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: var(--soviet-light-gray);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.8rem;
+  border: 2px solid var(--soviet-red);
+  background-color: var(--soviet-black);
+  color: var(--soviet-white);
+  font-family: var(--font-body);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--soviet-yellow);
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.8rem 1.5rem;
+  font-family: var(--font-propaganda);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--soviet-red);
+  color: var(--soviet-white);
+  border: 2px solid var(--soviet-yellow);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  background-color: var(--soviet-dark-red);
+  color: var(--soviet-yellow);
+}
+
+/* Posts */
+.post {
+  margin-bottom: 2rem;
+  border-left: 4px solid var(--soviet-red);
+  padding-left: 1rem;
+}
+
+.post-header {
+  margin-bottom: 0.5rem;
+}
+
+.post-title {
+  margin: 0;
+}
+
+.post-meta {
+  color: var(--soviet-light-gray);
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+.post-content {
+  margin-top: 1rem;
+}
+
+/* Topics */
+.topic {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: var(--soviet-gray);
+  border-left: 4px solid var(--soviet-yellow);
+}
+
+.topic-title {
+  margin: 0;
+  flex-grow: 1;
+}
+
+.topic-stats {
+  text-align: right;
+  color: var(--soviet-light-gray);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.page-item {
+  margin: 0 0.3rem;
+}
+
+.page-link {
+  display: block;
+  padding: 0.5rem 1rem;
+  background-color: var(--soviet-gray);
+  border: 1px solid var(--soviet-red);
+  color: var(--soviet-white);
+}
+
+.page-link:hover {
+  background-color: var(--soviet-red);
+  color: var(--soviet-white);
+  text-decoration: none;
+}
+
+.page-item.active .page-link {
+  background-color: var(--soviet-red);
+  color: var(--soviet-white);
+  border-color: var(--soviet-yellow);
+}
+
+/* Footer */
+.site-footer {
+  background-color: var(--soviet-gray);
+  color: var(--soviet-light-gray);
+  padding: 2rem 0;
+  text-align: center;
+  border-top: 5px solid var(--soviet-red);
+}
+
+/* User stats */
+.user-stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.stat-item {
+  padding: 1rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-family: var(--font-propaganda);
+  color: var(--soviet-yellow);
+}
+
+.stat-label {
+  color: var(--soviet-light-gray);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+/* Alerts */
+.alert {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 2px solid transparent;
+}
+
+.alert-success {
+  background-color: #1a4731;
+  border-color: #2e8b57;
+  color: #d4edda;
+}
+
+.alert-danger {
+  background-color: var(--soviet-dark-red);
+  border-color: var(--soviet-red);
+  color: var(--soviet-white);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-list {
+    flex-direction: column;
+  }
+
+  .nav-item {
+    margin: 0;
+    border-bottom: 1px solid var(--soviet-dark-red);
+  }
+
+  .user-stats {
+    flex-direction: column;
+  }
+
+  .stat-item {
+    margin-bottom: 1rem;
+  }
+}
