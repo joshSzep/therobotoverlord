@@ -22,6 +22,6 @@ async def user_schema_to_response(
         is_locked=user_schema.is_locked,
         created_at=user_schema.created_at,
         updated_at=user_schema.updated_at,
-        approved_count=0,  # These would need to be populated from elsewhere
-        rejected_count=0,
+        approved_count=user_schema.approved_count,
+        rejected_count=user_schema.rejected_count,
     )

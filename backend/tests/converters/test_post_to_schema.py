@@ -65,8 +65,8 @@ async def test_post_to_schema(mock_post) -> None:
     mock_post.fetch_related.assert_any_call("author", "topic")
     mock_post.fetch_related.assert_any_call("parent_post")
 
-    # Verify Post.filter was called with correct parameters
-    Post.filter.assert_called_once_with(parent_post_id=mock_post.id)  # type: ignore[reportFunctionMemberAccess]
+    # Verify Post.filter was called with correct parameters for reply count
+    Post.filter.assert_any_call(parent_post_id=mock_post.id)  # type: ignore[reportFunctionMemberAccess]
 
     # Verify the schema has the correct values
     assert isinstance(schema, PostResponse)
@@ -140,8 +140,8 @@ async def test_post_to_schema_with_parent(mock_post_with_parent) -> None:
     mock_post_with_parent.fetch_related.assert_any_call("author", "topic")
     mock_post_with_parent.fetch_related.assert_any_call("parent_post")
 
-    # Verify Post.filter was called with correct parameters
-    Post.filter.assert_called_once_with(parent_post_id=mock_post_with_parent.id)  # type: ignore[reportFunctionMemberAccess]
+    # Verify Post.filter was called with correct parameters for reply count
+    Post.filter.assert_any_call(parent_post_id=mock_post_with_parent.id)  # type: ignore[reportFunctionMemberAccess]
 
     # Verify the schema has the correct values
     assert isinstance(schema, PostResponse)

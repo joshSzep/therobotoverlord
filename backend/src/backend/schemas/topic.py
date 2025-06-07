@@ -34,6 +34,7 @@ class TopicResponse(TopicBase):
     created_at: datetime
     updated_at: datetime
     tags: List[TagResponse] = Field(default_factory=list)
+    post_count: int = 0
 
 
 class TopicList(BaseModel):

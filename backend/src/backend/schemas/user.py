@@ -16,6 +16,8 @@ class UserSchema(BaseModel):
     is_locked: bool = False
     created_at: datetime
     updated_at: datetime
+    approved_count: int = 0
+    rejected_count: int = 0
 
 
 class UserCreateSchema(BaseModel):
