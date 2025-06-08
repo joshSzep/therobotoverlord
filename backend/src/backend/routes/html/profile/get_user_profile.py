@@ -1,4 +1,5 @@
 # Standard library imports
+import logging
 from typing import Annotated
 from typing import Any
 from typing import List
@@ -27,6 +28,9 @@ from backend.routes.html.schemas.user import UserResponse
 from backend.routes.html.utils.auth import get_current_user_optional
 from backend.schemas.pending_post import PendingPostResponse
 from backend.schemas.post import PostResponse
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -112,7 +116,9 @@ async def get_user_profile(
     # Get user's pending posts (only if viewing own profile)
     pending_posts = []
     if current_user and current_user.id == user_id:
-        pending_posts = await list_pending_posts_by_user(user_id, limit=5)
+        # Increase limit to make sure we get all pending posts
+        pending_posts = await list_pending_posts_by_user(user_id, limit=20)
+        logger.info(f"Found {len(pending_posts)} pending posts for user {user_id}")
 
     # Fetch topic information for all posts
     # We need to handle both PostResponse and PendingPostResponse types
@@ -131,6 +137,9 @@ async def get_user_profile(
         converted_pending_posts = [
             convert_pending_to_post_response(p) for p in pending_posts
         ]
+        logger.info(
+            f"Converted {len(converted_pending_posts)} pending posts to PostResponse"
+        )
 
     # Create the profile page using Dominate
     doc = create_profile_page(

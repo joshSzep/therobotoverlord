@@ -10,6 +10,9 @@ from backend.routes.html.pending_posts.list_pending_posts import (
 from backend.routes.html.pending_posts.moderate_pending_post import (
     router as moderate_pending_post_router,
 )
+from backend.routes.html.pending_posts.trigger_ai_moderation import (
+    router as trigger_ai_moderation_router,
+)
 
 # Create main router for the pending posts module
 router = APIRouter(
@@ -21,6 +24,7 @@ router = APIRouter(
 router.include_router(list_pending_posts_router)
 router.include_router(get_pending_post_router)
 router.include_router(moderate_pending_post_router)
+router.include_router(trigger_ai_moderation_router)
 
 # Export public API
 __all__ = [

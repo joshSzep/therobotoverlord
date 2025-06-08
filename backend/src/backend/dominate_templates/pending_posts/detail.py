@@ -165,6 +165,26 @@ def create_pending_post_detail_page(
                                 cls="reject-button soviet-button",
                             )  # type: ignore
 
+                    # AI Moderation trigger button with Soviet styling
+                    if is_admin:  # Only show for admins
+                        with div(cls="moderation-action ai-moderation-action"):  # type: ignore
+                            # Helper function to generate AI moderation URL
+                            def get_ai_moderation_url(post_id: str) -> str:
+                                base_url = "/html/pending-posts/"
+                                return f"{base_url}{post_id}/trigger-ai-moderation/"
+
+                            form_attrs = {
+                                "action": get_ai_moderation_url(str(pending_post.id)),
+                                "method": "post",
+                                "cls": "soviet-form",
+                            }
+                            with form(**form_attrs):  # type: ignore
+                                button(
+                                    "TRIGGER AI MODERATION",
+                                    type="submit",
+                                    cls="ai-moderation-button soviet-button",
+                                )  # type: ignore
+
         # Back to list link
         with div(cls="back-link"):  # type: ignore
             a("← Back to Pending Posts", href="/html/pending-posts/")  # type: ignore

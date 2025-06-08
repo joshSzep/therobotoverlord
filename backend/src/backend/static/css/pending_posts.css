@@ -34,3 +34,50 @@
 .pending-posts {
   margin-bottom: 30px;
 }
+
+/* AI Moderation button styling */
+.ai-moderation-action {
+  margin-top: 10px;
+}
+
+.ai-moderation-controls {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: block;
+  text-align: center;
+}
+
+.ai-moderation-button {
+  background-color: #0056b3 !important;
+  border: 3px solid #003366 !important;
+  color: white !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  padding: 10px 20px !important;
+  cursor: pointer !important;
+  transition: all 0.3s !important;
+  display: block !important;
+  width: 100% !important;
+  margin: 5px auto !important;
+  font-size: 1.2em !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+  letter-spacing: 1px !important;
+}
+
+.ai-moderation-button:hover {
+  background-color: #003d7a !important;
+  border-color: #002244 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Make the button stand out with a pulsing animation */
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(0, 86, 179, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 86, 179, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 86, 179, 0); }
+}
+
+.ai-moderation-button {
+  animation: pulse-border 2s infinite;
+}

@@ -252,6 +252,24 @@ async def get_topic_page(
 
     # Only perform redirection if the highlighted post doesn't exist or isn't visible
     # to the user
+    # Check for redirect_count to prevent infinite loops
+    redirect_count_str = request.query_params.get("redirect_count", "0")
+    try:
+        redirect_count = int(redirect_count_str)
+    except ValueError:
+        redirect_count = 0
+
+    # If we've redirected too many times, just show the topic page without a highlight
+    if redirect_count >= 3:
+        logger.warning(
+            f"Too many redirects for highlight {highlight_uuid}, "
+            "showing topic page without highlight"
+        )
+        return RedirectResponse(
+            f"/html/topics/{topic_id}/",
+            status_code=302,
+        )
+
     if highlight_uuid and not highlight_exists:
         # Try to find the approved post using our user event tracking system
         approved_post = await find_post_from_pending_post(highlight_uuid)
@@ -262,8 +280,13 @@ async def get_topic_page(
                 f"Found approved post {approved_post.id} that replaced "
                 f"pending post {highlight_uuid} via event tracking"
             )
+            redirect_url = (
+                f"/html/topics/{topic_id}/"
+                f"?highlight={str(approved_post.id)}"
+                f"&redirect_count={str(redirect_count + 1)}"
+            )
             return RedirectResponse(
-                f"/html/topics/{topic_id}/?highlight={str(approved_post.id)}",
+                redirect_url,
                 status_code=302,
             )
         else:
@@ -292,10 +315,26 @@ async def get_topic_page(
                             f"Found approved post {post_response.id} that may replace "
                             f"pending post {highlight_uuid} via heuristic"
                         )
+                        redirect_url = (
+                            f"/html/topics/{topic_id}/"
+                            f"?highlight={str(post_response.id)}"
+                            f"&redirect_count={str(redirect_count + 1)}"
+                        )
                         return RedirectResponse(
-                            f"/html/topics/{topic_id}/?highlight={str(post_response.id)}",
+                            redirect_url,
                             status_code=302,
                         )
+
+    # Check and log admin status if user is logged in
+    is_admin = False
+    if current_user:
+        from backend.utils.role_check import check_is_admin
+
+        is_admin = await check_is_admin(current_user.id)
+        logger.info(
+            f"User {current_user.display_name} (ID: {current_user.id}) "
+            f"admin status: {is_admin}"
+        )
 
     # Create the topic detail page using Dominate
     doc = create_topic_detail_page(
@@ -307,6 +346,7 @@ async def get_topic_page(
         current_page=page,
         current_user=current_user,
         highlight_post_id=highlight,
+        is_admin=is_admin,  # Explicitly pass the admin status
     )
 
     # Return the rendered HTML

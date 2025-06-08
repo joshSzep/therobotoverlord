@@ -38,6 +38,24 @@ def render_post(
     is_admin: bool = False,
 ) -> None:
     """Recursively render a post and its replies."""
+    # Add logging for debugging admin status
+    import logging
+
+    logger = logging.getLogger("backend")
+
+    # Log the current admin status and user information
+    user_name = current_user.display_name if current_user else None
+    logger.info(
+        f"Rendering post {post.id}, is_admin={is_admin}, current_user={user_name}"
+    )
+
+    # Log additional user details if available
+    if current_user:
+        logger.info(
+            f"Current user ID: {current_user.id}, "
+            f"display name: {current_user.display_name}"
+        )
+
     # Add highlight class if this post is the one to highlight
     post_classes = f"post-container indent-level-{indent_level}"
     if highlight_post_id and str(post.id) == highlight_post_id:
@@ -114,6 +132,28 @@ def render_post(
                                     cls="rejection-reason",
                                 )  # type: ignore
                                 button("REJECT", type="submit", cls="reject-button")  # type: ignore
+
+                        # Debug info about admin status (will be removed in production)
+                        with div(cls="debug-info"):  # type: ignore
+                            span(
+                                f"DEBUG - is_admin: {is_admin}",
+                                style="color: red; font-weight: bold;",
+                            )  # type: ignore
+
+                        # AI Moderation button in its own div (only for admins)
+                        if is_admin:
+                            with (
+                                div(cls="ai-moderation-controls"),  # type: ignore
+                                form(  # type: ignore
+                                    action=f"/html/pending-posts/{post.id}/trigger-ai-moderation/",
+                                    method="post",
+                                ),
+                            ):
+                                button(
+                                    "⚙️ TRIGGER AI MODERATION ⚙️",
+                                    type="submit",
+                                    cls="ai-moderation-button",
+                                )  # type: ignore
 
             # Use different styling for pending posts
             content_class = (

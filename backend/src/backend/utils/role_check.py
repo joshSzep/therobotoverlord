@@ -60,7 +60,18 @@ async def check_is_admin(user_id: UUID) -> bool:
     Returns:
         bool: True if the user is an admin, False otherwise
     """
+    import logging
+
+    logger = logging.getLogger("backend")
+
     user = await User.get_or_none(id=user_id)
     if not user:
+        logger.warning(f"User with ID {user_id} not found when checking admin status")
         return False
-    return user.role == UserRole.ADMIN
+
+    is_admin = user.role == UserRole.ADMIN
+    logger.info(
+        f"User {user.display_name} (ID: {user_id}) "
+        f"admin status: {is_admin}, role: {user.role}"
+    )
+    return is_admin

@@ -1,6 +1,7 @@
 from backend.db.models.ai_analysis import AIAnalysis
 from backend.db.models.pending_post import PendingPost
 from backend.db.models.post import Post
+from backend.db.models.rejected_post import RejectedPost
 from backend.db.models.tag import Tag
 from backend.db.models.topic import Topic
 from backend.db.models.topic_tag import TopicTag
@@ -19,6 +20,7 @@ models = [
     TopicTag,
     Post,
     PendingPost,
+    RejectedPost,
     AIAnalysis,
 ]
 
@@ -32,5 +34,6 @@ __all__ = [
     "TopicTag",
     "Post",
     "PendingPost",
+    "RejectedPost",
     "AIAnalysis",
 ]

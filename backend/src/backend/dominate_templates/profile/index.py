@@ -186,43 +186,89 @@ def create_profile_page(
                         p("YOU HAVE NOT SUBMITTED ANY POSTS")  # type: ignore
 
                 # Pending posts section - only show if viewing own profile
-                if is_own_profile and pending_posts:
+                if is_own_profile:
                     with div(cls="pending-posts"):  # type: ignore
                         h2("PENDING SUBMISSIONS")  # type: ignore
-                        with div(cls="posts-list"):  # type: ignore
-                            for post in pending_posts:
-                                with div(cls="post pending"):  # type: ignore
-                                    # Display the full post content as a link
-                                    post_content = getattr(post, "content", "")
 
-                                    with div(cls="post-content"):  # type: ignore
-                                        a(
-                                            post_content,
-                                            href=f"/html/topics/{post.topic_id}/?highlight={post.id}",
-                                            cls="post-link",
-                                        )  # type: ignore
+                        # First check if we have dedicated pending_posts
+                        if pending_posts:
+                            with div(cls="posts-list"):  # type: ignore
+                                for post in pending_posts:
+                                    with div(cls="post pending"):  # type: ignore
+                                        # Display the full post content as a link
+                                        post_content = getattr(post, "content", "")
 
-                                    with div(cls="post-meta"):  # type: ignore
-                                        with span():  # type: ignore
-                                            text("Topic: ")  # type: ignore
-                                            topic_id = post.topic_id
-                                            topic_title = "View Topic"
-
+                                        with div(cls="post-content"):  # type: ignore
                                             a(
-                                                topic_title,
-                                                href=f"/html/topics/{topic_id}/",
+                                                post_content,
+                                                href=f"/html/topics/{post.topic_id}/?highlight={post.id}",
+                                                cls="post-link",
                                             )  # type: ignore
 
-                                        # Get created_at from schema
-                                        post_created_at = post.created_at
-                                        span(f"Submitted: {post_created_at}")  # type: ignore
-                                        span(
-                                            "Status: PENDING", cls="post-status pending"
-                                        )  # type: ignore
-                elif is_own_profile:
-                    with div(cls="pending-posts"):  # type: ignore
-                        h2("PENDING SUBMISSIONS")  # type: ignore
-                        p("NO PENDING SUBMISSIONS")  # type: ignore
+                                        with div(cls="post-meta"):  # type: ignore
+                                            with span():  # type: ignore
+                                                text("Topic: ")  # type: ignore
+                                                topic_id = post.topic_id
+                                                topic_title = "View Topic"
+
+                                                a(
+                                                    topic_title,
+                                                    href=f"/html/topics/{topic_id}/",
+                                                )  # type: ignore
+
+                                            # Get created_at from schema
+                                            post_created_at = post.created_at
+                                            span(f"Submitted: {post_created_at}")  # type: ignore
+                                            span(
+                                                "Status: PENDING",
+                                                cls="post-status pending",
+                                            )  # type: ignore
+                        # If no dedicated pending_posts, look for pending posts
+                        # in user_posts
+                        elif user_posts:
+                            pending_found = False
+                            with div(cls="posts-list"):  # type: ignore
+                                for post in user_posts:
+                                    # Check if this post has PENDING status
+                                    post_status = getattr(post, "status", "")
+                                    if post_status == "PENDING":
+                                        pending_found = True
+                                        with div(cls="post pending"):  # type: ignore
+                                            # Display the full post content as a link
+                                            post_content = getattr(post, "content", "")
+
+                                            with div(cls="post-content"):  # type: ignore
+                                                a(
+                                                    post_content,
+                                                    href=(
+                                                        f"/html/topics/{post.topic_id}/"
+                                                        f"?highlight={post.id}"
+                                                    ),
+                                                    cls="post-link",
+                                                )  # type: ignore
+
+                                            with div(cls="post-meta"):  # type: ignore
+                                                with span():  # type: ignore
+                                                    text("Topic: ")  # type: ignore
+                                                    topic_id = post.topic_id
+                                                    topic_title = "View Topic"
+
+                                                    a(
+                                                        topic_title,
+                                                        href=f"/html/topics/{topic_id}/",
+                                                    )  # type: ignore
+
+                                                # Get created_at from schema
+                                                post_created_at = post.created_at
+                                                span(f"Submitted: {post_created_at}")  # type: ignore
+                                                span(
+                                                    "Status: PENDING",
+                                                    cls="post-status pending",
+                                                )  # type: ignore
+                            if not pending_found:
+                                p("NO PENDING SUBMISSIONS")  # type: ignore
+                        else:
+                            p("NO PENDING SUBMISSIONS")  # type: ignore
 
     # Create the base document with the content function
     return create_base_document(
