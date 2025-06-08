@@ -40,9 +40,8 @@ async def create_post_action(
     # Schedule the post for moderation
     await schedule_post_moderation(new_pending_post.id)
 
-    # Redirect to the topic detail page with a message
-    message = "Your post has been submitted for moderation"
-    redirect_url = f"/html/topics/{topic_id}/?message={message}"
+    # Redirect to the topic detail page and highlight the new post
+    redirect_url = f"/html/topics/{topic_id}/?highlight={new_pending_post.id}"
     return StarletteRedirectResponse(
         url=redirect_url,
         status_code=status.HTTP_303_SEE_OTHER,
@@ -71,9 +70,8 @@ async def create_reply_action(
     # Schedule the post for moderation
     await schedule_post_moderation(new_pending_post.id)
 
-    # Redirect to the topic page with a message
-    message = "Your reply has been submitted for moderation"
-    redirect_url = f"/html/topics/{topic_id}/?message={message}"
+    # Redirect to the topic page and highlight the new reply
+    redirect_url = f"/html/topics/{topic_id}/?highlight={new_pending_post.id}"
     return StarletteRedirectResponse(
         url=redirect_url,
         status_code=status.HTTP_303_SEE_OTHER,

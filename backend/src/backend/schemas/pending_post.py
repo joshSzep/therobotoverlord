@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from typing import List
 from typing import Optional
 from uuid import UUID
@@ -24,6 +25,11 @@ class PendingPostResponse(PendingPostBase):
     parent_post_id: Optional[UUID] = None
     created_at: datetime
     updated_at: datetime
+    title: Optional[str] = None
+    ai_moderation_status: Optional[str] = None
+    ai_feedback: Optional[str] = None
+    topic: Optional[dict[str, Any]] = None
+    user: Optional[UserSchema] = None
 
 
 class PendingPostList(BaseModel):

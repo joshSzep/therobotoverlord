@@ -1,10 +1,9 @@
 from fastapi import APIRouter
 
-from backend.routes.admin.create_admin_user import router as create_admin_user_router
+from backend.routes.admin.moderation import router as moderation_router
 
-router = APIRouter(
-    prefix="/admin",
-    tags=["admin"],
+router = APIRouter()
+
+router.include_router(
+    moderation_router, prefix="/moderation", tags=["admin", "moderation"]
 )
-
-router.include_router(create_admin_user_router)

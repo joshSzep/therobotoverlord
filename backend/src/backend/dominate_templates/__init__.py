@@ -1,9 +1,20 @@
 # Export the main template functions for easy importing
+
 # Auth templates
 from backend.dominate_templates.auth.login import create_login_page
 from backend.dominate_templates.auth.register import create_register_page
+
+# Base template
 from backend.dominate_templates.base import create_base_document
+
+# Home template
 from backend.dominate_templates.home import create_home_page
+
+# Pending posts templates
+from backend.dominate_templates.pending_posts.detail import (
+    create_pending_post_detail_page,
+)
+from backend.dominate_templates.pending_posts.list import create_pending_posts_list_page
 
 # Posts templates
 from backend.dominate_templates.posts.detail import create_post_detail_page
@@ -21,6 +32,8 @@ __all__ = [
     "create_home_page",
     "create_login_page",
     "create_register_page",
+    "create_pending_posts_list_page",
+    "create_pending_post_detail_page",
     "create_post_detail_page",
     "create_topic_detail_page",
     "create_topics_list_page",

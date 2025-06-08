@@ -23,6 +23,12 @@ class UserEventSchema(BaseModel):
     updated_at: datetime
 
 
+class UserEventResponse(UserEventSchema):
+    # This class inherits all fields from UserEventSchema
+    # We can override or add specific fields as needed
+    pass
+
+
 class UserEventListSchema(BaseModel):
     user_events: List[UserEventSchema]
     count: int

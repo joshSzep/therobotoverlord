@@ -6,7 +6,7 @@ from uuid import UUID
 # Project-specific imports
 from backend.converters import user_event_to_schema
 from backend.db.models.user_event import UserEvent
-from backend.schemas.user_event import UserEventSchema
+from backend.schemas.user_event import UserEventResponse
 
 
 async def create_event(
@@ -17,7 +17,7 @@ async def create_event(
     resource_type: Optional[str] = None,
     resource_id: Optional[UUID] = None,
     metadata: Optional[dict[str, Any]] = None,
-) -> UserEventSchema:
+) -> UserEventResponse:
     event = await UserEvent.create(
         user_id=user_id,
         event_type=event_type,

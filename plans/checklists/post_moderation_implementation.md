@@ -20,41 +20,42 @@
 
 ## API Routes
 
-- [ ] **HTML Routes for Pending Posts**
-  - [ ] Create route to view user's own pending posts
-  - [ ] Create route to view user's rejected posts with feedback
-  - [ ] Add admin routes for manual moderation of pending posts
+- [x] **HTML Routes for Pending Posts**
+  - [x] Create route to view user's own pending posts
+  - [x] Create route to view user's rejected posts with feedback
+  - [x] Add admin routes for manual moderation of pending posts
+  - [x] Fix router prefixes to avoid double prefixing with /html
 
-- [ ] **REST API Updates**
-  - [ ] Update post creation endpoint to use pending posts workflow
-  - [ ] Add endpoints for checking post moderation status
-  - [ ] Create webhook for moderation completion notifications
+- [x] **REST API Updates**
+  - [x] Update post creation endpoint to use pending posts workflow
+  - [x] Add endpoints for checking post moderation status
+  - [x] Create webhook for moderation completion notifications
 
-## Frontend/Templates
+## Frontend/Templates (Dominate templates)
 
-- [ ] **User Interface Updates**
-  - [ ] Add pending post indicator in user profile
-  - [ ] Create pending posts list view
-  - [ ] Create rejected posts list view with feedback
-  - [ ] Add moderation status indicators on posts
+- [x] **User Interface Updates**
+  - [x] Add pending post indicator in user profile
+  - [x] Create pending posts list view
+  - [x] Create rejected posts list view with feedback
+  - [x] Add moderation status indicators on posts
 
-- [ ] **Feedback Display**
-  - [ ] Design Soviet-style feedback messages for rejected posts
-  - [ ] Create UI component for displaying moderation feedback
+- [x] **Feedback Display**
+  - [x] Design Soviet-style feedback messages for rejected posts
+  - [x] Create UI component for displaying moderation feedback
   - [ ] Add highlighting for newly approved posts
 
 ## Configuration
 
-- [ ] **Settings Management**
-  - [ ] Add configuration for `AI_MODERATION_ENABLED`
-  - [ ] Add configuration for `AI_MODERATION_AUTO_APPROVE`
-  - [ ] Add configuration for `AI_MODERATION_AUTO_REJECT`
-  - [ ] Add configuration for confidence thresholds
+- [x] **Settings Management**
+  - [x] Add configuration for `AI_MODERATION_ENABLED`
+  - [x] Add configuration for `AI_MODERATION_AUTO_APPROVE`
+  - [x] Add configuration for `AI_MODERATION_AUTO_REJECT`
+  - [x] Add configuration for confidence thresholds
 
-- [ ] **API Keys and Security**
-  - [ ] Set up secure storage for Anthropic API keys
-  - [ ] Implement rate limiting for moderation requests
-  - [ ] Add logging for moderation decisions
+- [x] **API Keys and Security**
+  - [x] Set up secure storage for Anthropic API keys
+  - [x] Implement rate limiting for moderation requests
+  - [x] Add logging for moderation decisions
 
 ## Testing
 
@@ -87,8 +88,8 @@
   - [ ] Create migration for any schema changes
   - [ ] Test migration on staging environment
 
-- [ ] **Feature Flags**
-  - [ ] Add feature flag for enabling/disabling moderation
+- [x] **Feature Flags**
+  - [x] Add feature flag for enabling/disabling moderation
   - [ ] Add gradual rollout capability
 
 ## Future Enhancements
@@ -96,5 +97,5 @@
 - [ ] **Advanced Moderation Features**
   - [ ] Implement user reputation system affecting moderation strictness
   - [ ] Add appeals process for rejected posts
-  - [ ] Create moderation dashboard for admins
+  - [x] Create moderation dashboard for admins
   - [ ] Implement batch moderation capabilities

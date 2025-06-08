@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
@@ -33,3 +35,32 @@ async def get_admin_user(
             detail="CITIZEN, THIS ACTION REQUIRES ADMINISTRATIVE CLEARANCE",
         )
     return current_user
+
+
+def is_admin(role: str) -> bool:
+    """
+    Check if the given role is an admin role.
+
+    Args:
+        role: The user role to check
+
+    Returns:
+        bool: True if the role is admin, False otherwise
+    """
+    return role == UserRole.ADMIN
+
+
+async def check_is_admin(user_id: UUID) -> bool:
+    """
+    Check if the user with the given ID is an admin.
+
+    Args:
+        user_id: The ID of the user to check
+
+    Returns:
+        bool: True if the user is an admin, False otherwise
+    """
+    user = await User.get_or_none(id=user_id)
+    if not user:
+        return False
+    return user.role == UserRole.ADMIN

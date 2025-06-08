@@ -71,6 +71,17 @@ def create_profile_page(
                             cls="rejected",
                         )  # type: ignore
 
+                # Pending posts indicator box
+                with div(cls="stat-box pending-indicator"):  # type: ignore
+                    h3("PENDING SUBMISSIONS")  # type: ignore
+                    with div(cls="stats"):  # type: ignore
+                        pending_count = len(pending_posts) if pending_posts else 0
+                        span(
+                            f"⏳ {pending_count}",
+                            cls="pending" + (" active" if pending_count > 0 else ""),
+                        )  # type: ignore
+                        # Pending posts are now shown directly in topics
+
                 # Citizen details box
                 with div(cls="stat-box"):  # type: ignore
                     h3("CITIZEN DETAILS")  # type: ignore

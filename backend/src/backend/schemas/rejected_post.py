@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Any
+from typing import Dict
 from typing import List
 from typing import Optional
 from uuid import UUID
@@ -21,6 +23,7 @@ class RejectedPostResponse(RejectedPostBase):
     created_at: datetime
     updated_at: datetime
     moderation_reason: str
+    topic: Optional[Dict[str, Any]] = None
 
 
 class RejectedPostList(BaseModel):

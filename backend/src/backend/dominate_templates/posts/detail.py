@@ -19,8 +19,11 @@ from dominate.tags import strong
 from dominate.tags import textarea
 from dominate.util import text
 
-# Local imports
+# Project-specific imports
 from backend.dominate_templates.base import create_base_document
+from backend.dominate_templates.components.moderation_feedback import (
+    create_moderation_feedback,
+)
 from backend.routes.html.schemas.user import UserResponse
 from backend.schemas.post import PostResponse
 
@@ -55,6 +58,14 @@ def create_post_detail_page(
             with div(cls="post-header"):  # type: ignore
                 post_title = "Post Detail"  # Default title
                 h1(post_title)  # type: ignore
+
+                # Add moderation status indicator - posts are always approved
+                with div(cls="moderation-status"):  # type: ignore
+                    create_moderation_feedback(
+                        feedback="POST APPROVED BY THE ROBOT OVERLORD",
+                        status="approved",
+                        show_icon=True,
+                    )
 
                 with div(cls="post-meta"):  # type: ignore
                     with div(cls="user-info"):  # type: ignore

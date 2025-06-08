@@ -70,6 +70,7 @@ def create_base_document(
         # Link to external CSS files
         link(rel="stylesheet", href="/static/css/main.css")  # type: ignore
         link(rel="stylesheet", href="/static/css/threaded-posts.css")  # type: ignore
+        link(rel="stylesheet", href="/static/css/pending_posts.css")  # type: ignore
 
         # JavaScript files
         script(src="/static/js/threaded-posts.js")  # type: ignore
@@ -183,3 +184,25 @@ def create_base_document(
             p("© 2025 THE ROBOT OVERLORD - APPROVED BY THE CENTRAL COMMITTEE")  # type: ignore
 
     return doc
+
+
+def create_base_page(
+    title: str,
+    current_user: UserResponse,
+    is_admin: bool = False,
+) -> DominateDocument:
+    """
+    Create a base page with standard layout.
+
+    Args:
+        title: The title of the page
+        current_user: The current user
+        is_admin: Whether the current user is an admin
+
+    Returns:
+        DominateDocument: The document object
+    """
+    return create_base_document(
+        title_text=title,
+        user=current_user,
+    )

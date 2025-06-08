@@ -1,5 +1,6 @@
 # Standard library imports
 from typing import Annotated
+from typing import Any
 from typing import List
 from uuid import UUID
 
@@ -24,9 +25,26 @@ from backend.db_functions.users.get_user_by_id import get_user_by_id
 from backend.dominate_templates.profile.index import create_profile_page
 from backend.routes.html.schemas.user import UserResponse
 from backend.routes.html.utils.auth import get_current_user_optional
+from backend.schemas.pending_post import PendingPostResponse
 from backend.schemas.post import PostResponse
 
 router = APIRouter()
+
+
+def convert_pending_to_post_response(pending: PendingPostResponse) -> PostResponse:
+    """Convert a PendingPostResponse to a PostResponse for template compatibility."""
+    # Create a PostResponse with the common fields from PendingPostResponse
+    return PostResponse(
+        id=pending.id,
+        author=pending.author,
+        topic_id=pending.topic_id,
+        parent_post_id=pending.parent_post_id,
+        created_at=pending.created_at,
+        updated_at=pending.updated_at,
+        content=pending.content,
+        reply_count=0,  # Pending posts don't have replies
+        replies=[],  # Empty list for replies
+    )
 
 
 @router.get("/{user_id}/", response_class=HTMLResponse)
@@ -97,19 +115,29 @@ async def get_user_profile(
         pending_posts = await list_pending_posts_by_user(user_id, limit=5)
 
     # Fetch topic information for all posts
-    all_posts: List[PostResponse] = []
+    # We need to handle both PostResponse and PendingPostResponse types
+    # Since they share common fields like topic_id, we can use them with
+    # enhance_posts_with_topics_for_profile
+    all_posts: List[Any] = []
     if user_posts:
         all_posts.extend(user_posts)
     if pending_posts:
         all_posts.extend(pending_posts)
     topic_map = await enhance_posts_with_topics_for_profile(all_posts)
 
+    # Convert pending posts to post responses for template compatibility
+    converted_pending_posts = None
+    if pending_posts:
+        converted_pending_posts = [
+            convert_pending_to_post_response(p) for p in pending_posts
+        ]
+
     # Create the profile page using Dominate
     doc = create_profile_page(
         profile_user=profile_user,
         current_user=current_user,
         user_posts=user_posts,
-        pending_posts=pending_posts,
+        pending_posts=converted_pending_posts,
         post_pagination=post_pagination,
         topic_map=topic_map,
         is_own_profile=bool(current_user and current_user.id == user_id),
