@@ -62,8 +62,9 @@
   - [x] Test pagination component with various page counts
   - [x] Test edge cases (page 1, last page)
 
-- [ ] **src/backend/dominate_templates/home.py** (22% coverage)
-  - [ ] Test home template with different user states
+- [x] **src/backend/dominate_templates/home.py** (22% coverage)
+  - [x] Test home template with different user states
+  - [x] Test with and without topics and posts
 
 ### Database Functions
 - [ ] **src/backend/db_functions/posts/find_post_from_pending_post.py** (29% coverage)
