@@ -61,9 +61,14 @@ async def moderate_pending_post(
         await approve_and_create_post(pending_post_id=pending_post_id)
         return pending_post
     elif action.lower() == "reject":
+        if not reason:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A reason must be provided when rejecting a post",
+            )
         await reject_pending_post(
             pending_post_id=pending_post_id,
-            moderation_reason=reason or "Rejected by moderator",
+            moderation_reason=reason,
         )
         return pending_post
     else:

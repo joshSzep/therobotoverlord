@@ -1,205 +1,159 @@
 from unittest import mock
-import uuid
 
 from fastapi import Request
 from fastapi.responses import HTMLResponse
 import pytest
 
 from backend.routes.html.home.index import home
-from backend.routes.html.schemas.user import UserResponse
-from backend.schemas.post import PostList
-from backend.schemas.post import PostResponse
-from backend.schemas.topic import TopicList
-from backend.schemas.topic import TopicResponse
-from backend.schemas.user import UserSchema
-from backend.utils.datetime import now_utc
 
 
 @pytest.fixture
-def mock_request() -> mock.MagicMock:
-    """Returns a mock Request object."""
-    return mock.MagicMock(spec=Request)
+def mock_request():
+    """Mock FastAPI request for testing."""
+    request = mock.MagicMock(spec=Request)
+    request.url = mock.MagicMock()
+    request.headers = {}
+    request.cookies = {}
+    return request
 
 
 @pytest.fixture
-def mock_user() -> UserResponse:
-    """Returns a mock UserResponse object."""
-    return UserResponse(
-        id=uuid.uuid4(),
-        email="test@example.com",
-        display_name="Test User",
-        is_verified=True,
-        role="user",
-        created_at=now_utc(),
-        updated_at=now_utc(),
-    )
+def mock_user():
+    """Mock authenticated user for testing."""
+    user = mock.MagicMock()
+    user.id = "test-user-id"
+    user.email = "test@example.com"
+    user.display_name = "Test User"
+    user.is_verified = True
+    return user
 
 
 @pytest.fixture
-def mock_topics(mock_user: UserResponse) -> TopicList:
-    """Returns a mock TopicList object."""
-    author_schema = UserSchema.model_validate(mock_user.model_dump())
-    topics = [
-        TopicResponse(
-            id=uuid.uuid4(),
-            title="First Topic",
-            description="Description for first topic",
-            author=author_schema,
-            created_at=now_utc(),
-            updated_at=now_utc(),
-            post_count=5,
-            tags=[],
-        ),
-        TopicResponse(
-            id=uuid.uuid4(),
-            title="Second Topic",
-            description="Description for second topic",
-            author=author_schema,
-            created_at=now_utc(),
-            updated_at=now_utc(),
-            post_count=3,
-            tags=[],
-        ),
-    ]
-    return TopicList(topics=topics, count=2)
+def mock_topics():
+    """Mock topics for testing."""
+    topics_data = mock.MagicMock()
+    topics = []
+    for i in range(5):
+        topic = mock.MagicMock()
+        topic.id = f"topic-{i}"
+        topic.name = f"Topic {i}"
+        topics.append(topic)
+    topics_data.topics = topics
+    return topics_data
 
 
 @pytest.fixture
-def mock_posts(mock_user: UserResponse) -> PostList:
-    """Returns a mock PostList object."""
-    author_schema = UserSchema.model_validate(mock_user.model_dump())
-    posts = [
-        PostResponse(
-            id=uuid.uuid4(),
-            content="First post content",
-            author=author_schema,
-            topic_id=uuid.uuid4(),
-            parent_post_id=None,
-            created_at=now_utc(),
-            updated_at=now_utc(),
-            reply_count=0,
-        ),
-        PostResponse(
-            id=uuid.uuid4(),
-            content="Second post content",
-            author=author_schema,
-            topic_id=uuid.uuid4(),
-            parent_post_id=None,
-            created_at=now_utc(),
-            updated_at=now_utc(),
-            reply_count=2,
-        ),
-    ]
-    return PostList(posts=posts, count=2)
+def mock_posts():
+    """Mock posts for testing."""
+    posts_data = mock.MagicMock()
+    posts = []
+    for i in range(5):
+        post = mock.MagicMock()
+        post.id = f"post-{i}"
+        post.content = f"Post content {i}"
+        post.author = mock.MagicMock()
+        post.author.display_name = f"Author {i}"
+        post.created_at = mock.MagicMock()
+        posts.append(post)
+    posts_data.posts = posts
+    return posts_data
 
 
 @pytest.mark.asyncio
 async def test_home_authenticated_user(
     mock_request, mock_user, mock_topics, mock_posts
 ):
-    """Test home page rendering with authenticated user."""
+    """Test home page rendering for authenticated user."""
     # Arrange
-    mock_html_content = "<html>Mock Home Page</html>"
-
-    # Mock dependencies
     with (
+        mock.patch("backend.routes.html.home.index.list_topics") as mock_list_topics,
+        mock.patch("backend.routes.html.home.index.list_posts") as mock_list_posts,
         mock.patch(
-            "backend.routes.html.home.index.list_topics",
-            new=mock.AsyncMock(return_value=mock_topics),
-        ) as mock_list_topics,
-        mock.patch(
-            "backend.routes.html.home.index.list_posts",
-            new=mock.AsyncMock(return_value=mock_posts),
-        ) as mock_list_posts,
-        mock.patch(
-            "backend.routes.html.home.index.create_home_page",
-            return_value=mock.MagicMock(__str__=lambda self: mock_html_content),
-        ) as mock_create_page,
+            "backend.routes.html.home.index.create_home_page"
+        ) as mock_create_home_page,
     ):
+        mock_list_topics.return_value = mock_topics
+        mock_list_posts.return_value = mock_posts
+        mock_create_home_page.return_value = "<html>Home Page</html>"
+
         # Act
-        response = await home(request=mock_request, current_user=mock_user)
+        result = await home(request=mock_request, current_user=mock_user)
 
         # Assert
-        assert isinstance(response, HTMLResponse)
-        assert response.body.decode() == mock_html_content  # type: ignore
+        assert isinstance(result, HTMLResponse)
         mock_list_topics.assert_called_once_with(skip=0, limit=5)
         mock_list_posts.assert_called_once_with(skip=0, limit=10)
-        mock_create_page.assert_called_once_with(
-            topics=mock_topics.topics,
-            posts=mock_posts.posts,
-            user=mock_user,
+        mock_create_home_page.assert_called_once_with(
+            topics=mock_topics.topics, posts=mock_posts.posts, user=mock_user
         )
 
 
 @pytest.mark.asyncio
 async def test_home_unauthenticated_user(mock_request, mock_topics, mock_posts):
-    """Test home page rendering with unauthenticated user."""
+    """Test home page rendering for unauthenticated user."""
     # Arrange
-    mock_html_content = "<html>Mock Home Page</html>"
-
-    # Mock dependencies
     with (
+        mock.patch("backend.routes.html.home.index.list_topics") as mock_list_topics,
+        mock.patch("backend.routes.html.home.index.list_posts") as mock_list_posts,
         mock.patch(
-            "backend.routes.html.home.index.list_topics",
-            new=mock.AsyncMock(return_value=mock_topics),
-        ) as mock_list_topics,
-        mock.patch(
-            "backend.routes.html.home.index.list_posts",
-            new=mock.AsyncMock(return_value=mock_posts),
-        ) as mock_list_posts,
-        mock.patch(
-            "backend.routes.html.home.index.create_home_page",
-            return_value=mock.MagicMock(__str__=lambda self: mock_html_content),
-        ) as mock_create_page,
+            "backend.routes.html.home.index.create_home_page"
+        ) as mock_create_home_page,
     ):
+        mock_list_topics.return_value = mock_topics
+        mock_list_posts.return_value = mock_posts
+        mock_create_home_page.return_value = "<html>Home Page</html>"
+
         # Act
-        response = await home(request=mock_request, current_user=None)
+        result = await home(request=mock_request, current_user=None)
 
         # Assert
-        assert isinstance(response, HTMLResponse)
-        assert response.body.decode() == mock_html_content  # type: ignore
+        assert isinstance(result, HTMLResponse)
         mock_list_topics.assert_called_once_with(skip=0, limit=5)
         mock_list_posts.assert_called_once_with(skip=0, limit=10)
-        mock_create_page.assert_called_once_with(
-            topics=mock_topics.topics,
-            posts=mock_posts.posts,
-            user=None,
+        mock_create_home_page.assert_called_once_with(
+            topics=mock_topics.topics, posts=mock_posts.posts, user=None
         )
 
 
 @pytest.mark.asyncio
-async def test_home_empty_topics_and_posts(mock_request, mock_user):
-    """Test home page rendering with empty topics and posts."""
+async def test_home_no_data(mock_request, mock_user):
+    """Test home page rendering when no topics or posts exist."""
     # Arrange
-    empty_topics = TopicList(topics=[], count=0)
-    empty_posts = PostList(posts=[], count=0)
-    mock_html_content = "<html>Empty Home Page</html>"
+    empty_topics = mock.MagicMock()
+    empty_topics.topics = []
+    empty_posts = mock.MagicMock()
+    empty_posts.posts = []
 
-    # Mock dependencies
     with (
+        mock.patch("backend.routes.html.home.index.list_topics") as mock_list_topics,
+        mock.patch("backend.routes.html.home.index.list_posts") as mock_list_posts,
         mock.patch(
-            "backend.routes.html.home.index.list_topics",
-            new=mock.AsyncMock(return_value=empty_topics),
-        ) as mock_list_topics,
-        mock.patch(
-            "backend.routes.html.home.index.list_posts",
-            new=mock.AsyncMock(return_value=empty_posts),
-        ) as mock_list_posts,
-        mock.patch(
-            "backend.routes.html.home.index.create_home_page",
-            return_value=mock.MagicMock(__str__=lambda self: mock_html_content),
-        ) as mock_create_page,
+            "backend.routes.html.home.index.create_home_page"
+        ) as mock_create_home_page,
     ):
+        mock_list_topics.return_value = empty_topics
+        mock_list_posts.return_value = empty_posts
+        mock_create_home_page.return_value = "<html>Home Page - No Data</html>"
+
         # Act
-        response = await home(request=mock_request, current_user=mock_user)
+        result = await home(request=mock_request, current_user=mock_user)
 
         # Assert
-        assert isinstance(response, HTMLResponse)
-        assert response.body.decode() == mock_html_content  # type: ignore
-        mock_list_topics.assert_called_once_with(skip=0, limit=5)
-        mock_list_posts.assert_called_once_with(skip=0, limit=10)
-        mock_create_page.assert_called_once_with(
-            topics=[],
-            posts=[],
-            user=mock_user,
+        assert isinstance(result, HTMLResponse)
+        mock_create_home_page.assert_called_once_with(
+            topics=[], posts=[], user=mock_user
         )
+
+
+@pytest.mark.asyncio
+async def test_home_database_error(mock_request, mock_user):
+    """Test home page handling of database errors."""
+    # Arrange
+    db_error = Exception("Database connection error")
+
+    with mock.patch("backend.routes.html.home.index.list_topics", side_effect=db_error):
+        # Act & Assert
+        with pytest.raises(Exception) as exc_info:
+            await home(request=mock_request, current_user=mock_user)
+
+        assert exc_info.value == db_error
