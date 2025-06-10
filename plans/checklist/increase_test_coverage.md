@@ -67,9 +67,9 @@
   - [x] Test with and without topics and posts
 
 ### Database Functions
-- [ ] **src/backend/db_functions/posts/find_post_from_pending_post.py** (29% coverage)
-  - [ ] Test post matching logic
-  - [ ] Test duplicate detection
+- [x] **src/backend/db_functions/posts/find_post_from_pending_post.py** (29% coverage)
+  - [x] Test post matching logic
+  - [x] Test duplicate detection
 
 - [ ] **src/backend/db_functions/user_sessions/delete_user_session.py** (25% coverage)
   - [ ] Test session deletion
