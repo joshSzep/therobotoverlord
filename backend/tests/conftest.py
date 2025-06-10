@@ -1,5 +1,4 @@
 # Standard library imports
-from datetime import datetime
 from datetime import timedelta
 import os
 import secrets
@@ -123,7 +122,7 @@ async def test_user_session(test_user: User) -> AsyncGenerator[UserSession, None
     session = await UserSession.create(
         user=test_user,
         session_token=secrets.token_hex(32),
-        expires_at=datetime.now(datetime.UTC) + timedelta(days=7),
+        expires_at=now_utc() + timedelta(days=7),
         user_agent="Test Agent",
         ip_address="127.0.0.1",
         is_active=True,

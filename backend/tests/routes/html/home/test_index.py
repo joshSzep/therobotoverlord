@@ -121,7 +121,7 @@ async def test_home_authenticated_user(
 
         # Assert
         assert isinstance(response, HTMLResponse)
-        assert response.body.decode() == mock_html_content
+        assert response.body.decode() == mock_html_content  # type: ignore
         mock_list_topics.assert_called_once_with(skip=0, limit=5)
         mock_list_posts.assert_called_once_with(skip=0, limit=10)
         mock_create_page.assert_called_once_with(
@@ -157,7 +157,7 @@ async def test_home_unauthenticated_user(mock_request, mock_topics, mock_posts):
 
         # Assert
         assert isinstance(response, HTMLResponse)
-        assert response.body.decode() == mock_html_content
+        assert response.body.decode() == mock_html_content  # type: ignore
         mock_list_topics.assert_called_once_with(skip=0, limit=5)
         mock_list_posts.assert_called_once_with(skip=0, limit=10)
         mock_create_page.assert_called_once_with(
@@ -195,7 +195,7 @@ async def test_home_empty_topics_and_posts(mock_request, mock_user):
 
         # Assert
         assert isinstance(response, HTMLResponse)
-        assert response.body.decode() == mock_html_content
+        assert response.body.decode() == mock_html_content  # type: ignore
         mock_list_topics.assert_called_once_with(skip=0, limit=5)
         mock_list_posts.assert_called_once_with(skip=0, limit=10)
         mock_create_page.assert_called_once_with(
