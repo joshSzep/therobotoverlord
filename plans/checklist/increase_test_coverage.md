@@ -42,9 +42,9 @@
   - [x] Test home page rendering
   - [x] Test authenticated vs unauthenticated views
 
-- [ ] **src/backend/dominate_templates/topics.py** (80 lines, 0% coverage)
-  - [ ] Test topic template rendering
-  - [ ] Test template with various data scenarios
+- [x] **src/backend/dominate_templates/topics/list.py** (80 lines, 0% coverage)
+  - [x] Test topic template rendering
+  - [x] Test template with various data scenarios
 
 - [ ] **src/backend/utils/moderation_config.py** (11 lines, 0% coverage)
   - [ ] Test moderation configuration loading

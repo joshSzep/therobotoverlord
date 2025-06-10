@@ -133,7 +133,7 @@ def create_topics_list_page(
 
         # Create topic form section (only if user is an admin)
         if user and user.is_admin:
-            with div(cls="create-topic"):  # type: ignore
+            with div(cls="create-topic-form"):  # type: ignore
                 h2("PROPOSE NEW TOPIC")  # type: ignore
                 with form(action="/html/topics/", method="post"):  # type: ignore
                     with div(cls="form-group"):  # type: ignore
