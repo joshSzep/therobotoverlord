@@ -23,24 +23,24 @@
   - [x] Test session creation with invalid user
   - [x] Test session token generation
 
-- [ ] **src/backend/routes/pending_posts/moderate_pending_post.py** (28 lines, 0% coverage)
-  - [ ] Test moderation approval flow
-  - [ ] Test moderation rejection flow
-  - [ ] Test unauthorized access
+- [x] **src/backend/routes/pending_posts/moderate_pending_post.py** (28 lines, 0% coverage)
+  - [x] Test moderation approval flow
+  - [x] Test moderation rejection flow
+  - [x] Test unauthorized access
 
-- [ ] **src/backend/routes/profile/list_my_rejected_posts.py** (10 lines, 0% coverage)
-  - [ ] Test rejected posts listing for authenticated user
-  - [ ] Test empty results
-  - [ ] Test pagination
+- [x] **src/backend/routes/profile/list_my_rejected_posts.py** (10 lines, 0% coverage)
+  - [x] Test rejected posts listing for authenticated user
+  - [x] Test empty results
+  - [x] Test pagination
 
-- [ ] **src/backend/routes/user_stats/get_user_stats_by_id.py** (12 lines, 0% coverage)
-  - [ ] Test user stats retrieval
-  - [ ] Test non-existent user
-  - [ ] Test stats calculation accuracy
+- [x] **src/backend/routes/user_stats/get_user_stats_by_id.py** (12 lines, 0% coverage)
+  - [x] Test user stats retrieval
+  - [x] Test non-existent user
+  - [x] Test stats calculation accuracy
 
-- [ ] **src/backend/routes/html/home/index.py** (20 lines, 0% coverage)
-  - [ ] Test home page rendering
-  - [ ] Test authenticated vs unauthenticated views
+- [x] **src/backend/routes/html/home/index.py** (20 lines, 0% coverage)
+  - [x] Test home page rendering
+  - [x] Test authenticated vs unauthenticated views
 
 - [ ] **src/backend/dominate_templates/topics.py** (80 lines, 0% coverage)
   - [ ] Test topic template rendering
