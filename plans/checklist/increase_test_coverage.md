@@ -8,20 +8,20 @@
 
 ### Files with 0% Coverage - Immediate Action Required
 
-- [ ] **src/backend/db_functions/posts/find_post_by_content.py** (32 lines, 0% coverage)
-  - [ ] Test post content search functionality
-  - [ ] Test edge cases (empty content, special characters)
-  - [ ] Test performance with large datasets
+- [x] **src/backend/db_functions/posts/find_post_by_content.py** (32 lines, 0% coverage)
+  - [x] Test post content search functionality
+  - [x] Test edge cases (empty content, special characters)
+  - [x] Test performance with large datasets
 
-- [ ] **src/backend/db_functions/posts/get_post_by_pending_post_id.py** (23 lines, 0% coverage)
-  - [ ] Test successful post retrieval
-  - [ ] Test non-existent pending post ID
-  - [ ] Test database connection errors
+- [x] **src/backend/db_functions/posts/get_post_by_pending_post_id.py** (23 lines, 0% coverage)
+  - [x] Test successful post retrieval
+  - [x] Test non-existent pending post ID
+  - [x] Test database connection errors
 
-- [ ] **src/backend/db_functions/user_sessions/create_user_session.py** (20 lines, 0% coverage)
-  - [ ] Test session creation with valid user
-  - [ ] Test session creation with invalid user
-  - [ ] Test session token generation
+- [x] **src/backend/db_functions/user_sessions/create_user_session.py** (20 lines, 0% coverage)
+  - [x] Test session creation with valid user
+  - [x] Test session creation with invalid user
+  - [x] Test session token generation
 
 - [ ] **src/backend/routes/pending_posts/moderate_pending_post.py** (28 lines, 0% coverage)
   - [ ] Test moderation approval flow
