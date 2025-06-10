@@ -58,9 +58,9 @@
   - [x] Test base template rendering
   - [x] Test template inheritance
 
-- [ ] **src/backend/dominate_templates/components/pagination.py** (16% coverage)
-  - [ ] Test pagination component with various page counts
-  - [ ] Test edge cases (page 1, last page)
+- [x] **src/backend/dominate_templates/components/pagination.py** (16% coverage)
+  - [x] Test pagination component with various page counts
+  - [x] Test edge cases (page 1, last page)
 
 - [ ] **src/backend/dominate_templates/home.py** (22% coverage)
   - [ ] Test home template with different user states
