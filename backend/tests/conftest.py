@@ -26,21 +26,6 @@ from backend.utils.datetime import now_utc
 from backend.utils.settings import settings
 
 
-# Create a module-level event loop for the tests
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for the test session."""
-    import asyncio
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    yield loop
-    # Close loop explicitly to avoid RuntimeError
-    if loop.is_running():
-        loop.call_soon_threadsafe(loop.stop)
-    loop.close()
-
-
 @pytest.fixture(scope="session")
 def db_url():
     """Get the test database URL."""
@@ -138,7 +123,7 @@ async def test_user_session(test_user: User) -> AsyncGenerator[UserSession, None
     session = await UserSession.create(
         user=test_user,
         session_token=secrets.token_hex(32),
-        expires_at=datetime.utcnow() + timedelta(days=7),
+        expires_at=datetime.now(datetime.UTC) + timedelta(days=7),
         user_agent="Test Agent",
         ip_address="127.0.0.1",
         is_active=True,
