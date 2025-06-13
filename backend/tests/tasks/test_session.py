@@ -11,6 +11,29 @@ from backend.tasks.session import run_session_cleanup_task
 
 
 @pytest.mark.asyncio
+async def test_cleanup_expired_sessions_initializes_db_when_needed() -> None:
+    mock_count = 7
+
+    with (
+        mock.patch("backend.tasks.session.Tortoise") as mock_tortoise,
+        mock.patch(
+            "backend.tasks.session.db_cleanup_expired_sessions"
+        ) as mock_db_cleanup,
+    ):
+        type(mock_tortoise)._inited = mock.PropertyMock(side_effect=[False, True])
+        type(mock_tortoise).init = mock.AsyncMock()
+        type(mock_tortoise).close_connections = mock.AsyncMock()
+        mock_db_cleanup.return_value = mock_count
+
+        result = await cleanup_expired_sessions()
+
+        assert result == mock_count
+        mock_tortoise.init.assert_awaited_once()
+        mock_db_cleanup.assert_awaited_once()
+        mock_tortoise.close_connections.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_cleanup_expired_sessions_success():
     # Arrange
     mock_count = 5
