@@ -4,14 +4,14 @@ from backend.schemas.rejected_post import RejectedPostResponse
 
 
 async def rejected_post_to_schema(rejected_post: RejectedPost) -> RejectedPostResponse:
-    author = await rejected_post.author
-    topic = await rejected_post.topic
+    # Fetch related author and topic
+    await rejected_post.fetch_related("author", "topic")
 
     return RejectedPostResponse(
         id=rejected_post.id,
         content=rejected_post.content,
-        author=await user_to_schema(author),
-        topic_id=topic.id,
+        author=await user_to_schema(rejected_post.author),
+        topic_id=rejected_post.topic.id,
         parent_post_id=rejected_post.parent_post_id,
         created_at=rejected_post.created_at,
         updated_at=rejected_post.updated_at,

@@ -26,3 +26,7 @@ class UserResponse(BaseModel):
     @property
     def is_admin(self) -> bool:
         return self.role == "admin"
+
+    @property
+    def display_email(self) -> str:
+        return self.email.upper()

@@ -96,7 +96,7 @@ def create_profile_page(
                     if is_own_profile:
                         with p():  # type: ignore
                             strong("Email: ")  # type: ignore
-                            email = profile_user.email
+                            email = profile_user.display_email
                             text(email)  # type: ignore
 
                     with p():  # type: ignore
