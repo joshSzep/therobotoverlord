@@ -39,7 +39,7 @@ async def list_all_pending_posts(
     return await list_pending_posts(limit=limit, offset=offset)
 
 
-@router.post("/{pending_post_id}/approve")
+@router.post("/{pending_post_id}/approve/")
 async def approve_pending_post(
     pending_post_id: UUID,
     background_tasks: BackgroundTasks,
@@ -79,7 +79,7 @@ async def approve_pending_post(
     }
 
 
-@router.post("/{pending_post_id}/reject")
+@router.post("/{pending_post_id}/reject/")
 async def reject_pending_post_route(
     pending_post_id: UUID,
     background_tasks: BackgroundTasks,
