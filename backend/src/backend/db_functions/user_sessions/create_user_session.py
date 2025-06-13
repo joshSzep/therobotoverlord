@@ -35,7 +35,7 @@ async def create_user_session(
             user=user,
             ip_address=ip_address,
             user_agent=user_agent,
-            token=token,
+            session_token=token,
             expires_at=expires_at,
             is_active=True,
         )
