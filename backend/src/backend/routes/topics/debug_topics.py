@@ -10,7 +10,7 @@ from backend.schemas.topic import TopicList
 router = APIRouter()
 
 
-@router.get("/debug", response_model=TopicList)
+@router.get("/debug/", response_model=TopicList)
 async def debug_topics() -> TopicList:
     """
     Debug endpoint to get all topics with their descriptions and tags.
