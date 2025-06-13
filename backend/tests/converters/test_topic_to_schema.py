@@ -143,3 +143,203 @@ async def test_topic_to_schema_with_tags(mock_topic_with_tags) -> None:
     assert len(schema.tags) == 2
     assert schema.tags[0].name == "Tag1"
     assert schema.tags[1].name == "Tag2"
+
+
+@pytest.mark.asyncio
+async def test_topic_to_schema_missing_author() -> None:
+    """Test error handling when topic has no associated author."""
+    # Create mock topic without an author
+    topic = mock.MagicMock(spec=Topic)
+    topic.id = uuid.uuid4()
+    topic.title = "Test Topic"
+    topic.description = "Test topic description"
+    topic.author = None  # Missing author
+    topic.created_at = datetime.now()
+    topic.updated_at = datetime.now()
+    topic.topic_tags = []
+
+    # Set up mock methods
+    topic.fetch_related = mock.AsyncMock()
+
+    # Mock Post.filter().count()
+    mock_filter = mock.MagicMock()
+    mock_filter.count = mock.AsyncMock(return_value=0)
+
+    with mock.patch("backend.db.models.post.Post.filter", return_value=mock_filter):
+        # Act and Assert
+        with pytest.raises(AttributeError):
+            await topic_to_schema(topic)
+
+        # Verify fetch_related was called
+        topic.fetch_related.assert_awaited_once_with("author", "topic_tags__tag")
+
+
+@pytest.mark.asyncio
+async def test_topic_to_schema_fetch_related_error() -> None:
+    """Test error handling when fetch_related fails."""
+    # Create mock topic
+    topic = mock.MagicMock(spec=Topic)
+    topic.id = uuid.uuid4()
+
+    # Set up mock methods to fail
+    fetch_error = Exception("Failed to fetch related data")
+    topic.fetch_related = mock.AsyncMock(side_effect=fetch_error)
+
+    # Act and Assert
+    with pytest.raises(Exception) as exc_info:
+        await topic_to_schema(topic)
+
+    # Verify the error is propagated
+    assert exc_info.value == fetch_error
+    topic.fetch_related.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_topic_to_schema_tag_to_schema_error() -> None:
+    """Test error handling when tag_to_schema conversion fails."""
+    # Create mock topic with tags
+    topic_id = uuid.uuid4()
+
+    # Create mock author
+    mock_author = mock.MagicMock()
+
+    # Create mock tag
+    mock_tag = mock.MagicMock()
+
+    # Create mock topic_tag
+    mock_topic_tag = mock.MagicMock()
+    mock_topic_tag.tag = mock_tag
+
+    # Create mock topic
+    topic = mock.MagicMock(spec=Topic)
+    topic.id = topic_id
+    topic.title = "Test Topic"
+    topic.description = "Test topic description"
+    topic.author = mock_author
+    topic.created_at = datetime.now()
+    topic.updated_at = datetime.now()
+    topic.topic_tags = [mock_topic_tag]
+
+    # Set up mock methods
+    topic.fetch_related = mock.AsyncMock()
+
+    # Mock Post.filter().count()
+    mock_filter = mock.MagicMock()
+    mock_filter.count = mock.AsyncMock(return_value=0)
+
+    # Mock tag_to_schema to fail
+    tag_schema_error = Exception("Failed to convert tag to schema")
+
+    with (
+        mock.patch("backend.db.models.post.Post.filter", return_value=mock_filter),
+        mock.patch(
+            "backend.converters.topic_to_schema.tag_to_schema",
+            side_effect=tag_schema_error,
+        ),
+    ):
+        # Act and Assert
+        with pytest.raises(Exception) as exc_info:
+            await topic_to_schema(topic)
+
+        # Verify the error is propagated
+        assert exc_info.value == tag_schema_error
+
+
+@pytest.mark.asyncio
+async def test_topic_to_schema_user_to_schema_error() -> None:
+    """Test error handling when user_to_schema conversion fails."""
+    # Create mock topic
+    topic_id = uuid.uuid4()
+
+    # Create mock author
+    mock_author = mock.MagicMock()
+
+    # Create mock topic
+    topic = mock.MagicMock(spec=Topic)
+    topic.id = topic_id
+    topic.title = "Test Topic"
+    topic.description = "Test topic description"
+    topic.author = mock_author
+    topic.created_at = datetime.now()
+    topic.updated_at = datetime.now()
+    topic.topic_tags = []
+
+    # Set up mock methods
+    topic.fetch_related = mock.AsyncMock()
+
+    # Mock Post.filter().count()
+    mock_filter = mock.MagicMock()
+    mock_filter.count = mock.AsyncMock(return_value=0)
+
+    # Mock user_to_schema to fail
+    user_schema_error = Exception("Failed to convert user to schema")
+
+    with (
+        mock.patch("backend.db.models.post.Post.filter", return_value=mock_filter),
+        mock.patch(
+            "backend.converters.topic_to_schema.user_to_schema",
+            side_effect=user_schema_error,
+        ),
+    ):
+        # Act and Assert
+        with pytest.raises(Exception) as exc_info:
+            await topic_to_schema(topic)
+
+        # Verify the error is propagated
+        assert exc_info.value == user_schema_error
+
+
+@pytest.mark.asyncio
+async def test_topic_to_schema_many_posts() -> None:
+    """Test topic with many posts."""
+    # Create mock topic
+    topic_id = uuid.uuid4()
+
+    # Create mock author
+    mock_author = mock.MagicMock()
+    mock_author.id = uuid.uuid4()
+
+    # Create mock topic
+    topic = mock.MagicMock(spec=Topic)
+    topic.id = topic_id
+    topic.title = "Test Topic with Many Posts"
+    topic.description = "Test topic description"
+    topic.author = mock_author
+    topic.created_at = datetime.now()
+    topic.updated_at = datetime.now()
+    topic.topic_tags = []
+
+    # Set up mock methods
+    topic.fetch_related = mock.AsyncMock()
+
+    # Mock Post.filter().count() to return a large number
+    mock_filter = mock.MagicMock()
+    mock_filter.count = mock.AsyncMock(return_value=1000)  # Many posts
+
+    # Create a proper mock UserSchema that matches the expected structure
+    from backend.schemas.user import UserSchema
+
+    mock_user_schema = UserSchema(
+        id=mock_author.id,
+        email="test_author@example.com",
+        display_name="Test Author",
+        is_verified=True,
+        role="user",
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+        approved_count=0,
+        rejected_count=0,
+    )
+
+    with (
+        mock.patch("backend.db.models.post.Post.filter", return_value=mock_filter),
+        mock.patch(
+            "backend.converters.topic_to_schema.user_to_schema",
+            mock.AsyncMock(return_value=mock_user_schema),
+        ),
+    ):
+        # Act
+        schema = await topic_to_schema(topic)
+
+        # Assert
+        assert schema.post_count == 1000

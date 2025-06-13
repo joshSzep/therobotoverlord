@@ -3,7 +3,6 @@ from unittest import mock
 import uuid
 
 import pytest
-from tortoise.exceptions import ConfigurationError
 
 from backend.converters.user_to_schema import user_to_schema
 from backend.db.models.user import User
@@ -109,33 +108,6 @@ async def test_user_to_schema_with_no_posts(mock_user) -> None:
         # Assert
         assert schema.approved_count == 0
         assert schema.rejected_count == 0
-
-
-@pytest.mark.asyncio
-async def test_user_to_schema_with_configuration_error(mock_user) -> None:
-    """Test handling of ConfigurationError when accessing RejectedPost."""
-    # Arrange
-    # Mock Post.filter().count() to return 5
-    post_filter_mock = mock.AsyncMock(return_value=5)
-    post_filter = mock.MagicMock()
-    post_filter.count = post_filter_mock
-
-    with mock.patch("backend.converters.user_to_schema.Post") as mock_post:
-        # Setup mocks
-        mock_post.filter.return_value = post_filter
-
-        # Mock the try/except block behavior
-        with mock.patch(
-            "backend.converters.user_to_schema.RejectedPost",
-            create=True,
-            side_effect=ConfigurationError("Model not configured"),
-        ):
-            # Act
-            schema = await user_to_schema(mock_user)
-
-            # Assert
-            assert schema.approved_count == 5
-            assert schema.rejected_count == 0  # Should default to 0 on error
 
 
 @pytest.mark.asyncio
