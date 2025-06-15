@@ -4,15 +4,18 @@ from typing import Annotated
 # Third-party imports
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi import HTTPException
 from fastapi import Query
 from fastapi import Request
+from fastapi import status
 from fastapi.responses import HTMLResponse
 
 # Project-specific imports
 from backend.db_functions.dashboard.get_dashboard_data import get_dashboard_data
 from backend.dominate_templates.dashboard.list import create_dashboard_page
 from backend.routes.html.schemas.user import UserResponse
-from backend.routes.html.utils.auth import get_current_user_optional
+from backend.routes.html.utils.auth import get_current_user
+from backend.utils.role_check import check_is_admin
 
 router = APIRouter()
 
@@ -20,10 +23,18 @@ router = APIRouter()
 @router.get("/", response_class=HTMLResponse)
 async def list_dashboard_page(
     request: Request,
-    current_user: Annotated[UserResponse | None, Depends(get_current_user_optional)],
+    current_user: Annotated[UserResponse, Depends(get_current_user)],
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
 ) -> HTMLResponse:
+    # Only allow admin users to access the dashboard
+    is_user_admin = await check_is_admin(current_user.id)
+    if not is_user_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only administrators can view the dashboard",
+        )
+
     # Calculate skip value for pagination
     skip = (page - 1) * limit
 
