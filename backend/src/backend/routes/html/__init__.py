@@ -3,6 +3,7 @@ from fastapi import APIRouter
 
 # Project-specific imports
 from backend.routes.html.auth import router as auth_router
+from backend.routes.html.dashboard import router as dashboard_router
 from backend.routes.html.pending_posts import router as pending_posts_router
 from backend.routes.html.posts import router as posts_router
 from backend.routes.html.profile import router as profile_router
@@ -22,5 +23,6 @@ router.include_router(tags_router)
 router.include_router(posts_router)
 router.include_router(pending_posts_router)
 router.include_router(rejected_posts_router)
+router.include_router(dashboard_router)
 router.include_router(profile_router)
 router.include_router(auth_router)

@@ -1,0 +1,96 @@
+/* Dashboard-specific styles */
+
+/* AI Analysis section */
+.ai-analysis {
+  background-color: #222;
+  border: 1px solid #cc0000;
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 3px;
+}
+
+.ai-decision, .ai-confidence {
+  margin-bottom: 5px;
+}
+
+.ai-label {
+  color: #cc0000;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.ai-value {
+  color: #ffcc00;
+}
+
+.ai-analysis-text {
+  color: #aaa;
+  font-style: italic;
+  margin-top: 5px;
+  font-size: 0.9em;
+}
+
+.no-ai-data {
+  color: #666;
+  font-style: italic;
+}
+
+/* Table styling */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.dashboard-table th {
+  background-color: #cc0000;
+  color: #000;
+  text-align: left;
+  padding: 10px;
+  font-weight: bold;
+}
+
+.dashboard-table td {
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.dashboard-table tr:hover {
+  background-color: #222;
+}
+
+/* Section headers */
+.dashboard-section {
+  color: #cc0000;
+  margin: 30px 0 15px 0;
+  font-size: 1.8em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid #cc0000;
+  padding-bottom: 5px;
+}
+
+/* Pagination */
+.pagination {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.pagination a {
+  display: inline-block;
+  padding: 5px 10px;
+  margin: 0 5px;
+  background-color: #333;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 3px;
+}
+
+.pagination a:hover {
+  background-color: #cc0000;
+}
+
+.pagination .current-page {
+  background-color: #cc0000;
+  color: #fff;
+}

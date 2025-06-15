@@ -71,6 +71,7 @@ def create_base_document(
         link(rel="stylesheet", href="/static/css/main.css")  # type: ignore
         link(rel="stylesheet", href="/static/css/threaded-posts.css")  # type: ignore
         link(rel="stylesheet", href="/static/css/pending_posts.css")  # type: ignore
+        link(rel="stylesheet", href="/static/css/dashboard.css")  # type: ignore
 
         # JavaScript files
         script(src="/static/js/threaded-posts.js")  # type: ignore
