@@ -22,7 +22,7 @@
 - **Concept**: AI-moderated debate platform with satirical Soviet propaganda aesthetic
 - **Core Flow**: Users submit posts → AI analysis → APPROVE (post appears) or REJECT (tombstone counter)
 - **Theme**: Authoritarian robot overlord ("CITIZEN, YOUR LOGIC REQUIRES CALIBRATION")
-- **Tech Stack**: FastAPI+Tortoise ORM backend, Next.js frontend, PostgreSQL, OpenAI/Anthropic APIs
+- **Tech Stack**: FastAPI+Tortoise ORM backend with integrated frontend rendering, PostgreSQL, OpenAI/Anthropic APIs
 - **Key Features**: User accounts with approval/rejection counters, threaded debates, AI moderation pipeline, Soviet-themed UI
 
 ## Project Structure
@@ -58,7 +58,7 @@
     - `utils/`: Shared utilities
   - `tests/`: Test files (mirrors source code directory structure)
   - `pyproject.toml`: Project configuration
-- `frontend/`: Next.js frontend (TypeScript)
+
 - `scripts/`: Shell scripts for workflows
 - `plans/`: Markdown files for LLM consumption (technical design documentation)
 - `plans/checklists/`: Markdown files for LLM consumption (checklists)
@@ -135,7 +135,7 @@ src/backend/
   - `just mypy`: Type check backend (reference implementation)
   - `just pyright`: Type check backend (Microsoft implementation)
   - `just pytest`: Test backend (runs all tests with coverage)
-  - `just eslint`: Lint frontend
+
   - `just update-llm-rules`: Update all AI assistant rule files from LLM_RULES.md
 
 - **Database Migration Commands**:
@@ -255,8 +255,7 @@ async def check() -> HealthCheckResponse:
     return build_health_check_response()
 ```
 
-## Frontend & CI/CD
-- **Frontend**: TypeScript, ESLint, Next.js conventions, TailwindCSS
+## CI/CD
 - **CI/CD**: GitHub Actions for code quality on push/PR
 
 ## MOST IMPORTANTLY: Docstring etiquette

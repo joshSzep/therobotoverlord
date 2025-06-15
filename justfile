@@ -24,9 +24,6 @@ aerich-upgrade:
 db-migration-fresh-start:
     @./scripts/db-migration-fresh-start.sh
 
-# `eslint`: lint the frontend
-eslint:
-    @./scripts/eslint.sh
 
 # `gunicorn`: serve the backend in PRODUCTION
 gunicorn:

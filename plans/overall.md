@@ -10,9 +10,8 @@ CORE CONCEPT:
 
 TECH STACK DECISIONS MADE:
 - Backend: FastAPI + Tortoise ORM (Django-like ORM syntax with async support)
-- Frontend: Next.js (React SPA for smooth "waiting for judgment" UX)
 - Database: PostgreSQL
-- Deployment: Backend on Render, Frontend on Vercel
+- Deployment: Backend on Render (with integrated frontend)
 - AI: OpenAI/Anthropic APIs for content moderation
 
 KEY FEATURES FOR MVP:
