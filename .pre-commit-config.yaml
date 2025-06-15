@@ -46,8 +46,3 @@ repos:
         entry: ./scripts/pytest.sh
         language: system
         pass_filenames: false
-      - id: eslint
-        name: FRONTEND eslint
-        entry: ./scripts/eslint.sh
-        language: system
-        pass_filenames: false

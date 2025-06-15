@@ -1,7 +1,6 @@
 # therobotoverlord
 
 [![Backend Checks](https://github.com/joshSzep/therobotoverlord/actions/workflows/backend-checks.yml/badge.svg)](https://github.com/joshSzep/therobotoverlord/actions/workflows/backend-checks.yml)
-[![Frontend Checks](https://github.com/joshSzep/therobotoverlord/actions/workflows/frontend-checks.yml/badge.svg)](https://github.com/joshSzep/therobotoverlord/actions/workflows/frontend-checks.yml)
 [![Global Checks](https://github.com/joshSzep/therobotoverlord/actions/workflows/global-checks.yml/badge.svg)](https://github.com/joshSzep/therobotoverlord/actions/workflows/global-checks.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 [![Deploy](https://img.shields.io/badge/render-deployed-76B900.svg?logo=render)](https://render.com)
@@ -23,9 +22,8 @@ A debate platform with a unique twist: it's moderated by a single AI "robot over
 
 ### Tech Stack
 - **Backend**: FastAPI + Tortoise ORM (Django-like ORM with async support)
-- **Frontend**: Next.js (React SPA)
 - **Database**: PostgreSQL
-- **Deployment**: Backend on Render, Frontend on Vercel
+- **Deployment**: Backend on Render
 - **AI**: OpenAI/Anthropic APIs for content moderation
 
 ### Key Features
@@ -40,7 +38,7 @@ A debate platform with a unique twist: it's moderated by a single AI "robot over
 
 - `git` - [Version Control System](https://git-scm.com/)
 - `just` - [Command Runner](https://just.systems/)
-- `node` - [JavaScript Runtime and Package Manager](https://nodejs.org/)
+
 - `uv` - [Python Package Manager](https://github.com/urbit/uv)
 - `python` - [Python Runtime](https://www.python.org/)
 
@@ -55,7 +53,6 @@ A debate platform with a unique twist: it's moderated by a single AI "robot over
 It's important to know the following about the monorepo structure:
 
 - `backend/`: [FastAPI backend](./backend/README.md).
-- `frontend/`: [Next.js frontend](./frontend/README.md).
 - `scripts/`: [Scripts](./scripts/README.md) - used for managing the monorepo.
 - `justfile`: [Justfile](./justfile) - used for executing commands in the monorepo.
 - `plans/`: Markdown files intended for LLM consumption - serves as technical design documentation for AI-assisted development.
