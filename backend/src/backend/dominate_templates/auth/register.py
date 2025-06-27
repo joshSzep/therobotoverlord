@@ -13,6 +13,7 @@ from dominate.tags import h1
 from dominate.tags import input_
 from dominate.tags import label
 from dominate.tags import p
+from dominate.tags import script
 from dominate.util import text
 
 # Local imports
@@ -34,7 +35,10 @@ def create_register_page(
     Returns:
         A dominate document object
     """
-    # Define the content function to be passed to the base document
+
+    # Define head content function to include password validation script
+    def head_content_func() -> None:
+        script(src="/static/js/password-validation.js")  # type: ignore
 
     # Define the content function to be passed to the base document
     def content_func() -> None:
@@ -77,4 +81,5 @@ def create_register_page(
         user=user,
         messages=messages,
         content_func=content_func,
+        head_content_func=head_content_func,
     )
