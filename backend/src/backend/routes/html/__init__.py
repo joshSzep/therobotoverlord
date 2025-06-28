@@ -11,6 +11,7 @@ from backend.routes.html.rejected_posts import router as rejected_posts_router
 from backend.routes.html.root import router as root_router
 from backend.routes.html.tags import router as tags_router
 from backend.routes.html.topics import router as topics_router
+from backend.routes.html.users import router as users_router
 
 # Create HTML router
 router = APIRouter(prefix="/html")
@@ -26,3 +27,4 @@ router.include_router(rejected_posts_router)
 router.include_router(dashboard_router)
 router.include_router(profile_router)
 router.include_router(auth_router)
+router.include_router(users_router)
