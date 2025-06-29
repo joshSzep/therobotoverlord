@@ -181,7 +181,9 @@ def create_base_document(
             if content_func:
                 content_func(**kwargs)
 
-        with footer(), div(cls="container"):  # type: ignore
+        with footer(), div(cls="container"), div(cls="footer-content"):  # type: ignore
+            with div(cls="footer-links"):  # type: ignore
+                a("CITIZEN REGISTRY", href="/html/users/", cls="footer-link")  # type: ignore
             p("© 2025 THE ROBOT OVERLORD - APPROVED BY THE CENTRAL COMMITTEE")  # type: ignore
 
     return doc
