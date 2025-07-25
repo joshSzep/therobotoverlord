@@ -497,6 +497,31 @@ a:visited:hover {
   font-size: 0.9rem;
 }
 
+/* Messages */
+.message {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 2px solid transparent;
+  font-family: var(--font-propaganda);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: bold;
+}
+
+.message.success {
+  background-color: #1a4731;
+  border-color: #2e8b57;
+  color: #90ee90;
+  border-left: 4px solid #2e8b57;
+}
+
+.message.error {
+  background-color: var(--soviet-dark-red);
+  border-color: var(--soviet-red);
+  color: var(--soviet-white);
+  border-left: 4px solid var(--soviet-red);
+}
+
 /* Alerts */
 .alert {
   padding: 1rem;
