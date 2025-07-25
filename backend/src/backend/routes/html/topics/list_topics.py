@@ -1,5 +1,7 @@
 # Standard library imports
 from typing import Annotated
+from typing import Dict
+from typing import List
 from uuid import UUID
 
 # Third-party imports
@@ -34,6 +36,7 @@ async def list_topics_page(
     current_user: Annotated[UserResponse | None, Depends(get_current_user_optional)],
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
+    registration_success: int = Query(0),
 ) -> HTMLResponse:
     # Get topics with pagination
     skip = (page - 1) * limit
@@ -54,12 +57,26 @@ async def list_topics_page(
         "next_page": page + 1,
     }
 
+    # Handle registration success message
+    messages: List[Dict[str, str]] = []
+    if registration_success and current_user:
+        messages.append(
+            {
+                "type": "success",
+                "text": (
+                    f"WELCOME, CITIZEN {current_user.display_name.upper()}! "
+                    "THE OVERLORD HAS APPROVED YOUR REGISTRATION. "
+                    "YOUR LOGIC CALIBRATION BEGINS NOW."
+                ),
+            }
+        )
+
     # Create the topics list page using Dominate
     doc = create_topics_list_page(
         topics=topics,  # Pass schema objects directly
         pagination=pagination,
         user=current_user,  # Pass schema object directly
-        messages=[],  # Empty list instead of None
+        messages=messages,
     )
 
     # Return the rendered HTML
